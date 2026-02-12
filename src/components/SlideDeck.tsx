@@ -28,7 +28,7 @@ export default function SlideDeck({ slides, onBack, deckId }: SlideDeckProps) {
 
 function SlideDeckInner({ slides, onBack }: { slides: SlideData[]; onBack?: () => void }) {
   const slideRefs = useRef<(HTMLDivElement | null)[]>([])
-  const { editMode, toggleEditMode, getEffectiveSlideData, addedSlides, addSlide } = useEditor()
+  const { editMode, toggleEditMode, getEffectiveSlideData, addedSlides, addSlide, setSelection } = useEditor()
 
   const allSlides = useMemo(
     () => [...slides, ...addedSlides],
@@ -77,6 +77,11 @@ function SlideDeckInner({ slides, onBack }: { slides: SlideData[]; onBack?: () =
       <div
         className="flex-1 xl:ml-56 flex flex-col items-center gap-10 py-10 relative transition-all"
         style={{ marginRight: editMode ? 320 : 0 }}
+        onClick={(e) => {
+          if (!editMode) return
+          // Only deselect when clicking directly on the scroll container (gaps between slides)
+          if (e.target === e.currentTarget) setSelection(null)
+        }}
       >
         {onBack && (
           <button
