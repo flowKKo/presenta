@@ -75,7 +75,7 @@ export default function BlockWrapper({
   if (!editMode) {
     return (
       <div
-        className="absolute overflow-hidden"
+        className="absolute overflow-hidden flex flex-col"
         style={{
           left: `${bounds.x}%`,
           top: `${bounds.y}%`,
@@ -91,7 +91,7 @@ export default function BlockWrapper({
   return (
     <>
       <div
-        className="absolute overflow-hidden"
+        className="absolute overflow-hidden flex flex-col"
         style={{
           left: `${bounds.x}%`,
           top: `${bounds.y}%`,
