@@ -1,5 +1,6 @@
 import { useEditor } from './EditorProvider'
 import SlideDataEditor from './SlideDataEditor'
+import LayoutPicker from './LayoutPicker'
 import type { SlideData } from '../../data/types'
 import type { TextOverlay, RectOverlay, LineOverlay, OverlayElement } from '../../data/editor-types'
 
@@ -89,6 +90,12 @@ export default function PropertyPanel({ originalSlides }: PropertyPanelProps) {
             <NumberField label="高 (%)" value={box.height} onChange={(v) => setContentBox(slideIndex, { ...box, height: v })} min={10} step={0.5} />
           </div>
         </div>
+
+        {/* Layout Picker */}
+        <LayoutPicker
+          data={effectiveData}
+          onChange={(data) => setSlideDataOverride(slideIndex, data)}
+        />
 
         {/* Slide Data Editor */}
         <SlideDataEditor
