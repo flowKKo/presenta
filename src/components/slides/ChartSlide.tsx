@@ -13,19 +13,31 @@ const colorMap: Record<string, string> = {
   neutral: colors.accentNeutral,
 }
 
-function renderChart(data: ChartSlideData) {
-  const h = data.chartHeight
+export interface ChartDiagramProps {
+  chartType: ChartSlideData['chartType']
+  bars?: ChartSlideData['bars']
+  slices?: ChartSlideData['slices']
+  innerRadius?: number
+  categories?: string[]
+  lineSeries?: ChartSlideData['lineSeries']
+  indicators?: ChartSlideData['indicators']
+  radarSeries?: ChartSlideData['radarSeries']
+  chartHeight?: number
+}
 
-  switch (data.chartType) {
+export function ChartDiagram(props: ChartDiagramProps) {
+  const h = props.chartHeight
+
+  switch (props.chartType) {
     case 'pie':
-      return <PieChart data={data.slices ?? []} innerRadius={data.innerRadius} height={h} />
+      return <PieChart data={props.slices ?? []} innerRadius={props.innerRadius} height={h} />
     case 'line':
-      return <LineChart categories={data.categories ?? []} series={data.lineSeries ?? []} height={h} />
+      return <LineChart categories={props.categories ?? []} series={props.lineSeries ?? []} height={h} />
     case 'radar':
-      return <RadarChart indicators={data.indicators ?? []} series={data.radarSeries ?? []} height={h} />
+      return <RadarChart indicators={props.indicators ?? []} series={props.radarSeries ?? []} height={h} />
     case 'bar':
     default: {
-      const bars = data.bars ?? []
+      const bars = props.bars ?? []
       const categories = bars.map(b => b.category)
       const seriesNames = [...new Set(bars.flatMap(b => b.values.map(v => v.name)))]
       const series = seriesNames.map(name => {
@@ -39,6 +51,10 @@ function renderChart(data: ChartSlideData) {
       return <BarChart categories={categories} series={series} height={h} />
     }
   }
+}
+
+function renderChart(data: ChartSlideData) {
+  return <ChartDiagram {...data} />
 }
 
 export default function ChartSlide(data: ChartSlideData) {

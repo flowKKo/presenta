@@ -1,5 +1,5 @@
 import { createContext, useContext, useReducer, useCallback, useEffect, useRef, type ReactNode } from 'react'
-import type { SlideData } from '../../data/types'
+import type { SlideData, BlockSlideData, ContentBlock, BlockData } from '../../data/types'
 import type {
   DeckEditorState,
   SlideEditorState,
@@ -32,12 +32,18 @@ type EditorAction =
   | { type: 'SET_CONTENT_BOX'; slideIndex: number; box: ContentBox | undefined }
   | { type: 'SET_CONTENT_BOX_QUIET'; slideIndex: number; box: ContentBox | undefined }
   | { type: 'SET_SLIDE_DATA_OVERRIDE'; slideIndex: number; data: SlideData | undefined }
+  | { type: 'SET_SLIDE_DATA_OVERRIDE_QUIET'; slideIndex: number; data: SlideData }
   | { type: 'ADD_OVERLAY'; slideIndex: number; overlay: OverlayElement }
   | { type: 'UPDATE_OVERLAY'; slideIndex: number; id: string; overlay: Partial<OverlayElement> }
   | { type: 'UPDATE_OVERLAY_QUIET'; slideIndex: number; id: string; overlay: Partial<OverlayElement> }
   | { type: 'REMOVE_OVERLAY'; slideIndex: number; id: string }
   | { type: 'ADD_SLIDE'; data: SlideData }
   | { type: 'REMOVE_ADDED_SLIDE'; index: number }
+  | { type: 'ADD_BLOCK'; slideIndex: number; block: ContentBlock }
+  | { type: 'UPDATE_BLOCK'; slideIndex: number; blockId: string; changes: Partial<ContentBlock> }
+  | { type: 'UPDATE_BLOCK_QUIET'; slideIndex: number; blockId: string; changes: Partial<ContentBlock> }
+  | { type: 'REMOVE_BLOCK'; slideIndex: number; blockId: string }
+  | { type: 'UPDATE_BLOCK_DATA'; slideIndex: number; blockId: string; data: BlockData }
   | { type: 'LOAD_STATE'; state: DeckEditorState }
   | { type: 'UNDO' }
   | { type: 'REDO' }
@@ -191,6 +197,116 @@ function editorReducer(state: EditorState, action: EditorAction): EditorState {
         },
       }
     }
+    // ─── Quiet slide data override (no history push, used during block drag) ───
+    case 'SET_SLIDE_DATA_OVERRIDE_QUIET': {
+      const slide = getSlideState(state.deckState, action.slideIndex)
+      return {
+        ...state,
+        deckState: setSlideState(state.deckState, action.slideIndex, {
+          ...slide,
+          slideDataOverride: action.data,
+        }),
+      }
+    }
+
+    // ─── Block operations ───
+    case 'ADD_BLOCK': {
+      const hist = pushHistory(state)
+      const slide = getSlideState(state.deckState, action.slideIndex)
+      const blockData = slide.slideDataOverride as BlockSlideData | undefined
+      if (!blockData || blockData.type !== 'block-slide') return state
+      const updated: BlockSlideData = { ...blockData, blocks: [...blockData.blocks, action.block] }
+      return {
+        ...state,
+        ...hist,
+        deckState: setSlideState(state.deckState, action.slideIndex, {
+          ...slide,
+          slideDataOverride: updated,
+        }),
+      }
+    }
+    case 'UPDATE_BLOCK': {
+      const hist = pushHistory(state)
+      const slide = getSlideState(state.deckState, action.slideIndex)
+      const blockData = slide.slideDataOverride as BlockSlideData | undefined
+      if (!blockData || blockData.type !== 'block-slide') return state
+      const updated: BlockSlideData = {
+        ...blockData,
+        blocks: blockData.blocks.map((b) =>
+          b.id === action.blockId ? { ...b, ...action.changes } : b,
+        ),
+      }
+      return {
+        ...state,
+        ...hist,
+        deckState: setSlideState(state.deckState, action.slideIndex, {
+          ...slide,
+          slideDataOverride: updated,
+        }),
+      }
+    }
+    case 'UPDATE_BLOCK_QUIET': {
+      const slide = getSlideState(state.deckState, action.slideIndex)
+      const blockData = slide.slideDataOverride as BlockSlideData | undefined
+      if (!blockData || blockData.type !== 'block-slide') return state
+      const updated: BlockSlideData = {
+        ...blockData,
+        blocks: blockData.blocks.map((b) =>
+          b.id === action.blockId ? { ...b, ...action.changes } : b,
+        ),
+      }
+      return {
+        ...state,
+        deckState: setSlideState(state.deckState, action.slideIndex, {
+          ...slide,
+          slideDataOverride: updated,
+        }),
+      }
+    }
+    case 'REMOVE_BLOCK': {
+      const hist = pushHistory(state)
+      const slide = getSlideState(state.deckState, action.slideIndex)
+      const blockData = slide.slideDataOverride as BlockSlideData | undefined
+      if (!blockData || blockData.type !== 'block-slide') return state
+      const newSelection =
+        state.selection?.type === 'block' && state.selection.blockId === action.blockId
+          ? null
+          : state.selection
+      const updated: BlockSlideData = {
+        ...blockData,
+        blocks: blockData.blocks.filter((b) => b.id !== action.blockId),
+      }
+      return {
+        ...state,
+        ...hist,
+        selection: newSelection,
+        deckState: setSlideState(state.deckState, action.slideIndex, {
+          ...slide,
+          slideDataOverride: updated,
+        }),
+      }
+    }
+    case 'UPDATE_BLOCK_DATA': {
+      const hist = pushHistory(state)
+      const slide = getSlideState(state.deckState, action.slideIndex)
+      const blockData = slide.slideDataOverride as BlockSlideData | undefined
+      if (!blockData || blockData.type !== 'block-slide') return state
+      const updated: BlockSlideData = {
+        ...blockData,
+        blocks: blockData.blocks.map((b) =>
+          b.id === action.blockId ? { ...b, data: action.data } : b,
+        ),
+      }
+      return {
+        ...state,
+        ...hist,
+        deckState: setSlideState(state.deckState, action.slideIndex, {
+          ...slide,
+          slideDataOverride: updated,
+        }),
+      }
+    }
+
     case 'LOAD_STATE':
       return { ...state, deckState: action.state }
 
@@ -257,6 +373,12 @@ interface EditorContextValue {
   addedSlides: SlideData[]
   addSlide: (data: SlideData) => void
   removeAddedSlide: (index: number) => void
+  setSlideDataOverrideQuiet: (slideIndex: number, data: SlideData) => void
+  addBlock: (slideIndex: number, block: ContentBlock) => void
+  updateBlock: (slideIndex: number, blockId: string, changes: Partial<ContentBlock>) => void
+  updateBlockQuiet: (slideIndex: number, blockId: string, changes: Partial<ContentBlock>) => void
+  removeBlock: (slideIndex: number, blockId: string) => void
+  updateBlockData: (slideIndex: number, blockId: string, data: BlockData) => void
   undo: () => void
   redo: () => void
   canUndo: boolean
@@ -409,6 +531,42 @@ export function EditorProvider({ deckId, children }: EditorProviderProps) {
     [],
   )
 
+  const setSlideDataOverrideQuiet = useCallback(
+    (slideIndex: number, data: SlideData) =>
+      dispatch({ type: 'SET_SLIDE_DATA_OVERRIDE_QUIET', slideIndex, data }),
+    [],
+  )
+
+  const addBlock = useCallback(
+    (slideIndex: number, block: ContentBlock) =>
+      dispatch({ type: 'ADD_BLOCK', slideIndex, block }),
+    [],
+  )
+
+  const updateBlock = useCallback(
+    (slideIndex: number, blockId: string, changes: Partial<ContentBlock>) =>
+      dispatch({ type: 'UPDATE_BLOCK', slideIndex, blockId, changes }),
+    [],
+  )
+
+  const updateBlockQuiet = useCallback(
+    (slideIndex: number, blockId: string, changes: Partial<ContentBlock>) =>
+      dispatch({ type: 'UPDATE_BLOCK_QUIET', slideIndex, blockId, changes }),
+    [],
+  )
+
+  const removeBlock = useCallback(
+    (slideIndex: number, blockId: string) =>
+      dispatch({ type: 'REMOVE_BLOCK', slideIndex, blockId }),
+    [],
+  )
+
+  const updateBlockData = useCallback(
+    (slideIndex: number, blockId: string, data: BlockData) =>
+      dispatch({ type: 'UPDATE_BLOCK_DATA', slideIndex, blockId, data }),
+    [],
+  )
+
   const undo = useCallback(() => dispatch({ type: 'UNDO' }), [])
   const redo = useCallback(() => dispatch({ type: 'REDO' }), [])
 
@@ -439,6 +597,12 @@ export function EditorProvider({ deckId, children }: EditorProviderProps) {
     addedSlides,
     addSlide,
     removeAddedSlide,
+    setSlideDataOverrideQuiet,
+    addBlock,
+    updateBlock,
+    updateBlockQuiet,
+    removeBlock,
+    updateBlockData,
     undo,
     redo,
     canUndo,

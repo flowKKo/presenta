@@ -1,0 +1,101 @@
+import type { BlockData } from '../../data/types'
+import type { SlideData } from '../../data/types'
+import SlideDataEditor from './SlideDataEditor'
+
+interface BlockDataEditorProps {
+  data: BlockData
+  onChange: (data: BlockData) => void
+}
+
+/**
+ * Converts BlockData to a SlideData for reuse of SlideDataEditor,
+ * and converts back on change.
+ */
+function blockToSlideData(data: BlockData): SlideData | null {
+  switch (data.type) {
+    case 'title-body':
+      return null // handled inline below
+    case 'grid-item':
+      return { ...data, title: '' }
+    case 'sequence':
+      return { ...data, title: '' }
+    case 'compare':
+      return { ...data, title: '' }
+    case 'funnel':
+      return { ...data, title: '' }
+    case 'concentric':
+      return { ...data, title: '' }
+    case 'hub-spoke':
+      return { ...data, title: '' }
+    case 'venn':
+      return { ...data, title: '' }
+    case 'chart':
+      return { ...data, title: '' }
+  }
+}
+
+function slideDataToBlock(slideData: SlideData, originalType: BlockData['type']): BlockData {
+  // Strip title/body from SlideData when converting back to BlockData
+  switch (slideData.type) {
+    case 'grid-item':
+      return { type: 'grid-item', items: slideData.items, variant: slideData.variant, columns: slideData.columns }
+    case 'sequence':
+      return { type: 'sequence', steps: slideData.steps, variant: slideData.variant, direction: slideData.direction }
+    case 'compare':
+      return { type: 'compare', mode: slideData.mode, sides: slideData.sides, quadrantItems: slideData.quadrantItems, xAxis: slideData.xAxis, yAxis: slideData.yAxis, visible: slideData.visible, hidden: slideData.hidden }
+    case 'funnel':
+      return { type: 'funnel', layers: slideData.layers, variant: slideData.variant }
+    case 'concentric':
+      return { type: 'concentric', rings: slideData.rings, variant: slideData.variant }
+    case 'hub-spoke':
+      return { type: 'hub-spoke', center: slideData.center, spokes: slideData.spokes, variant: slideData.variant }
+    case 'venn':
+      return { type: 'venn', sets: slideData.sets, variant: slideData.variant, intersectionLabel: slideData.intersectionLabel }
+    case 'chart':
+      return { type: 'chart', chartType: slideData.chartType, bars: slideData.bars, slices: slideData.slices, innerRadius: slideData.innerRadius, categories: slideData.categories, lineSeries: slideData.lineSeries, indicators: slideData.indicators, radarSeries: slideData.radarSeries, highlight: slideData.highlight }
+    default:
+      // Should not happen, but return original
+      return { type: 'title-body', title: '', body: '' }
+  }
+}
+
+function TextInput({ label, value, onChange }: { label: string; value: string; onChange: (v: string) => void }) {
+  return (
+    <label className="block">
+      <span className="text-xs text-gray-500">{label}</span>
+      <input
+        type="text"
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        className="w-full px-2 py-1 text-sm border border-gray-200 rounded mt-0.5"
+      />
+    </label>
+  )
+}
+
+export default function BlockDataEditor({ data, onChange }: BlockDataEditorProps) {
+  // Title-body block: simple inline editor
+  if (data.type === 'title-body') {
+    return (
+      <div className="space-y-2">
+        <div className="text-xs font-semibold text-gray-600 uppercase border-b border-gray-100 pb-1">文本内容</div>
+        <TextInput label="标题" value={data.title} onChange={(v) => onChange({ ...data, title: v })} />
+        <TextInput label="正文" value={data.body ?? ''} onChange={(v) => onChange({ ...data, body: v })} />
+      </div>
+    )
+  }
+
+  // For all other types, convert to SlideData and use SlideDataEditor
+  const slideData = blockToSlideData(data)
+  if (!slideData) return null
+
+  return (
+    <SlideDataEditor
+      data={slideData}
+      onChange={(newSlideData) => {
+        const newBlock = slideDataToBlock(newSlideData, data.type)
+        onChange(newBlock)
+      }}
+    />
+  )
+}

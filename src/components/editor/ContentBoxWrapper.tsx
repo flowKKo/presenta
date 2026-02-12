@@ -1,9 +1,10 @@
-import { useCallback, useRef, type ReactNode } from 'react'
+import { useCallback, useLayoutEffect, useRef, type ReactNode } from 'react'
 import { useEditor } from './EditorProvider'
 import ResizeHandles from './ResizeHandles'
 import type { ContentBox } from '../../data/editor-types'
 import { getResizeConstraint } from '../../data/editor-types'
 import type { SlideData } from '../../data/types'
+import { legacyToBlocks } from '../../data/block-adapter'
 
 interface ContentBoxWrapperProps {
   slideIndex: number
@@ -14,11 +15,18 @@ interface ContentBoxWrapperProps {
 const DEFAULT_BOX: ContentBox = { x: 0, y: 0, width: 100, height: 100 }
 
 export default function ContentBoxWrapper({ slideIndex, slideData, children }: ContentBoxWrapperProps) {
-  const { editMode, selection, setSelection, getContentBox, setContentBox, setContentBoxQuiet, beginDrag } = useEditor()
+  const { editMode, selection, setSelection, getContentBox, setContentBoxQuiet, setSlideDataOverrideQuiet, beginDrag } = useEditor()
   const box = getContentBox(slideIndex) ?? DEFAULT_BOX
   const isSelected = selection?.type === 'content-box' && selection.slideIndex === slideIndex
   const constraint = getResizeConstraint(slideData)
   const dragRef = useRef<{ startMouse: { x: number; y: number }; startBox: ContentBox; containerRect: DOMRect } | null>(null)
+
+  // Auto-convert legacy slides to block-slide when in edit mode (before paint)
+  useLayoutEffect(() => {
+    if (editMode && slideData.type !== 'block-slide') {
+      setSlideDataOverrideQuiet(slideIndex, legacyToBlocks(slideData))
+    }
+  }, [editMode, slideData.type, slideIndex, slideData, setSlideDataOverrideQuiet])
 
   const handleClick = useCallback((e: React.MouseEvent) => {
     if (!editMode) return
@@ -67,6 +75,11 @@ export default function ContentBoxWrapper({ slideIndex, slideData, children }: C
   const handleResize = useCallback((newBounds: { x: number; y: number; width: number; height: number }) => {
     setContentBoxQuiet(slideIndex, newBounds)
   }, [slideIndex, setContentBoxQuiet])
+
+  // Block-slides manage their own positioning — no content-box wrapping needed
+  if (slideData.type === 'block-slide') {
+    return <div className="w-full h-full">{children}</div>
+  }
 
   if (!editMode) {
     // Non-edit: just render children in a full container (no overlays etc are separate)

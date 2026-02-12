@@ -55,7 +55,7 @@ function RibbonStep({ label, description, index, color, isLast }: { label: strin
   )
 }
 
-export default function SequenceEngine({ title, body, steps, variant, direction = 'horizontal' }: SequenceSlideData) {
+export function SequenceDiagram({ steps, variant, direction = 'horizontal' }: { steps: SequenceSlideData['steps']; variant: SequenceSlideData['variant']; direction?: 'horizontal' | 'vertical' }) {
   const isH = direction === 'horizontal'
   const palette = generateGradientColors(steps.length)
 
@@ -108,6 +108,14 @@ export default function SequenceEngine({ title, body, steps, variant, direction 
   }
 
   return (
+    <div className={`flex ${isH ? 'flex-row' : 'flex-col'} items-center gap-2`}>
+      {stepsWithConnectors()}
+    </div>
+  )
+}
+
+export default function SequenceEngine({ title, body, steps, variant, direction = 'horizontal' }: SequenceSlideData) {
+  return (
     <motion.div
       className="flex flex-col gap-6 h-full justify-center"
       variants={motionConfig.stagger}
@@ -116,9 +124,7 @@ export default function SequenceEngine({ title, body, steps, variant, direction 
       viewport={{ once: true }}
     >
       <EngineTitle title={title} body={body} />
-      <div className={`flex ${isH ? 'flex-row' : 'flex-col'} items-center gap-2`}>
-        {stepsWithConnectors()}
-      </div>
+      <SequenceDiagram steps={steps} variant={variant} direction={direction} />
     </motion.div>
   )
 }

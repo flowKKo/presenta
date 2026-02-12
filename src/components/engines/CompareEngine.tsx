@@ -107,6 +107,17 @@ function IcebergMode({ visible, hidden }: Pick<CompareSlideData, 'visible' | 'hi
   )
 }
 
+export function CompareDiagram(props: Omit<CompareSlideData, 'type' | 'title' | 'body'>) {
+  const { mode } = props
+  return (
+    <>
+      {mode === 'versus' && <VersusMode sides={props.sides} />}
+      {mode === 'quadrant' && <QuadrantMode quadrantItems={props.quadrantItems} xAxis={props.xAxis} yAxis={props.yAxis} />}
+      {mode === 'iceberg' && <IcebergMode visible={props.visible} hidden={props.hidden} />}
+    </>
+  )
+}
+
 export default function CompareEngine(props: CompareSlideData) {
   const { title, body, mode } = props
 
@@ -119,9 +130,7 @@ export default function CompareEngine(props: CompareSlideData) {
       viewport={{ once: true }}
     >
       <EngineTitle title={title} body={body} />
-      {mode === 'versus' && <VersusMode sides={props.sides} />}
-      {mode === 'quadrant' && <QuadrantMode quadrantItems={props.quadrantItems} xAxis={props.xAxis} yAxis={props.yAxis} />}
-      {mode === 'iceberg' && <IcebergMode visible={props.visible} hidden={props.hidden} />}
+      <CompareDiagram mode={mode} sides={props.sides} quadrantItems={props.quadrantItems} xAxis={props.xAxis} yAxis={props.yAxis} visible={props.visible} hidden={props.hidden} />
     </motion.div>
   )
 }

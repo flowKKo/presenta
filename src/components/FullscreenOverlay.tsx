@@ -76,7 +76,7 @@ export default function FullscreenOverlay({
         >
           <div className="relative w-full h-full">
             <ContentBoxWrapper slideIndex={currentIndex} slideData={slides[currentIndex]}>
-              <SlideContent data={slides[currentIndex]} />
+              <SlideContent data={slides[currentIndex]} slideIndex={currentIndex} />
             </ContentBoxWrapper>
             <OverlayLayer slideIndex={currentIndex} readOnly />
           </div>

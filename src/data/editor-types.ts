@@ -64,6 +64,7 @@ export interface DeckEditorState {
 export type SelectionTarget =
   | { type: 'content-box'; slideIndex: number }
   | { type: 'overlay'; slideIndex: number; id: string }
+  | { type: 'block'; slideIndex: number; blockId: string }
   | null
 
 export type ResizeConstraint = 'free' | 'proportional'

@@ -141,7 +141,6 @@ function ChartEditor({ data, onChange }: { data: ChartSlideData; onChange: (d: S
       <Section title="图表">
         <TextInput label="标题" value={data.title} onChange={(v) => onChange({ ...data, title: v })} />
         <TextInput label="正文" value={data.body ?? ''} onChange={(v) => onChange({ ...data, body: v })} />
-        <SelectInput label="图表类型" value={data.chartType} options={['bar', 'pie', 'line', 'radar']} onChange={(v) => onChange({ ...data, chartType: v })} />
         <TextInput label="高亮" value={data.highlight ?? ''} onChange={(v) => onChange({ ...data, highlight: v })} />
       </Section>
 
@@ -270,7 +269,6 @@ function GridItemEditor({ data, onChange, commonFields }: { data: GridItemSlideD
     <div className="space-y-4">
       {commonFields}
       <Section title="网格配置">
-        <SelectInput label="样式" value={data.variant} options={['solid', 'outline', 'sideline', 'topline', 'top-circle', 'joined', 'leaf', 'labeled', 'alternating', 'pillar', 'diamonds', 'signs']} onChange={(v) => onChange({ ...data, variant: v })} />
         <NumberInput label="列数" value={data.columns ?? 0} onChange={(v) => onChange({ ...data, columns: v || undefined })} min={0} max={6} />
       </Section>
       <Section title="项目">
@@ -296,7 +294,6 @@ function SequenceEditor({ data, onChange, commonFields }: { data: SequenceSlideD
     <div className="space-y-4">
       {commonFields}
       <Section title="序列配置">
-        <SelectInput label="样式" value={data.variant} options={['timeline', 'chain', 'arrows', 'pills', 'ribbon-arrows', 'numbered', 'zigzag']} onChange={(v) => onChange({ ...data, variant: v })} />
         <SelectInput label="方向" value={data.direction ?? 'horizontal'} options={['horizontal', 'vertical']} onChange={(v) => onChange({ ...data, direction: v })} />
       </Section>
       <Section title="步骤">
@@ -320,9 +317,6 @@ function CompareEditor({ data, onChange, commonFields }: { data: CompareSlideDat
   return (
     <div className="space-y-4">
       {commonFields}
-      <Section title="比较配置">
-        <SelectInput label="模式" value={data.mode} options={['versus', 'quadrant', 'iceberg']} onChange={(v) => onChange({ ...data, mode: v })} />
-      </Section>
       {data.mode === 'versus' && data.sides && (
         <Section title="对比方">
           <ArrayEditor
@@ -397,9 +391,6 @@ function FunnelEditor({ data, onChange, commonFields }: { data: FunnelSlideData;
   return (
     <div className="space-y-4">
       {commonFields}
-      <Section title="漏斗配置">
-        <SelectInput label="样式" value={data.variant} options={['funnel', 'pyramid', 'slope']} onChange={(v) => onChange({ ...data, variant: v })} />
-      </Section>
       <Section title="层级">
         <ArrayEditor
           items={data.layers}
@@ -422,9 +413,6 @@ function ConcentricEditor({ data, onChange, commonFields }: { data: ConcentricSl
   return (
     <div className="space-y-4">
       {commonFields}
-      <Section title="同心圆配置">
-        <SelectInput label="样式" value={data.variant} options={['circles', 'diamond', 'target']} onChange={(v) => onChange({ ...data, variant: v })} />
-      </Section>
       <Section title="环">
         <ArrayEditor
           items={data.rings}
@@ -446,9 +434,6 @@ function HubSpokeEditor({ data, onChange, commonFields }: { data: HubSpokeSlideD
   return (
     <div className="space-y-4">
       {commonFields}
-      <Section title="轮辐配置">
-        <SelectInput label="样式" value={data.variant} options={['orbit', 'solar', 'pinwheel']} onChange={(v) => onChange({ ...data, variant: v })} />
-      </Section>
       <Section title="中心">
         <TextInput label="标签" value={data.center.label} onChange={(v) => onChange({ ...data, center: { ...data.center, label: v } })} />
         <TextInput label="描述" value={data.center.description ?? ''} onChange={(v) => onChange({ ...data, center: { ...data.center, description: v } })} />
@@ -475,7 +460,6 @@ function VennEditor({ data, onChange, commonFields }: { data: VennSlideData; onC
     <div className="space-y-4">
       {commonFields}
       <Section title="韦恩图配置">
-        <SelectInput label="样式" value={data.variant} options={['classic', 'linear', 'linear-filled']} onChange={(v) => onChange({ ...data, variant: v })} />
         <TextInput label="交集标签" value={data.intersectionLabel ?? ''} onChange={(v) => onChange({ ...data, intersectionLabel: v })} />
       </Section>
       <Section title="集合">

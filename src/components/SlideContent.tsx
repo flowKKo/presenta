@@ -10,8 +10,9 @@ import FunnelPyramidEngine from './engines/FunnelPyramidEngine'
 import ConcentricEngine from './engines/ConcentricEngine'
 import HubSpokeEngine from './engines/HubSpokeEngine'
 import VennEngine from './engines/VennEngine'
+import BlockSlideRenderer from './blocks/BlockSlideRenderer'
 
-export default function SlideContent({ data }: { data: SlideData }) {
+export default function SlideContent({ data, slideIndex }: { data: SlideData; slideIndex?: number }) {
   switch (data.type) {
     case 'title': return <TitleSlide {...data} />
     case 'key-point': return <KeyPointSlide {...data} />
@@ -23,5 +24,6 @@ export default function SlideContent({ data }: { data: SlideData }) {
     case 'concentric': return <ConcentricEngine {...data} />
     case 'hub-spoke': return <HubSpokeEngine {...data} />
     case 'venn': return <VennEngine {...data} />
+    case 'block-slide': return <BlockSlideRenderer data={data} slideIndex={slideIndex ?? 0} />
   }
 }

@@ -79,6 +79,9 @@ export function extractCommonItems(data: SlideData): CommonSlideData {
         ...base,
         items: data.sets.map((s) => ({ name: s.label, description: s.description })),
       }
+
+    case 'block-slide':
+      return { ...base, items: [] }
   }
 }
 
@@ -230,6 +233,9 @@ function buildTarget(
         sets: items.slice(0, 4).map((i) => ({ label: i.name, description: i.description })),
         variant: (variant as VennVariant) ?? 'classic',
       }
+
+    case 'block-slide':
+      return { type: 'block-slide', title, blocks: [] }
   }
 }
 
@@ -392,6 +398,12 @@ export function createDefaultSlide(type: SlideData['type']): SlideData {
           { label: '集合 B', description: '第二个维度' },
         ],
         intersectionLabel: '交集',
+      }
+
+    case 'block-slide':
+      return {
+        type: 'block-slide', title: '新页面',
+        blocks: [{ id: 'b1', x: 10, y: 5, width: 80, height: 25, data: { type: 'title-body', title: '新页面', body: '在此添加内容' } }],
       }
   }
 }

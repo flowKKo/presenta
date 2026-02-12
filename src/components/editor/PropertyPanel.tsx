@@ -1,7 +1,10 @@
 import { useEditor } from './EditorProvider'
 import SlideDataEditor from './SlideDataEditor'
 import LayoutPicker from './LayoutPicker'
-import type { SlideData } from '../../data/types'
+import BlockLayoutPicker from './BlockLayoutPicker'
+import BlockDataEditor from './BlockDataEditor'
+import AddBlockPanel from './AddBlockPanel'
+import type { SlideData, BlockSlideData, ContentBlock } from '../../data/types'
 import type { TextOverlay, RectOverlay, LineOverlay, OverlayElement } from '../../data/editor-types'
 
 interface PropertyPanelProps {
@@ -55,6 +58,10 @@ export default function PropertyPanel({ originalSlides }: PropertyPanelProps) {
     getOverlays,
     updateOverlay,
     removeOverlay,
+    updateBlock,
+    removeBlock,
+    updateBlockData,
+    addBlock,
   } = useEditor()
 
   if (!selection) {
@@ -69,6 +76,18 @@ export default function PropertyPanel({ originalSlides }: PropertyPanelProps) {
     const { slideIndex } = selection
     const box = getContentBox(slideIndex) ?? { x: 0, y: 0, width: 100, height: 100 }
     const effectiveData = getEffectiveSlideData(slideIndex, originalSlides[slideIndex])
+
+    // Block-slide: show add-block panel instead of old layout/data editors
+    if (effectiveData.type === 'block-slide') {
+      return (
+        <div className="p-4 space-y-6 overflow-y-auto h-full">
+          <div className="text-xs font-semibold text-gray-600 uppercase">
+            自由布局页面 ({effectiveData.blocks.length} 个 Block)
+          </div>
+          <AddBlockPanel onAdd={(block) => addBlock(slideIndex, block)} />
+        </div>
+      )
+    }
 
     return (
       <div className="p-4 space-y-6 overflow-y-auto h-full">
@@ -103,6 +122,17 @@ export default function PropertyPanel({ originalSlides }: PropertyPanelProps) {
           onChange={(data) => setSlideDataOverride(slideIndex, data)}
         />
       </div>
+    )
+  }
+
+  // Block selected
+  if (selection.type === 'block') {
+    return (
+      <BlockPropertyPanel
+        slideIndex={selection.slideIndex}
+        blockId={selection.blockId}
+        originalSlides={originalSlides}
+      />
     )
   }
 
@@ -217,6 +247,69 @@ function LineOverlayPanel({ overlay, update }: { overlay: LineOverlay; update: (
       </div>
       <ColorField label="描边" value={overlay.stroke} onChange={(v) => update({ stroke: v })} />
       <NumberField label="描边宽度" value={overlay.strokeWidth} onChange={(v) => update({ strokeWidth: v })} min={1} max={20} />
+    </div>
+  )
+}
+
+function BlockPropertyPanel({ slideIndex, blockId, originalSlides }: { slideIndex: number; blockId: string; originalSlides: SlideData[] }) {
+  const {
+    getEffectiveSlideData,
+    updateBlock,
+    removeBlock,
+    updateBlockData,
+    addBlock,
+  } = useEditor()
+
+  const effectiveData = getEffectiveSlideData(slideIndex, originalSlides[slideIndex])
+  if (effectiveData.type !== 'block-slide') return null
+
+  const block = effectiveData.blocks.find((b) => b.id === blockId)
+  if (!block) {
+    return (
+      <div className="h-full flex items-center justify-center p-6 text-gray-400 text-sm text-center">
+        Block 未找到
+      </div>
+    )
+  }
+
+  return (
+    <div className="p-4 space-y-6 overflow-y-auto h-full">
+      {/* Position/Size */}
+      <div className="space-y-2">
+        <div className="flex items-center justify-between">
+          <span className="text-xs font-semibold text-gray-600 uppercase">位置 / 尺寸</span>
+          <button
+            onClick={() => removeBlock(slideIndex, blockId)}
+            className="text-xs text-red-500 hover:underline cursor-pointer"
+          >
+            删除 Block
+          </button>
+        </div>
+        <div className="grid grid-cols-2 gap-2">
+          <NumberField label="X (%)" value={block.x} onChange={(v) => updateBlock(slideIndex, blockId, { x: v })} step={0.5} />
+          <NumberField label="Y (%)" value={block.y} onChange={(v) => updateBlock(slideIndex, blockId, { y: v })} step={0.5} />
+          <NumberField label="宽 (%)" value={block.width} onChange={(v) => updateBlock(slideIndex, blockId, { width: v })} min={10} step={0.5} />
+          <NumberField label="高 (%)" value={block.height} onChange={(v) => updateBlock(slideIndex, blockId, { height: v })} min={10} step={0.5} />
+        </div>
+      </div>
+
+      {/* Block Layout Picker */}
+      <BlockLayoutPicker
+        data={block.data}
+        onChange={(data) => updateBlockData(slideIndex, blockId, data)}
+      />
+
+      {/* Block Data Editor */}
+      <BlockDataEditor
+        data={block.data}
+        onChange={(data) => updateBlockData(slideIndex, blockId, data)}
+      />
+
+      {/* Add Block */}
+      <div className="space-y-2">
+        <span className="text-xs font-semibold text-gray-600 uppercase">添加 Block</span>
+        <AddBlockPanel onAdd={(b) => addBlock(slideIndex, b)} />
+      </div>
     </div>
   )
 }

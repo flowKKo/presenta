@@ -27,9 +27,34 @@ function getClipPath(variant: FunnelSlideData['variant'], index: number, total: 
   return `polygon(0 0, ${topWidth}% 0, ${bottomWidth}% 100%, 0 100%)`
 }
 
-export default function FunnelPyramidEngine({ title, body, layers, variant }: FunnelSlideData) {
+export function FunnelDiagram({ layers, variant }: { layers: FunnelSlideData['layers']; variant: FunnelSlideData['variant'] }) {
   const palette = generateGradientColors(layers.length)
 
+  return (
+    <div className="flex flex-col items-center gap-1 flex-1">
+      {layers.map((layer, i) => (
+        <div
+          key={i}
+          className="w-full flex items-center justify-center text-center relative"
+          style={{
+            flex: 1,
+            clipPath: getClipPath(variant, i, layers.length),
+            backgroundColor: palette[i],
+            minHeight: 48,
+          }}
+        >
+          <div className="px-6 py-2">
+            <EditableText value={layer.label} field={`layers.${i}.label`} as="div" className="text-sm font-bold text-white" />
+            {layer.description && <EditableText value={layer.description} field={`layers.${i}.description`} as="div" className="text-xs text-white/80" />}
+            {layer.value !== undefined && <div className="text-xs text-white/70 font-semibold">{layer.value}</div>}
+          </div>
+        </div>
+      ))}
+    </div>
+  )
+}
+
+export default function FunnelPyramidEngine({ title, body, layers, variant }: FunnelSlideData) {
   return (
     <motion.div
       className="flex flex-col gap-6 h-full justify-center"
@@ -39,27 +64,7 @@ export default function FunnelPyramidEngine({ title, body, layers, variant }: Fu
       viewport={{ once: true }}
     >
       <EngineTitle title={title} body={body} />
-      <div className="flex flex-col items-center gap-1 flex-1">
-        {layers.map((layer, i) => (
-          <motion.div
-            key={i}
-            variants={motionConfig.child}
-            className="w-full flex items-center justify-center text-center relative"
-            style={{
-              flex: 1,
-              clipPath: getClipPath(variant, i, layers.length),
-              backgroundColor: palette[i],
-              minHeight: 48,
-            }}
-          >
-            <div className="px-6 py-2">
-              <EditableText value={layer.label} field={`layers.${i}.label`} as="div" className="text-sm font-bold text-white" />
-              {layer.description && <EditableText value={layer.description} field={`layers.${i}.description`} as="div" className="text-xs text-white/80" />}
-              {layer.value !== undefined && <div className="text-xs text-white/70 font-semibold">{layer.value}</div>}
-            </div>
-          </motion.div>
-        ))}
-      </div>
+      <FunnelDiagram layers={layers} variant={variant} />
     </motion.div>
   )
 }

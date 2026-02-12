@@ -82,7 +82,7 @@ export default function Sidebar({ slides, activeIndex, onClickSlide, editMode, o
                     }}
                   >
                     <div className="w-full h-full px-20 py-16 flex flex-col justify-center">
-                      <SlideContent data={slide} />
+                      <SlideContent data={slide} slideIndex={i} />
                     </div>
                   </div>
                 </MotionConfig>

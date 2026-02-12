@@ -102,7 +102,7 @@ function SlideDeckInner({ slides, onBack }: { slides: SlideData[]; onBack?: () =
             slideData={effectiveSlides[i]}
           >
             <InlineEditProvider slideIndex={i} originalData={slide}>
-              <SlideContent data={effectiveSlides[i]} />
+              <SlideContent data={effectiveSlides[i]} slideIndex={i} />
             </InlineEditProvider>
           </Slide>
         ))}

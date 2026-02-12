@@ -111,10 +111,34 @@ function TopCircleCard({ item, index, color }: { item: GridItemEntry; index: num
   )
 }
 
-export default function GridItemEngine({ title, body, items, variant, columns }: GridItemSlideData) {
+export function GridItemDiagram({ items, variant, columns }: { items: GridItemEntry[]; variant: GridItemSlideData['variant']; columns?: number }) {
   const cols = getColumns(items.length, columns)
   const palette = generateGradientColors(items.length)
 
+  return (
+    <div
+      className="grid gap-4"
+      style={{ gridTemplateColumns: `repeat(${cols}, minmax(0, 1fr))` }}
+    >
+      {items.map((item, i) => {
+        switch (variant) {
+          case 'outline':
+            return <OutlineCard key={i} item={item} index={i} />
+          case 'sideline':
+            return <SidelineCard key={i} item={item} index={i} color={palette[i]} />
+          case 'topline':
+            return <ToplineCard key={i} item={item} index={i} color={palette[i]} />
+          case 'top-circle':
+            return <TopCircleCard key={i} item={item} index={i} color={palette[i]} />
+          default: // solid + all others fallback
+            return <SolidCard key={i} item={item} index={i} />
+        }
+      })}
+    </div>
+  )
+}
+
+export default function GridItemEngine({ title, body, items, variant, columns }: GridItemSlideData) {
   return (
     <motion.div
       className="flex flex-col gap-6 h-full justify-center"
@@ -124,25 +148,7 @@ export default function GridItemEngine({ title, body, items, variant, columns }:
       viewport={{ once: true }}
     >
       <EngineTitle title={title} body={body} />
-      <div
-        className="grid gap-4"
-        style={{ gridTemplateColumns: `repeat(${cols}, minmax(0, 1fr))` }}
-      >
-        {items.map((item, i) => {
-          switch (variant) {
-            case 'outline':
-              return <OutlineCard key={i} item={item} index={i} />
-            case 'sideline':
-              return <SidelineCard key={i} item={item} index={i} color={palette[i]} />
-            case 'topline':
-              return <ToplineCard key={i} item={item} index={i} color={palette[i]} />
-            case 'top-circle':
-              return <TopCircleCard key={i} item={item} index={i} color={palette[i]} />
-            default: // solid + all others fallback
-              return <SolidCard key={i} item={item} index={i} />
-          }
-        })}
-      </div>
+      <GridItemDiagram items={items} variant={variant} columns={columns} />
     </motion.div>
   )
 }

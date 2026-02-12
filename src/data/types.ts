@@ -190,6 +190,35 @@ export type SlideData =
   | ConcentricSlideData
   | HubSpokeSlideData
   | VennSlideData
+  | BlockSlideData
+
+// ─── Block Model ───
+
+export type BlockData =
+  | { type: 'title-body'; title: string; body?: string }
+  | { type: 'grid-item'; items: GridItemEntry[]; variant: GridItemVariant; columns?: number }
+  | { type: 'sequence'; steps: SequenceStep[]; variant: SequenceVariant; direction?: 'horizontal' | 'vertical' }
+  | { type: 'compare'; mode: 'versus' | 'quadrant' | 'iceberg'; sides?: CompareSide[]; quadrantItems?: QuadrantItem[]; xAxis?: string; yAxis?: string; visible?: IcebergItem[]; hidden?: IcebergItem[] }
+  | { type: 'funnel'; layers: FunnelLayer[]; variant: FunnelVariant }
+  | { type: 'concentric'; rings: ConcentricRing[]; variant: ConcentricVariant }
+  | { type: 'hub-spoke'; center: { label: string; description?: string }; spokes: { label: string; description?: string }[]; variant: HubSpokeVariant }
+  | { type: 'venn'; sets: { label: string; description?: string }[]; intersectionLabel?: string; variant: VennVariant }
+  | { type: 'chart'; chartType: ChartType; bars?: ChartBar[]; slices?: ChartSlice[]; innerRadius?: number; categories?: string[]; lineSeries?: LineSeries[]; indicators?: RadarIndicator[]; radarSeries?: RadarSeries[]; highlight?: string }
+
+export interface ContentBlock {
+  id: string
+  x: number       // percentage 0-100
+  y: number
+  width: number
+  height: number
+  data: BlockData
+}
+
+export interface BlockSlideData {
+  type: 'block-slide'
+  title: string
+  blocks: ContentBlock[]
+}
 
 export interface DeckMeta {
   id: string
