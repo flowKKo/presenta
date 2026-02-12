@@ -1,15 +1,7 @@
-export type SlideType =
-  | 'title'
-  | 'data-comparison'
-  | 'key-point'
-  | 'comparison'
-  | 'grid'
-  | 'chart'
-  | 'player-card'
-  | 'diagram'
-  | 'list'
-  | 'placeholder'
+// ─── Shared ───
+export type SemanticColor = 'positive' | 'negative' | 'neutral'
 
+// ─── 1. Title ───
 export interface TitleSlideData {
   type: 'title'
   title: string
@@ -17,14 +9,7 @@ export interface TitleSlideData {
   badge?: string
 }
 
-export interface DataComparisonSlideData {
-  type: 'data-comparison'
-  title: string
-  body?: string
-  items: { label: string; value: string; color?: 'positive' | 'negative' | 'neutral' }[]
-  conclusion?: string
-}
-
+// ─── 2. KeyPoint ───
 export interface KeyPointSlideData {
   type: 'key-point'
   title: string
@@ -32,94 +17,179 @@ export interface KeyPointSlideData {
   body?: string
 }
 
-export interface ComparisonColumn {
-  name: string
-  items: { label: string; value: string }[]
-}
-
-export interface ComparisonSlideData {
-  type: 'comparison'
-  title: string
-  body?: string
-  columns: ComparisonColumn[]
-}
-
-export interface GridItem {
-  number: number
-  title: string
-  description: string
-}
-
-export interface GridSlideData {
-  type: 'grid'
-  title: string
-  items: GridItem[]
-}
+// ─── 3. Chart (expanded) ───
+export type ChartType = 'bar' | 'pie' | 'line' | 'radar'
 
 export interface ChartBar {
   category: string
-  values: { name: string; value: number; color?: 'positive' | 'negative' | 'neutral' }[]
+  values: { name: string; value: number; color?: SemanticColor }[]
 }
+export interface ChartSlice { name: string; value: number }
+export interface LineSeries { name: string; data: number[]; area?: boolean }
+export interface RadarIndicator { name: string; max: number }
+export interface RadarSeries { name: string; values: number[] }
 
 export interface ChartSlideData {
   type: 'chart'
+  chartType: ChartType
   title: string
   body?: string
-  bars: ChartBar[]
   highlight?: string
+  chartHeight?: number           // px, default auto-fills available space
+  // bar
+  bars?: ChartBar[]
+  // pie
+  slices?: ChartSlice[]
+  innerRadius?: number
+  // line
+  categories?: string[]
+  lineSeries?: LineSeries[]
+  // radar
+  indicators?: RadarIndicator[]
+  radarSeries?: RadarSeries[]
 }
 
-export interface PlayerCardSlideData {
-  type: 'player-card'
-  rank: string
-  name: string
-  score: number
-  model: string
-  highlight?: string
-  features: { label: string; value: string }[]
-  comparison?: { name: string; value: number }[]
+// ─── 4. GridItem Engine ───
+export type GridItemVariant =
+  | 'solid' | 'outline' | 'sideline' | 'topline'
+  | 'top-circle' | 'joined' | 'leaf' | 'labeled'
+  | 'alternating' | 'pillar' | 'diamonds' | 'signs'
+
+export interface GridItemEntry {
+  title: string
+  description?: string
+  value?: string
+  valueColor?: SemanticColor
 }
 
-export interface DiagramStep {
+export interface GridItemSlideData {
+  type: 'grid-item'
+  title: string
+  body?: string
+  items: GridItemEntry[]
+  variant: GridItemVariant
+  columns?: number
+}
+
+// ─── 5. Sequence Engine ───
+export type SequenceVariant =
+  | 'timeline' | 'chain' | 'arrows' | 'pills'
+  | 'ribbon-arrows' | 'numbered' | 'zigzag'
+
+export interface SequenceStep {
   label: string
-  description: string
+  description?: string
 }
 
-export interface DiagramSlideData {
-  type: 'diagram'
+export interface SequenceSlideData {
+  type: 'sequence'
   title: string
   body?: string
-  steps: DiagramStep[]
-  sideNote?: string
+  steps: SequenceStep[]
+  variant: SequenceVariant
+  direction?: 'horizontal' | 'vertical'
 }
 
-export interface ListSlideData {
-  type: 'list'
-  title: string
-  items: string[]
+// ─── 6. Compare Engine ───
+export interface CompareSide {
+  name: string
+  items: { label: string; value: string }[]
+}
+export interface QuadrantItem {
+  label: string
+  x: number
+  y: number
+}
+export interface IcebergItem {
+  label: string
+  description?: string
 }
 
-export interface PlaceholderSlideData {
-  type: 'placeholder'
+export interface CompareSlideData {
+  type: 'compare'
   title: string
   body?: string
-  placeholderLabel: string
-  metric?: { value: string; label: string }
-  caption?: string
-  cards?: { label: string; value: string }[]
+  mode: 'versus' | 'quadrant' | 'iceberg'
+  // versus
+  sides?: CompareSide[]
+  // quadrant
+  quadrantItems?: QuadrantItem[]
+  xAxis?: string
+  yAxis?: string
+  // iceberg
+  visible?: IcebergItem[]
+  hidden?: IcebergItem[]
 }
 
+// ─── 7. Funnel Engine ───
+export type FunnelVariant = 'funnel' | 'pyramid' | 'slope'
+
+export interface FunnelLayer {
+  label: string
+  description?: string
+  value?: number
+}
+
+export interface FunnelSlideData {
+  type: 'funnel'
+  title: string
+  body?: string
+  layers: FunnelLayer[]
+  variant: FunnelVariant
+}
+
+// ─── 8. Concentric Engine ───
+export type ConcentricVariant = 'circles' | 'diamond' | 'target'
+
+export interface ConcentricRing {
+  label: string
+  description?: string
+}
+
+export interface ConcentricSlideData {
+  type: 'concentric'
+  title: string
+  body?: string
+  rings: ConcentricRing[]
+  variant: ConcentricVariant
+}
+
+// ─── 9. HubSpoke Engine ───
+export type HubSpokeVariant = 'orbit' | 'solar' | 'pinwheel'
+
+export interface HubSpokeSlideData {
+  type: 'hub-spoke'
+  title: string
+  body?: string
+  center: { label: string; description?: string }
+  spokes: { label: string; description?: string }[]
+  variant: HubSpokeVariant
+}
+
+// ─── 10. Venn Engine ───
+export type VennVariant = 'classic' | 'linear' | 'linear-filled'
+
+export interface VennSlideData {
+  type: 'venn'
+  title: string
+  body?: string
+  sets: { label: string; description?: string }[]
+  intersectionLabel?: string
+  variant: VennVariant
+}
+
+// ─── Union ───
 export type SlideData =
   | TitleSlideData
-  | DataComparisonSlideData
   | KeyPointSlideData
-  | ComparisonSlideData
-  | GridSlideData
   | ChartSlideData
-  | PlayerCardSlideData
-  | DiagramSlideData
-  | ListSlideData
-  | PlaceholderSlideData
+  | GridItemSlideData
+  | SequenceSlideData
+  | CompareSlideData
+  | FunnelSlideData
+  | ConcentricSlideData
+  | HubSpokeSlideData
+  | VennSlideData
 
 export interface DeckMeta {
   id: string

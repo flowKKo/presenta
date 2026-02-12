@@ -1,10 +1,8 @@
 import type { DeckMeta } from '../types'
-import { terminalBenchDeck } from './terminal-bench'
-import { aiScaffoldDeck } from './ai-scaffold'
+import { engineDemoDeck } from './engine-demo'
 
 export const decks: Record<string, DeckMeta> = {
-  'terminal-bench': terminalBenchDeck,
-  'ai-scaffold': aiScaffoldDeck,
+  'engine-demo': engineDemoDeck,
 }
 
 export const deckList = Object.values(decks)
