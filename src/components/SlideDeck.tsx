@@ -22,9 +22,9 @@ export default function SlideDeck({ slides, onBack }: SlideDeckProps) {
     slideRefs.current[index]?.scrollIntoView({ behavior: 'smooth', block: 'center' })
   }, [])
 
-  const handleExpand = useCallback((index: number) => {
-    fullscreen.enter(index)
-  }, [fullscreen])
+  const handleEnterFullscreen = useCallback(() => {
+    fullscreen.enter(activeIndex)
+  }, [fullscreen, activeIndex])
 
   const handleExitFullscreen = useCallback(() => {
     const idx = fullscreen.currentIndex
@@ -68,12 +68,28 @@ export default function SlideDeck({ slides, onBack }: SlideDeckProps) {
             key={i}
             ref={(el) => { slideRefs.current[i] = el }}
             number={i + 1}
-            onExpand={() => handleExpand(i)}
           >
             <SlideContent data={slide} />
           </Slide>
         ))}
       </div>
+
+      {/* Fullscreen enter button — fixed top-right */}
+      <button
+        onClick={handleEnterFullscreen}
+        className="fixed top-5 right-5 z-50 w-10 h-10 flex items-center justify-center rounded-lg cursor-pointer transition-colors hover:bg-black/5"
+        style={{
+          color: colors.textSecondary,
+          background: colors.card,
+          border: `1px solid ${colors.border}`,
+          boxShadow: '0 2px 8px rgba(0,0,0,0.06)',
+        }}
+        title="全屏预览"
+      >
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M2 6V2h4M14 6V2h-4M2 10v4h4M14 10v4h-4" />
+        </svg>
+      </button>
 
       {/* Fullscreen overlay */}
       {fullscreen.isActive && fullscreen.currentIndex !== null && (
