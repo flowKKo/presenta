@@ -3,7 +3,7 @@
 ## Master Prompt Template
 
 ```text
-You are a senior front-end engineer. Build a vertically scrollable PPT-style webpage.
+You are a senior front-end engineer. Build a vertically scrollable PPT-style web app.
 
 Requirements:
 - Multiple slides rendered as independent sections.
@@ -12,76 +12,84 @@ Requirements:
 - Slide gaps are configurable.
 
 Engineering constraints:
-- Use HTML + CSS + JavaScript.
+- Use Vite + React + TypeScript.
+- Use Tailwind CSS for styling.
+- Use Framer Motion for animation.
+- Use ECharts + echarts-for-react for chart slides.
 - Keep responsive behavior for desktop and mobile.
-- Keep layout/content separated with `PPT_CONFIG` and `PPT_SCRIPT`.
+- Keep layout/content controlled by exactly 3 inputs: `lang`, `style`, `script`.
+- Apply PPT best-practice rules before coding and anti-rule audit after coding.
 
 Config model:
-- `PPT_CONFIG`: language, theme, palette, typography, spacing, behavior, motion, canvas.
-- `PPT_SCRIPT`: meta + slides.
+- `lang`: output language code.
+- `style`: one of `tech-dark | minimal-light | gradient-warm | corporate | retro-terminal | glassmorphism`, or natural-language custom style description.
+- `script`: selectable Markdown file path for content source (never hardcode `./script.md`).
+- Style presets are modular files (`styles/presets/*.ts`), one style per file, auto-loaded by registry.
 
 Rendering rules:
-- Map slide `type` to layout presets.
-- Do not hardcode visible copy outside `PPT_SCRIPT`.
-- Support optional scroll snap and optional entrance animation.
+- Parse Markdown at `script` into slide data.
+- Do not hardcode visible copy outside parsed script.
+- Resolve style tokens from preset or natural-language custom style.
+- Support optional scroll snap and entrance animation.
 - Respect reduced-motion.
+- Keep fixed padding and content utilization targets based on the quality rulebook.
 
 Deliver:
-- Runnable code (single HTML or split files).
+- Runnable React app code.
 - At least 6 sample slides with mixed types.
-- A short “where to edit” note for language/theme/script.
+- A short “where to edit” note for `lang`, `style`, `script`.
+- A short anti-rule pass/fail QA summary.
 ```
 
 ## Parameterized User Prompt Template
 
 ```text
-请基于以下配置生成“纵向滚动的 PPT 风格网页”：
+请基于以下配置生成“纵向滚动的 PPT 风格 React 网页”：
 
-[布局]
-- 画布比例：16:9
-- 幻灯片数量：{N}
-- 幻灯片间距：{slide_gap}
-- 页面内边距：{page_padding}
-- 滚动方式：{natural_scroll | scroll_snap}
+[技术栈]
+- 构建: Vite
+- 框架: React + TypeScript
+- 样式: Tailwind CSS
+- 动画: Framer Motion
+- 图表: ECharts + echarts-for-react
 
-[语言]
-- 输出语言：{language}
-- 语气：{tone}
+[Core Controls]
+- lang: {zh-CN | en-US | ja-JP | ...}
+- style: {tech-dark | minimal-light | gradient-warm | corporate | retro-terminal | glassmorphism | 自然语言自定义风格}
+- script: {可选 Markdown 文件路径，例如 ./storyboard.md | ./voiceover.md | ./slides/q1.md}
 
-[视觉]
-- 主题：{theme_name}
-- 主色：{primary_color}
-- 强调色：{accent_color}
-- 字体：标题 {title_font}，正文 {body_font}
+[布局要求]
+- 每个 slide 画布固定 16:9
+- slides 从上到下排列，支持间距
+- 页面纵向滚动浏览
+
+[脚本解析]
+- 只从传入的 `script` 路径读取 Markdown 内容，不允许写死文件名
+- `##` 作为 slide 分割
+- `---` 作为强制分页
+- 列表和段落作为 slide 正文
 
 [动效]
-- 启用动效：{true|false}
-- 动画类型：{fade|slide-up|scale-in}
-- 时长：{duration_ms}
+- 使用 Framer Motion
 - 遵循 reduced-motion：true
 
 [内容脚本]
-- 演示标题：{title}
-- 作者：{author}
-- 日期：{yyyy-mm-dd}
-- 幻灯片脚本：{JSON}
+- 只允许来自 `script` 的内容进入页面
+- 不要硬编码正文
 
 [工程要求]
-- 使用 `PPT_CONFIG` + `PPT_SCRIPT`
-- 所有文案从脚本读取
+- 输出可运行的 Vite React TS 项目结构
+- style 既支持 preset，也支持自然语言自定义
+- 每个 preset style 必须是独立文件，支持增删文件即生效
+- 图表使用 ECharts React 组件并跟随主题色
 - 输出可直接运行
+- 开始制作前先按 PPT 规则工作，完成后按反规则逐项检查
 ```
 
-## Example Variables
+## Custom Style Example (Swiss Minimal)
 
-```json
-{
-  "language": "zh-CN",
-  "theme_name": "Tech Grid",
-  "slide_gap": "56px",
-  "page_padding": "36px",
-  "title": "2026 前端架构升级路线",
-  "author": "技术平台组",
-  "date": "2026-02-12"
-}
+```text
+lang: zh-CN
+style: 极简、米白色底、专业设计风格，建议采用 Swiss Style。背景 #F5F5F0，主文字 #333333，正向 #4CAF50，负向 #E57373，中性 #546E7A，卡片白底和轻阴影，圆角 12-16px，扁平化图表无网格线。
+script: ./storyboard.md
 ```
