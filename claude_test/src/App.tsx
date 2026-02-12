@@ -1,6 +1,8 @@
+import { useState, useEffect, useCallback } from 'react'
 import SlideDeck from './components/SlideDeck'
+import DeckSelector from './components/DeckSelector'
 import Slide from './components/Slide'
-import { slides } from './data/slides'
+import { decks, deckList } from './data/decks'
 import type { SlideData } from './data/types'
 
 import TitleSlide from './components/slides/TitleSlide'
@@ -29,10 +31,39 @@ function SlideContent({ data }: { data: SlideData }) {
   }
 }
 
+function getHashDeckId(): string | null {
+  const hash = window.location.hash.slice(1)
+  return hash || null
+}
+
 export default function App() {
+  const [deckId, setDeckId] = useState<string | null>(getHashDeckId)
+
+  const onHashChange = useCallback(() => {
+    setDeckId(getHashDeckId())
+  }, [])
+
+  useEffect(() => {
+    window.addEventListener('hashchange', onHashChange)
+    return () => window.removeEventListener('hashchange', onHashChange)
+  }, [onHashChange])
+
+  const handleBack = useCallback(() => {
+    window.location.hash = ''
+  }, [])
+
+  if (!deckId) {
+    return <DeckSelector decks={deckList} />
+  }
+
+  const deck = decks[deckId]
+  if (!deck) {
+    return <DeckSelector decks={deckList} />
+  }
+
   return (
-    <SlideDeck>
-      {slides.map((slide, i) => (
+    <SlideDeck onBack={handleBack}>
+      {deck.slides.map((slide, i) => (
         <Slide key={i} number={i + 1}>
           <SlideContent data={slide} />
         </Slide>

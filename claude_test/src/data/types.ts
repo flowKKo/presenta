@@ -120,3 +120,11 @@ export type SlideData =
   | DiagramSlideData
   | ListSlideData
   | PlaceholderSlideData
+
+export interface DeckMeta {
+  id: string
+  title: string
+  description?: string
+  date?: string
+  slides: SlideData[]
+}

@@ -30,6 +30,7 @@ Parse `$ARGUMENTS` for these flags:
 | `--script` | Yes | — | Path to the slide script Markdown file |
 | `--slides` | No | all | Comma-separated slide numbers to regenerate (e.g., `5,8,12`) |
 | `--source` | No | — | Path to the full reference document (e.g., `full.md`) for detailed data research |
+| `--deck` | No | slugified from script filename | Deck ID for multi-deck support (e.g., `terminal-bench`). Determines output file: `src/data/decks/<deck-id>.ts` |
 
 Positional shorthand: `/web-ppt zh swiss slides.md` → lang=zh, style=swiss, script=slides.md
 
@@ -41,13 +42,14 @@ If a `full.md` (or similarly named source document) exists in the project root, 
 
 ```
 src/
-├── App.tsx                  # Main app: renders <SlideDeck> with slide data
+├── App.tsx                  # Main app: hash routing, deck selector or slide deck
 ├── main.tsx                 # Entry point
 ├── index.css                # Tailwind directives + Google Fonts import
 ├── theme/
 │   └── swiss.ts             # Style theme: colors, echarts theme, tailwind overrides
 ├── components/
-│   ├── SlideDeck.tsx         # Vertical slide container with gap
+│   ├── SlideDeck.tsx         # Vertical slide container with gap + optional back button
+│   ├── DeckSelector.tsx      # Landing page: grid of deck cards
 │   ├── Slide.tsx             # Base 16:9 slide wrapper (aspect-ratio, padding, bg)
 │   └── slides/               # One component per slide type
 │       ├── TitleSlide.tsx
@@ -63,7 +65,10 @@ src/
 ├── charts/
 │   └── BarChart.tsx          # ECharts bar chart wrapper with theme
 └── data/
-    └── slides.ts             # All slide content as typed data (generated from script)
+    ├── types.ts              # Slide and DeckMeta type definitions
+    └── decks/
+        ├── index.ts          # Deck registry (Record<string, DeckMeta>)
+        └── terminal-bench.ts # Terminal-Bench deck data (generated from script)
 ```
 
 ## Style System
@@ -316,18 +321,20 @@ Each slide type has minimum content requirements:
 4. **Research phase** — for each slide in the script, identify what specific data from the source document will populate it. Map source sections → slide data fields.
 5. **Check if project is initialized** — if `package.json` doesn't exist, scaffold the Vite + React + Tailwind project first (see Project Setup below).
 6. **Generate/update `src/theme/{style}.ts`** from the style definition.
-7. **Generate/update `src/data/slides.ts`** — populate with REAL data extracted from the source document. Every value, label, bar, and description must come from the source.
-8. **Generate/update slide components** — create any missing slide type components in `src/components/slides/`.
-9. **Generate/update `src/App.tsx`** — import theme and slide data, render `<SlideDeck>`.
-10. **Run dev server** if not already running: `npm run dev`.
-11. **Report** the number of slides generated and the dev server URL.
+7. **Determine deck ID** — use `--deck` value if provided, otherwise slugify the script filename (e.g., `slides.md` → `slides`, `ai-scaffold.md` → `ai-scaffold`).
+8. **Generate/update `src/data/decks/<deck-id>.ts`** — export a `DeckMeta` object with `id`, `title`, `description`, `date`, and `slides` array. Populate with REAL data extracted from the source document. Every value, label, bar, and description must come from the source.
+9. **Update `src/data/decks/index.ts`** — add/update the import for the new deck and its entry in the `decks` record.
+10. **Generate/update slide components** — create any missing slide type components in `src/components/slides/`.
+11. **Run dev server** if not already running: `npm run dev`.
+12. **Report** the number of slides generated, the deck ID, and the direct URL (e.g., `localhost:5173/#<deck-id>`).
 
 ### Partial Regeneration (`--slides` flag provided)
 
 1. **Read the script file** for content reference.
-2. **Update only the specified entries in `src/data/slides.ts`**.
-3. **Update corresponding slide components** if the slide type changed.
-4. **Report** which slides were updated. Vite HMR will auto-refresh.
+2. **Determine deck ID** — use `--deck` value or slugify script filename.
+3. **Update only the specified entries in `src/data/decks/<deck-id>.ts`**.
+4. **Update corresponding slide components** if the slide type changed.
+5. **Report** which slides were updated. Vite HMR will auto-refresh.
 
 ### Project Setup (First Run Only)
 
