@@ -99,12 +99,9 @@ Every slide is wrapped in the base `<Slide>` component:
 <motion.div
   id={`slide-${number}`}
   className="w-[min(90vw,1600px)] aspect-video overflow-hidden relative
-             rounded-xl shadow-lg px-20 py-16 flex flex-col justify-center"
+             rounded-xl shadow-lg px-20 py-16"
   style={{ background: theme.colors.slide }}
-  initial={{ opacity: 0, y: 30 }}
-  whileInView={{ opacity: 1, y: 0 }}
-  viewport={{ once: true, amount: 0.15 }}
-  transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+  {...motionConfig.slide}
 >
   {children}
 </motion.div>
@@ -112,8 +109,23 @@ Every slide is wrapped in the base `<Slide>` component:
 
 Key rules:
 - `aspect-video` enforces 16:9
-- All slides wrapped in Framer Motion for entrance animation
-- Inner elements use `motion.div` with `staggerChildren` for sequenced entrance
+- Fixed padding `px-20 py-16` defines the safe area (BP-1)
+- Framer Motion entrance animation via `motionConfig.slide`
+
+### Inner Layout Grid (BP-13)
+
+Non-centered slides use CSS Grid for fixed title positioning:
+
+```tsx
+// Inside each slide type component (except TitleSlide/KeyPointSlide):
+<div className="grid grid-rows-[auto_1fr_auto] h-full gap-6">
+  <div className="self-start">{/* Title Zone */}</div>
+  <div className="self-center">{/* Content Zone */}</div>
+  <div className="self-end">{/* Caption Zone (optional) */}</div>
+</div>
+```
+
+TitleSlide and KeyPointSlide use `flex items-center justify-center` (centered).
 
 ### `<SlideDeck>` Container
 
@@ -185,20 +197,42 @@ Each slide type is a separate component receiving typed props:
 
 See BP-2.
 
-### Card Style
+### Content Presentation
+
+- Cards are NOT the default — choose layout by data type. See BP-12.
+- Alternative layouts: table rows, accent-border items, borderless grid, timeline, inline highlights.
+- Max 50% of content slides should use white cards.
+
+### Layout Grid
+
+- Non-centered slides: `grid grid-rows-[auto_1fr_auto] h-full gap-6`. See BP-13.
+- Title zone: `self-start` (pinned top). Content zone: `self-center`. Caption zone: `self-end`.
+- TitleSlide / KeyPointSlide: `flex items-center justify-center`.
+
+### Data Visualization
+
+- Prefer CSS/Tailwind horizontal bars over ECharts for ≤8 items. See BP-14.
+- Horizontal bars: label left (`w-32`), bar middle (`h-8 rounded-r-lg`), value right.
+- Big numbers get micro progress bars below them (`h-2 rounded-full`).
+- Animate bar growth with Framer Motion `animate={{ width }}`.
+- Keep ECharts only for complex multi-series charts (8+ data points).
+
+### Body Text
+
+- Keywords: `font-semibold text-primary` within `textSecondary` body. See BP-15.
+- Data pills: `bg-accent/10 text-accent px-2 py-0.5 rounded`.
+- Max width: `max-w-[75%]`. Line height: `leading-loose`.
+
+### Fragment Animations
+
+- Click/Space/→ reveals next fragment within a slide. See BP-16.
+- Types: `appear`, `countUp` (numbers), `growBar` (bars), `highlight`, `revealGroup`.
+- Fragment 0 always includes title + body.
+- Falls back to scroll-triggered stagger if `fragments` is not set.
+
+### Card Style (when cards ARE used)
 
 All cards: `rounded-[14px] px-8 py-6` + `cardStyle` object from theme. See BP-4.
-
-### ECharts Configuration
-
-- Registered theme matching `--style`
-- Flat: no gradients, no 3D
-- No grid lines (`show: false`)
-- `borderRadius: [6, 6, 0, 0]` on bars
-- `label.show: true` to display values on bars
-- Auto-resize via echarts `autoResize`
-
-See BP-7.
 
 ### Framer Motion Patterns
 
@@ -206,8 +240,9 @@ All defined in `motionConfig` from theme file:
 - Slide entrance: `motionConfig.slide` — applied by `<Slide>` wrapper
 - Stagger parent: `motionConfig.stagger` — wraps inner content
 - Stagger child: `motionConfig.child` — each direct child element
+- Fragment animations: managed by `fragmentIndex` state in `<SlideDeck>`
 
-See BP-8.
+See BP-8, BP-16.
 
 ---
 
@@ -567,7 +602,8 @@ export const cardStyle = {
 
 ---
 
-### BP-11: Slide Number & Navigation Hints
+### BP-11: Slide Number & Navigation Hints (unchanged)
+
 
 **Principle:** Audience needs orientation in longer decks.
 
@@ -583,6 +619,223 @@ export const cardStyle = {
 
 ---
 
+### BP-12: Content Presentation Diversity
+
+**Principle:** Over-reliance on white cards makes slides monotonous. Different data types demand different visual treatments. Cards are only ONE tool — not the default.
+
+**Layout Selection Matrix — choose by data type:**
+
+| Data Scenario | DON'T (anti-pattern) | DO (preferred) |
+|---------------|---------------------|----------------|
+| Side-by-side comparison (Comparison) | 3 white cards, each with stacked label-value pairs | **Table layout** — rows are dimensions, columns are subjects, cells hold values only. Clean `border-b` separators, no card backgrounds |
+| Feature/attribute list (PlayerCard) | White cards with label + value | **Left accent border** — no card background, use `border-l-3 border-accent pl-6` + text. Lighter and more editorial |
+| Dimension overview (Grid 4-6 items) | White cards with number badges | **Borderless grid** — remove card bg/shadow, use accent-colored icon or number + title + description. Separate items with whitespace, not card borders |
+| Ordered steps (List) | White cards with number badges | **Timeline** — vertical line on left (`border-l-2`), circle markers (`w-3 h-3 rounded-full bg-accent`), content to the right |
+| Short key-value pairs (≤3 items) | Cards for 2-3 items | **Inline highlights** — no container at all. Place data inline with `font-semibold text-primary` for values and `text-caption` for labels |
+
+**DO (Rules):**
+- Before using `cardStyle`, ask: "Does this data benefit from being in a box?" If not, use a lighter treatment.
+- Mix at least 2-3 different visual treatments across a full presentation.
+- Table layouts: use `<table>` or CSS grid with `border-b border-black/[0.06]` row separators, no outer border.
+- Accent border style: `border-l-[3px]` + accent color, transparent background, `pl-6`.
+- Timeline style: left line `border-l-2 border-black/[0.08]`, circle nodes `w-3 h-3 rounded-full bg-accentNeutral`.
+
+**DON'T (Anti-Rules):**
+- Never use white cards for MORE than 50% of all content slides. Consciously alternate.
+- Never show 3+ consecutive slides that all use the same card-grid layout.
+- Never use a card for a single line of text — cards need at least a title + 1 detail line to justify the visual weight.
+
+---
+
+### BP-13: Fixed Title Zone & Layout Grid
+
+**Principle:** The title must appear at the EXACT same position on every slide. Varying title positions causes visual jitter when scrolling through slides.
+
+**Implementation — CSS Grid with fixed zones:**
+
+```tsx
+// Inside <Slide>, the inner layout uses CSS Grid:
+<div className="grid grid-rows-[auto_1fr_auto] h-full gap-6">
+  {/* Title Zone — always self-start, pinned to top */}
+  <div className="self-start">
+    <h2>Title</h2>
+    <p>Body text</p>
+  </div>
+
+  {/* Content Zone — fills remaining space, vertically centered */}
+  <div className="self-center">
+    {/* cards / charts / lists */}
+  </div>
+
+  {/* Caption Zone — always self-end, pinned to bottom */}
+  <div className="self-end">
+    <p>Caption</p>
+  </div>
+</div>
+```
+
+**DO (Rules):**
+- ALL non-centered slides (everything except TitleSlide and KeyPointSlide) use `grid grid-rows-[auto_1fr_auto]`.
+- Title zone: `self-start` — title always at the top of the safe area.
+- Content zone: `self-center` for small content, `self-stretch` for full-height content (charts).
+- Caption zone: `self-end` — always at the bottom. If no caption, render an empty div to maintain grid structure.
+- TitleSlide and KeyPointSlide keep `flex items-center justify-center` (centered layout).
+
+**DON'T (Anti-Rules):**
+- Never use `justify-center` on non-centered slides — it causes the title to float to different Y positions depending on content height.
+- Never let the title zone grow beyond 20% of slide height — constrain with `max-h-[20%]`.
+- Never put spacing between title and body with margins — use the title zone's internal `gap-2`.
+
+---
+
+### BP-14: Data Visualization Enhancement
+
+**Principle:** Generic ECharts bar charts are visually weak and don't leverage the presentation context. Data visualization should be tailored to the comparison type and use CSS/SVG for tighter design control.
+
+**Visualization Selection by Data Type:**
+
+| Data Type | Recommended Visualization | Implementation |
+|-----------|--------------------------|----------------|
+| 2-4 big metrics (DataComparison) | **Big number + micro progress bar** | Number in `text-7xl`, below it a thin (h-2) horizontal bar colored by sentiment, width proportional to value |
+| Multi-item score ranking (Chart) | **Horizontal bar chart** | Labels on left, bars extending right, value at bar end. Use Tailwind width percentages, not ECharts |
+| Head-to-head (PlayerCard comparison) | **Ranked list with bars** | Each row: rank badge + name + horizontal progress bar + score. Top entry uses accent color |
+| Before/after or baseline+gain | **Stacked dual-color bar** | Grey portion = baseline, green/red portion = gain/loss. Shows both absolute and delta |
+| Disproportionate values (e.g., 72K vs 235K) | **Area/size comparison** | Circles or squares with area proportional to value. More visceral than bars for large ratios |
+
+**CSS Bar Chart Component** (replaces ECharts for most cases):
+```tsx
+// Horizontal bar — pure Tailwind + Framer Motion
+<motion.div className="flex items-center gap-4">
+  <span className="w-32 text-right text-base shrink-0">{label}</span>
+  <motion.div
+    className="h-8 rounded-r-lg"
+    style={{ background: color, width: 0 }}
+    animate={{ width: `${percentage}%` }}
+    transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+  />
+  <span className="text-lg font-semibold">{value}</span>
+</motion.div>
+```
+
+**DO (Rules):**
+- Prefer CSS/Tailwind horizontal bars over ECharts for ≤8 data points — better design control, animatable with Framer Motion.
+- Keep ECharts only for complex multi-series charts with 8+ data points or when interactive tooltips are needed.
+- Horizontal bars: label on left (`w-32 text-right`), bar in middle (`h-8 rounded-r-lg`), value on right.
+- Progress micro-bars under big numbers: `h-2 rounded-full`, width proportional, max-width `w-48`.
+- Bar colors follow semantic rules: `accentPositive` for best, `accentNegative` for worst, `accentNeutral` for middle.
+- Animate bar growth with Framer Motion `animate={{ width }}` — not instant, always animated.
+
+**DON'T (Anti-Rules):**
+- Never use ECharts default vertical bar charts for ≤4 items — they waste horizontal space.
+- Never show bars without value labels — the number must be visible.
+- Never make all bars the same neutral color — use semantic colors to highlight the story.
+- Never use ECharts default tooltip/legend chrome — it clashes with Swiss style.
+
+---
+
+### BP-15: Body Text & Typography Enhancement
+
+**Principle:** Large blocks of body text are the #1 visual problem in data presentations. Text must be scannable, with key information visually pulled out.
+
+**Techniques:**
+
+| Technique | Implementation | When to Use |
+|-----------|---------------|-------------|
+| Keyword highlighting | `<span className="font-semibold text-primary">` for key terms within secondary-color body text | Every body paragraph with data points |
+| Inline data pills | `<span className="bg-accentNeutral/10 text-accentNeutral px-2 py-0.5 rounded text-base font-medium">+10.4pp</span>` | Numbers, percentages, deltas in body text |
+| Max text width | `max-w-[75%]` on body text blocks | Always — never let text span full slide width |
+| Generous line height | `leading-loose` (2.0x) for body text | All body/description text |
+| Short paragraphs | Split at sentence boundaries, each `<p>` ≤ 2 lines | Any body text > 2 lines |
+
+**DO (Rules):**
+- Body text color is `textSecondary`, but key terms within body text use `textPrimary` + `font-semibold`.
+- Numbers mentioned in body text should be wrapped in pill-style spans with accent background at 10% opacity.
+- Body text max width: `max-w-[75%]` — leave right margin as breathing room.
+- Line height: `leading-loose` (line-height: 2) for body, `leading-relaxed` for card content.
+- Break body text into multiple `<p>` elements if > 2 lines, with `gap-3` between them.
+
+**DON'T (Anti-Rules):**
+- Never render body text at full slide width — it creates intimidating text walls.
+- Never use uniform `textSecondary` for the entire body — highlight key terms to create visual anchors.
+- Never have more than 3 lines of continuous body text — break it up or convert to bullet points.
+- Never use `leading-normal` for body text — too tight for presentation readability.
+
+---
+
+### BP-16: Fragment Animation System
+
+**Principle:** Good presentations reveal content progressively, guiding the audience's attention. A "fragment" is a numbered animation step within a single slide — content appears only when its fragment index is reached.
+
+**Interaction Model:**
+
+| Input | Action |
+|-------|--------|
+| `Space` / `→` / Click | Reveal next fragment (or scroll to next slide if all fragments shown) |
+| `←` | Hide last fragment (or scroll to previous slide if at fragment 0) |
+| `↑` / `↓` | Scroll between slides directly (skip fragment stepping) |
+| Touch swipe | Same as arrow keys |
+
+**Fragment Types:**
+
+| Type | Animation | Use Case |
+|------|-----------|----------|
+| `appear` | `opacity: 0→1, y: 16→0` (0.5s) | Default — titles, body text, cards |
+| `countUp` | Number counts from 0 to target (0.8s, ease-out) | Big metric numbers in DataComparison |
+| `growBar` | Bar width grows from 0% to target (0.8s, ease-out) | Horizontal bars, progress bars |
+| `highlight` | Other elements dim to `opacity: 0.3`, this element brightens to `1.0` | Spotlight one item during walkthrough |
+| `revealGroup` | Group appears together with internal `staggerChildren: 0.08` | Card groups, list items |
+
+**Data Model:**
+```ts
+// In SlideData types — each slide type gets an optional fragments count
+interface SlideData {
+  // ... existing fields
+  fragments?: number  // Total fragment count. If omitted, all content shows at once (scroll-only mode)
+}
+```
+
+**Component Architecture:**
+```tsx
+// Global fragment state managed in SlideDeck
+const [activeSlide, setActiveSlide] = useState(0)
+const [fragmentIndex, setFragmentIndex] = useState(0)
+
+// Each slide receives fragmentIndex and checks:
+// - fragment 0: title + body visible
+// - fragment 1: first data item (countUp)
+// - fragment 2: second data item (countUp)
+// - fragment N: conclusion text
+// Elements with fragment > fragmentIndex render with opacity: 0 and no interaction
+```
+
+**Standard Fragment Assignment by Slide Type:**
+
+| Slide Type | Fragment 0 | Fragment 1 | Fragment 2+ | Final Fragment |
+|------------|-----------|-----------|------------|---------------|
+| DataComparison | Title + body | Each metric item (one per fragment, countUp) | — | Conclusion text |
+| Chart | Title + body | All bars grow together (growBar) | Highlight annotation | — |
+| Comparison | Title + body | Each column (revealGroup, one per fragment) | — | — |
+| Grid | Title | All grid items (revealGroup) | — | — |
+| PlayerCard | Left panel (rank + name + score countUp) | Right panel features (revealGroup) | Comparison chart (growBar) | — |
+| Diagram | Title + body | Each step sequentially (appear) | Side note | — |
+| List | Title | Each list item (appear, one per fragment) | — | — |
+
+**DO (Rules):**
+- Fragment 0 always includes the slide title + body text — never show an empty slide.
+- Big numbers MUST use `countUp` animation — static number appearance wastes a powerful attention-grabbing moment.
+- Horizontal bars MUST use `growBar` animation — bars growing from zero dramatically demonstrates relative differences.
+- Keep total fragments per slide ≤ 6 — too many clicks per slide breaks flow.
+- If `fragments` is not set on a slide, fall back to the existing scroll-triggered stagger animation (backwards compatible).
+
+**DON'T (Anti-Rules):**
+- Never reveal the title as a separate fragment — it must always be visible immediately (fragment 0).
+- Never use `highlight` type on more than 3 items per slide — diminishing returns.
+- Never make every single text line its own fragment — group logically (e.g., all card items in one fragment).
+- Never auto-advance fragments — user must explicitly click/press to advance.
+- Never play fragment animations on scroll — fragments are click-triggered only. Scroll triggers slide entrance.
+
+---
+
 ## Quality Checklist
 
 Before delivering, verify:
@@ -591,13 +844,18 @@ Before delivering, verify:
 - [ ] Slides centered with consistent gap
 - [ ] Font sizes follow hierarchy, nothing below 18px / `text-base`
 - [ ] Key numbers are prominent (text-7xl+)
-- [ ] ECharts renders correctly with theme applied
+- [ ] **Title position is identical across all non-centered slides** (BP-13)
+- [ ] **Content uses diverse layouts** — not all white cards (BP-12)
+- [ ] **Horizontal bars used instead of ECharts for ≤8 items** (BP-14)
+- [ ] **Body text has keyword highlights and max-w-[75%]** (BP-15)
+- [ ] **Fragment system works**: Space/→ reveals next fragment, ← goes back (BP-16)
+- [ ] **countUp animation on big numbers, growBar on bars** (BP-16)
 - [ ] No horizontal overflow on any slide
 - [ ] All text is in the specified `--lang`
 - [ ] Style theme is consistently applied
 - [ ] `npm run dev` works without errors
 - [ ] `npm run build` produces working static output
-- [ ] Framer Motion animations trigger on scroll into view
+- [ ] Framer Motion animations trigger correctly (scroll entrance + click fragments)
 
 ---
 
