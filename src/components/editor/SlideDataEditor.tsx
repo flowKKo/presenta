@@ -1,0 +1,497 @@
+import type { SlideData, ChartSlideData, GridItemSlideData, SequenceSlideData, CompareSlideData, FunnelSlideData, ConcentricSlideData, HubSpokeSlideData, VennSlideData } from '../../data/types'
+import ArrayEditor from './ArrayEditor'
+
+interface SlideDataEditorProps {
+  data: SlideData
+  onChange: (data: SlideData) => void
+}
+
+function TextInput({ label, value, onChange }: { label: string; value: string; onChange: (v: string) => void }) {
+  return (
+    <label className="block">
+      <span className="text-xs text-gray-500">{label}</span>
+      <input
+        type="text"
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        className="w-full px-2 py-1 text-sm border border-gray-200 rounded mt-0.5"
+      />
+    </label>
+  )
+}
+
+function NumberInput({ label, value, onChange, min, max, step }: { label: string; value: number; onChange: (v: number) => void; min?: number; max?: number; step?: number }) {
+  return (
+    <label className="block">
+      <span className="text-xs text-gray-500">{label}</span>
+      <input
+        type="number"
+        value={value}
+        min={min}
+        max={max}
+        step={step}
+        onChange={(e) => onChange(Number(e.target.value))}
+        className="w-full px-2 py-1 text-sm border border-gray-200 rounded mt-0.5"
+      />
+    </label>
+  )
+}
+
+function SelectInput<T extends string>({ label, value, options, onChange }: { label: string; value: T; options: T[]; onChange: (v: T) => void }) {
+  return (
+    <label className="block">
+      <span className="text-xs text-gray-500">{label}</span>
+      <select
+        value={value}
+        onChange={(e) => onChange(e.target.value as T)}
+        className="w-full px-2 py-1 text-sm border border-gray-200 rounded mt-0.5"
+      >
+        {options.map((o) => <option key={o} value={o}>{o}</option>)}
+      </select>
+    </label>
+  )
+}
+
+function CheckboxInput({ label, value, onChange }: { label: string; value: boolean; onChange: (v: boolean) => void }) {
+  return (
+    <label className="flex items-center gap-2">
+      <input type="checkbox" checked={value} onChange={(e) => onChange(e.target.checked)} />
+      <span className="text-xs text-gray-500">{label}</span>
+    </label>
+  )
+}
+
+function Section({ title, children }: { title: string; children: React.ReactNode }) {
+  return (
+    <div className="space-y-2">
+      <div className="text-xs font-semibold text-gray-600 uppercase border-b border-gray-100 pb-1">{title}</div>
+      {children}
+    </div>
+  )
+}
+
+export default function SlideDataEditor({ data, onChange }: SlideDataEditorProps) {
+  // Common title/body fields
+  const commonFields = (
+    <Section title="基本信息">
+      <TextInput label="标题" value={data.title} onChange={(v) => onChange({ ...data, title: v })} />
+      {'body' in data && data.body !== undefined && (
+        <TextInput label="正文" value={data.body} onChange={(v) => onChange({ ...data, body: v })} />
+      )}
+      {'subtitle' in data && data.subtitle !== undefined && (
+        <TextInput label="副标题" value={data.subtitle} onChange={(v) => onChange({ ...data, subtitle: v })} />
+      )}
+    </Section>
+  )
+
+  switch (data.type) {
+    case 'title':
+      return (
+        <div className="space-y-4">
+          <Section title="标题页">
+            <TextInput label="标题" value={data.title} onChange={(v) => onChange({ ...data, title: v })} />
+            <TextInput label="副标题" value={data.subtitle ?? ''} onChange={(v) => onChange({ ...data, subtitle: v })} />
+            <TextInput label="徽标" value={data.badge ?? ''} onChange={(v) => onChange({ ...data, badge: v })} />
+          </Section>
+        </div>
+      )
+
+    case 'key-point':
+      return (
+        <div className="space-y-4">
+          <Section title="关键点">
+            <TextInput label="标题" value={data.title} onChange={(v) => onChange({ ...data, title: v })} />
+            <TextInput label="副标题" value={data.subtitle ?? ''} onChange={(v) => onChange({ ...data, subtitle: v })} />
+            <TextInput label="正文" value={data.body ?? ''} onChange={(v) => onChange({ ...data, body: v })} />
+          </Section>
+        </div>
+      )
+
+    case 'chart':
+      return <ChartEditor data={data} onChange={onChange} />
+
+    case 'grid-item':
+      return <GridItemEditor data={data} onChange={onChange} commonFields={commonFields} />
+
+    case 'sequence':
+      return <SequenceEditor data={data} onChange={onChange} commonFields={commonFields} />
+
+    case 'compare':
+      return <CompareEditor data={data} onChange={onChange} commonFields={commonFields} />
+
+    case 'funnel':
+      return <FunnelEditor data={data} onChange={onChange} commonFields={commonFields} />
+
+    case 'concentric':
+      return <ConcentricEditor data={data} onChange={onChange} commonFields={commonFields} />
+
+    case 'hub-spoke':
+      return <HubSpokeEditor data={data} onChange={onChange} commonFields={commonFields} />
+
+    case 'venn':
+      return <VennEditor data={data} onChange={onChange} commonFields={commonFields} />
+  }
+}
+
+// ─── Chart Editor ───
+
+function ChartEditor({ data, onChange }: { data: ChartSlideData; onChange: (d: SlideData) => void }) {
+  return (
+    <div className="space-y-4">
+      <Section title="图表">
+        <TextInput label="标题" value={data.title} onChange={(v) => onChange({ ...data, title: v })} />
+        <TextInput label="正文" value={data.body ?? ''} onChange={(v) => onChange({ ...data, body: v })} />
+        <SelectInput label="图表类型" value={data.chartType} options={['bar', 'pie', 'line', 'radar']} onChange={(v) => onChange({ ...data, chartType: v })} />
+        <TextInput label="高亮" value={data.highlight ?? ''} onChange={(v) => onChange({ ...data, highlight: v })} />
+      </Section>
+
+      {data.chartType === 'bar' && data.bars && (
+        <Section title="柱状图数据">
+          <ArrayEditor
+            items={data.bars}
+            onChange={(bars) => onChange({ ...data, bars })}
+            createDefault={() => ({ category: '新类别', values: [{ name: '系列1', value: 50 }] })}
+            renderRow={(bar, _, update) => (
+              <div className="space-y-1 p-2 bg-gray-50 rounded">
+                <TextInput label="类别" value={bar.category} onChange={(v) => update({ ...bar, category: v })} />
+                <ArrayEditor
+                  items={bar.values}
+                  onChange={(values) => update({ ...bar, values })}
+                  createDefault={() => ({ name: '系列', value: 50 })}
+                  renderRow={(val, __, updateVal) => (
+                    <div className="flex gap-1">
+                      <div className="flex-1">
+                        <TextInput label="名称" value={val.name} onChange={(v) => updateVal({ ...val, name: v })} />
+                      </div>
+                      <div className="w-20">
+                        <NumberInput label="值" value={val.value} onChange={(v) => updateVal({ ...val, value: v })} />
+                      </div>
+                    </div>
+                  )}
+                  label="值"
+                />
+              </div>
+            )}
+          />
+        </Section>
+      )}
+
+      {data.chartType === 'pie' && data.slices && (
+        <Section title="饼图数据">
+          <ArrayEditor
+            items={data.slices}
+            onChange={(slices) => onChange({ ...data, slices })}
+            createDefault={() => ({ name: '新项', value: 25 })}
+            renderRow={(slice, _, update) => (
+              <div className="flex gap-1">
+                <div className="flex-1">
+                  <TextInput label="名称" value={slice.name} onChange={(v) => update({ ...slice, name: v })} />
+                </div>
+                <div className="w-20">
+                  <NumberInput label="值" value={slice.value} onChange={(v) => update({ ...slice, value: v })} />
+                </div>
+              </div>
+            )}
+          />
+          <NumberInput label="内半径" value={data.innerRadius ?? 0} onChange={(v) => onChange({ ...data, innerRadius: v })} min={0} max={100} />
+        </Section>
+      )}
+
+      {data.chartType === 'line' && data.lineSeries && (
+        <Section title="折线图数据">
+          <TextInput
+            label="X轴类别 (逗号分隔)"
+            value={(data.categories ?? []).join(', ')}
+            onChange={(v) => onChange({ ...data, categories: v.split(',').map((s) => s.trim()) })}
+          />
+          <ArrayEditor
+            items={data.lineSeries}
+            onChange={(lineSeries) => onChange({ ...data, lineSeries })}
+            createDefault={() => ({ name: '系列', data: [0], area: false })}
+            renderRow={(series, _, update) => (
+              <div className="space-y-1 p-2 bg-gray-50 rounded">
+                <TextInput label="名称" value={series.name} onChange={(v) => update({ ...series, name: v })} />
+                <TextInput
+                  label="数据 (逗号分隔)"
+                  value={series.data.join(', ')}
+                  onChange={(v) => update({ ...series, data: v.split(',').map((s) => Number(s.trim()) || 0) })}
+                />
+                <CheckboxInput label="面积图" value={series.area ?? false} onChange={(v) => update({ ...series, area: v })} />
+              </div>
+            )}
+          />
+        </Section>
+      )}
+
+      {data.chartType === 'radar' && (
+        <Section title="雷达图数据">
+          <ArrayEditor
+            items={data.indicators ?? []}
+            onChange={(indicators) => onChange({ ...data, indicators })}
+            createDefault={() => ({ name: '指标', max: 100 })}
+            label="指标"
+            renderRow={(ind, _, update) => (
+              <div className="flex gap-1">
+                <div className="flex-1">
+                  <TextInput label="名称" value={ind.name} onChange={(v) => update({ ...ind, name: v })} />
+                </div>
+                <div className="w-20">
+                  <NumberInput label="最大值" value={ind.max} onChange={(v) => update({ ...ind, max: v })} />
+                </div>
+              </div>
+            )}
+          />
+          <ArrayEditor
+            items={data.radarSeries ?? []}
+            onChange={(radarSeries) => onChange({ ...data, radarSeries })}
+            createDefault={() => ({ name: '系列', values: [50] })}
+            label="系列"
+            renderRow={(series, _, update) => (
+              <div className="space-y-1 p-2 bg-gray-50 rounded">
+                <TextInput label="名称" value={series.name} onChange={(v) => update({ ...series, name: v })} />
+                <TextInput
+                  label="值 (逗号分隔)"
+                  value={series.values.join(', ')}
+                  onChange={(v) => update({ ...series, values: v.split(',').map((s) => Number(s.trim()) || 0) })}
+                />
+              </div>
+            )}
+          />
+        </Section>
+      )}
+    </div>
+  )
+}
+
+// ─── Engine Editors ───
+
+function GridItemEditor({ data, onChange, commonFields }: { data: GridItemSlideData; onChange: (d: SlideData) => void; commonFields: React.ReactNode }) {
+  return (
+    <div className="space-y-4">
+      {commonFields}
+      <Section title="网格配置">
+        <SelectInput label="样式" value={data.variant} options={['solid', 'outline', 'sideline', 'topline', 'top-circle', 'joined', 'leaf', 'labeled', 'alternating', 'pillar', 'diamonds', 'signs']} onChange={(v) => onChange({ ...data, variant: v })} />
+        <NumberInput label="列数" value={data.columns ?? 0} onChange={(v) => onChange({ ...data, columns: v || undefined })} min={0} max={6} />
+      </Section>
+      <Section title="项目">
+        <ArrayEditor
+          items={data.items}
+          onChange={(items) => onChange({ ...data, items })}
+          createDefault={() => ({ title: '新项目', description: '描述' })}
+          renderRow={(item, _, update) => (
+            <div className="space-y-1 p-2 bg-gray-50 rounded">
+              <TextInput label="标题" value={item.title} onChange={(v) => update({ ...item, title: v })} />
+              <TextInput label="描述" value={item.description ?? ''} onChange={(v) => update({ ...item, description: v })} />
+              <TextInput label="数值" value={item.value ?? ''} onChange={(v) => update({ ...item, value: v })} />
+            </div>
+          )}
+        />
+      </Section>
+    </div>
+  )
+}
+
+function SequenceEditor({ data, onChange, commonFields }: { data: SequenceSlideData; onChange: (d: SlideData) => void; commonFields: React.ReactNode }) {
+  return (
+    <div className="space-y-4">
+      {commonFields}
+      <Section title="序列配置">
+        <SelectInput label="样式" value={data.variant} options={['timeline', 'chain', 'arrows', 'pills', 'ribbon-arrows', 'numbered', 'zigzag']} onChange={(v) => onChange({ ...data, variant: v })} />
+        <SelectInput label="方向" value={data.direction ?? 'horizontal'} options={['horizontal', 'vertical']} onChange={(v) => onChange({ ...data, direction: v })} />
+      </Section>
+      <Section title="步骤">
+        <ArrayEditor
+          items={data.steps}
+          onChange={(steps) => onChange({ ...data, steps })}
+          createDefault={() => ({ label: '新步骤', description: '描述' })}
+          renderRow={(step, _, update) => (
+            <div className="space-y-1 p-2 bg-gray-50 rounded">
+              <TextInput label="标签" value={step.label} onChange={(v) => update({ ...step, label: v })} />
+              <TextInput label="描述" value={step.description ?? ''} onChange={(v) => update({ ...step, description: v })} />
+            </div>
+          )}
+        />
+      </Section>
+    </div>
+  )
+}
+
+function CompareEditor({ data, onChange, commonFields }: { data: CompareSlideData; onChange: (d: SlideData) => void; commonFields: React.ReactNode }) {
+  return (
+    <div className="space-y-4">
+      {commonFields}
+      <Section title="比较配置">
+        <SelectInput label="模式" value={data.mode} options={['versus', 'quadrant', 'iceberg']} onChange={(v) => onChange({ ...data, mode: v })} />
+      </Section>
+      {data.mode === 'versus' && data.sides && (
+        <Section title="对比方">
+          <ArrayEditor
+            items={data.sides}
+            onChange={(sides) => onChange({ ...data, sides })}
+            createDefault={() => ({ name: '方案', items: [{ label: '特性', value: '值' }] })}
+            minItems={2}
+            renderRow={(side, _, update) => (
+              <div className="space-y-1 p-2 bg-gray-50 rounded">
+                <TextInput label="名称" value={side.name} onChange={(v) => update({ ...side, name: v })} />
+                <ArrayEditor
+                  items={side.items}
+                  onChange={(items) => update({ ...side, items })}
+                  createDefault={() => ({ label: '特性', value: '值' })}
+                  renderRow={(item, __, updateItem) => (
+                    <div className="flex gap-1">
+                      <div className="flex-1"><TextInput label="标签" value={item.label} onChange={(v) => updateItem({ ...item, label: v })} /></div>
+                      <div className="flex-1"><TextInput label="值" value={item.value} onChange={(v) => updateItem({ ...item, value: v })} /></div>
+                    </div>
+                  )}
+                />
+              </div>
+            )}
+          />
+        </Section>
+      )}
+      {data.mode === 'quadrant' && (
+        <Section title="象限">
+          <TextInput label="X轴" value={data.xAxis ?? ''} onChange={(v) => onChange({ ...data, xAxis: v })} />
+          <TextInput label="Y轴" value={data.yAxis ?? ''} onChange={(v) => onChange({ ...data, yAxis: v })} />
+          <ArrayEditor
+            items={data.quadrantItems ?? []}
+            onChange={(quadrantItems) => onChange({ ...data, quadrantItems })}
+            createDefault={() => ({ label: '项目', x: 50, y: 50 })}
+            renderRow={(item, _, update) => (
+              <div className="flex gap-1 items-end">
+                <div className="flex-1"><TextInput label="标签" value={item.label} onChange={(v) => update({ ...item, label: v })} /></div>
+                <div className="w-16"><NumberInput label="X" value={item.x} onChange={(v) => update({ ...item, x: v })} min={0} max={100} /></div>
+                <div className="w-16"><NumberInput label="Y" value={item.y} onChange={(v) => update({ ...item, y: v })} min={0} max={100} /></div>
+              </div>
+            )}
+          />
+        </Section>
+      )}
+      {data.mode === 'iceberg' && (
+        <Section title="冰山">
+          <ArrayEditor
+            items={data.visible ?? []}
+            onChange={(visible) => onChange({ ...data, visible })}
+            createDefault={() => ({ label: '可见项' })}
+            label="可见部分"
+            renderRow={(item, _, update) => (
+              <TextInput label="标签" value={item.label} onChange={(v) => update({ ...item, label: v })} />
+            )}
+          />
+          <ArrayEditor
+            items={data.hidden ?? []}
+            onChange={(hidden) => onChange({ ...data, hidden })}
+            createDefault={() => ({ label: '隐藏项' })}
+            label="隐藏部分"
+            renderRow={(item, _, update) => (
+              <TextInput label="标签" value={item.label} onChange={(v) => update({ ...item, label: v })} />
+            )}
+          />
+        </Section>
+      )}
+    </div>
+  )
+}
+
+function FunnelEditor({ data, onChange, commonFields }: { data: FunnelSlideData; onChange: (d: SlideData) => void; commonFields: React.ReactNode }) {
+  return (
+    <div className="space-y-4">
+      {commonFields}
+      <Section title="漏斗配置">
+        <SelectInput label="样式" value={data.variant} options={['funnel', 'pyramid', 'slope']} onChange={(v) => onChange({ ...data, variant: v })} />
+      </Section>
+      <Section title="层级">
+        <ArrayEditor
+          items={data.layers}
+          onChange={(layers) => onChange({ ...data, layers })}
+          createDefault={() => ({ label: '新层', description: '描述' })}
+          renderRow={(layer, _, update) => (
+            <div className="space-y-1 p-2 bg-gray-50 rounded">
+              <TextInput label="标签" value={layer.label} onChange={(v) => update({ ...layer, label: v })} />
+              <TextInput label="描述" value={layer.description ?? ''} onChange={(v) => update({ ...layer, description: v })} />
+              <NumberInput label="数值" value={layer.value ?? 0} onChange={(v) => update({ ...layer, value: v })} />
+            </div>
+          )}
+        />
+      </Section>
+    </div>
+  )
+}
+
+function ConcentricEditor({ data, onChange, commonFields }: { data: ConcentricSlideData; onChange: (d: SlideData) => void; commonFields: React.ReactNode }) {
+  return (
+    <div className="space-y-4">
+      {commonFields}
+      <Section title="同心圆配置">
+        <SelectInput label="样式" value={data.variant} options={['circles', 'diamond', 'target']} onChange={(v) => onChange({ ...data, variant: v })} />
+      </Section>
+      <Section title="环">
+        <ArrayEditor
+          items={data.rings}
+          onChange={(rings) => onChange({ ...data, rings })}
+          createDefault={() => ({ label: '新环', description: '描述' })}
+          renderRow={(ring, _, update) => (
+            <div className="space-y-1 p-2 bg-gray-50 rounded">
+              <TextInput label="标签" value={ring.label} onChange={(v) => update({ ...ring, label: v })} />
+              <TextInput label="描述" value={ring.description ?? ''} onChange={(v) => update({ ...ring, description: v })} />
+            </div>
+          )}
+        />
+      </Section>
+    </div>
+  )
+}
+
+function HubSpokeEditor({ data, onChange, commonFields }: { data: HubSpokeSlideData; onChange: (d: SlideData) => void; commonFields: React.ReactNode }) {
+  return (
+    <div className="space-y-4">
+      {commonFields}
+      <Section title="轮辐配置">
+        <SelectInput label="样式" value={data.variant} options={['orbit', 'solar', 'pinwheel']} onChange={(v) => onChange({ ...data, variant: v })} />
+      </Section>
+      <Section title="中心">
+        <TextInput label="标签" value={data.center.label} onChange={(v) => onChange({ ...data, center: { ...data.center, label: v } })} />
+        <TextInput label="描述" value={data.center.description ?? ''} onChange={(v) => onChange({ ...data, center: { ...data.center, description: v } })} />
+      </Section>
+      <Section title="辐条">
+        <ArrayEditor
+          items={data.spokes}
+          onChange={(spokes) => onChange({ ...data, spokes })}
+          createDefault={() => ({ label: '新辐条', description: '描述' })}
+          renderRow={(spoke, _, update) => (
+            <div className="space-y-1 p-2 bg-gray-50 rounded">
+              <TextInput label="标签" value={spoke.label} onChange={(v) => update({ ...spoke, label: v })} />
+              <TextInput label="描述" value={spoke.description ?? ''} onChange={(v) => update({ ...spoke, description: v })} />
+            </div>
+          )}
+        />
+      </Section>
+    </div>
+  )
+}
+
+function VennEditor({ data, onChange, commonFields }: { data: VennSlideData; onChange: (d: SlideData) => void; commonFields: React.ReactNode }) {
+  return (
+    <div className="space-y-4">
+      {commonFields}
+      <Section title="韦恩图配置">
+        <SelectInput label="样式" value={data.variant} options={['classic', 'linear', 'linear-filled']} onChange={(v) => onChange({ ...data, variant: v })} />
+        <TextInput label="交集标签" value={data.intersectionLabel ?? ''} onChange={(v) => onChange({ ...data, intersectionLabel: v })} />
+      </Section>
+      <Section title="集合">
+        <ArrayEditor
+          items={data.sets}
+          onChange={(sets) => onChange({ ...data, sets })}
+          createDefault={() => ({ label: '新集合', description: '描述' })}
+          minItems={2}
+          renderRow={(set, _, update) => (
+            <div className="space-y-1 p-2 bg-gray-50 rounded">
+              <TextInput label="标签" value={set.label} onChange={(v) => update({ ...set, label: v })} />
+              <TextInput label="描述" value={set.description ?? ''} onChange={(v) => update({ ...set, description: v })} />
+            </div>
+          )}
+        />
+      </Section>
+    </div>
+  )
+}

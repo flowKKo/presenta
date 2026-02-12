@@ -3,6 +3,8 @@ import { useRef, useState } from 'react'
 import { colors } from '../theme/swiss'
 import type { SlideData } from '../data/types'
 import SlideContent from './SlideContent'
+import ContentBoxWrapper from './editor/ContentBoxWrapper'
+import OverlayLayer from './editor/OverlayLayer'
 
 interface FullscreenOverlayProps {
   slides: SlideData[]
@@ -69,10 +71,15 @@ export default function FullscreenOverlay({
           animate={{ opacity: 1, x: 0 }}
           exit={{ opacity: 0, x: direction * -300 }}
           transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
-          className="w-full h-full px-20 py-16 flex flex-col justify-center"
+          className="w-full h-full px-20 py-16"
           style={{ background: colors.slide }}
         >
-          <SlideContent data={slides[currentIndex]} />
+          <div className="relative w-full h-full">
+            <ContentBoxWrapper slideIndex={currentIndex} slideData={slides[currentIndex]}>
+              <SlideContent data={slides[currentIndex]} />
+            </ContentBoxWrapper>
+            <OverlayLayer slideIndex={currentIndex} readOnly />
+          </div>
         </motion.div>
       </AnimatePresence>
 

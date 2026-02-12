@@ -33,5 +33,5 @@ export default function App() {
     return <DeckSelector decks={deckList} />
   }
 
-  return <SlideDeck slides={deck.slides} onBack={handleBack} />
+  return <SlideDeck slides={deck.slides} onBack={handleBack} deckId={deckId} />
 }
