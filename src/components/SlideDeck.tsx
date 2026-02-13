@@ -38,12 +38,6 @@ function SlideDeckInner({ slides, onBack }: { slides: SlideData[]; onBack?: () =
   const activeIndex = useActiveSlideIndex(slideRefs, allSlides.length)
   const fullscreen = useFullscreen(allSlides.length)
 
-  // Default to edit mode on mount
-  useEffect(() => {
-    if (!editMode) toggleEditMode()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
-
   const effectiveSlides = useMemo(
     () => allSlides.map((s, i) => getEffectiveSlideData(i, s)),
     [allSlides, getEffectiveSlideData],

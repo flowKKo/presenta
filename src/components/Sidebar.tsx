@@ -178,7 +178,7 @@ export default function Sidebar({
                 <div className="flex items-center gap-1.5 mb-1">
                   <span
                     className="text-xs font-medium"
-                    style={{ color: isActive ? colors.accentNeutral : colors.textCaption }}
+                    style={{ color: isActive ? '#42A5F5' : colors.textCaption }}
                   >
                     {i + 1}
                   </span>
@@ -189,9 +189,9 @@ export default function Sidebar({
                   className="w-full aspect-video overflow-hidden rounded-md transition-all relative"
                   style={{
                     border: isActive
-                      ? `2px solid ${colors.accentNeutral}`
+                      ? '2px solid #90CAF9'
                       : `1px solid ${colors.border}`,
-                    boxShadow: isActive ? `0 0 0 2px ${colors.accentNeutral}33` : 'none',
+                    boxShadow: isActive ? '0 0 0 1px #90CAF933' : 'none',
                   }}
                 >
                   <MotionConfig reducedMotion="always">

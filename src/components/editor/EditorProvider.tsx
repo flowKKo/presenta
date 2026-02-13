@@ -533,7 +533,7 @@ interface EditorProviderProps {
 
 export function EditorProvider({ deckId, originalSlides, children }: EditorProviderProps) {
   const [state, dispatch] = useReducer(editorReducer, { deckId, originalSlides }, ({ deckId: id, originalSlides: slides }) => ({
-    editMode: false,
+    editMode: true,
     activeTool: 'select' as ActiveTool,
     selection: null,
     activeColor: '#EF4444',
