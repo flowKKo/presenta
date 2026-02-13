@@ -35,6 +35,7 @@ function SlideDeckInner({ slides, onBack }: { slides: SlideData[]; onBack?: () =
 
   const [spotlight, setSpotlight] = useState(false)
   const [activeIndex, setActiveIndex] = useState(0)
+  const [sidebarWidth, setSidebarWidth] = useState(260)
   const goNextRef = useRef(() => {})
   const goPrevRef = useRef(() => {})
   const fullscreen = useFullscreen(allSlides.length)
@@ -216,13 +217,15 @@ function SlideDeckInner({ slides, onBack }: { slides: SlideData[]; onBack?: () =
         onReorderSlide={handleReorderSlide}
         hasClipboard={clipboard !== null}
         onBack={onBack}
+        width={sidebarWidth}
+        onResize={setSidebarWidth}
       />
 
       {/* Main content — single page view */}
       <div
         ref={mainRef}
-        className="flex-1 xl:ml-56 flex items-center justify-center relative transition-all overflow-hidden h-screen"
-        style={{ marginRight: editMode ? 320 : 0 }}
+        className="flex-1 flex items-center justify-center relative transition-all overflow-hidden h-screen sidebar-margin"
+        style={{ '--sidebar-w': `${sidebarWidth}px`, marginRight: editMode ? 320 : 0 } as React.CSSProperties}
         onClick={(e) => {
           if (!editMode) return
           if (e.target === e.currentTarget) setSelection(null)

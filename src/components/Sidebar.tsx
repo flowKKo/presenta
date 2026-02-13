@@ -17,10 +17,13 @@ interface SidebarProps {
   onReorderSlide?: (fromIndex: number, toIndex: number) => void
   hasClipboard?: boolean
   onBack?: () => void
+  width: number
+  onResize: (width: number) => void
 }
 
-const THUMB_W = 168
 const SLIDE_W = 960
+const SIDEBAR_MIN = 200
+const SIDEBAR_MAX = 400
 
 interface ContextMenuState {
   x: number
@@ -55,12 +58,35 @@ function ContextMenuItem({ label, onClick, danger, disabled }: {
 export default function Sidebar({
   slides, activeIndex, onClickSlide, editMode,
   onInsertBlankSlide, onDeleteSlide, onCopySlide, onPasteSlide, onDuplicateSlide,
-  onReorderSlide, hasClipboard, onBack,
+  onReorderSlide, hasClipboard, onBack, width, onResize,
 }: SidebarProps) {
   const thumbRefs = useRef<(HTMLButtonElement | null)[]>([])
   const [contextMenu, setContextMenu] = useState<ContextMenuState | null>(null)
   const menuRef = useRef<HTMLDivElement | null>(null)
-  const scale = THUMB_W / SLIDE_W
+  // pl-2(8) + pr-5(20) + w-4(16) + gap-3(12) = 56px padding/chrome
+  const thumbW = width - 56
+  const scale = thumbW / SLIDE_W
+
+  // ─── Resize handle ───
+  const resizeRef = useRef<{ startX: number; startW: number } | null>(null)
+
+  const handleResizeStart = useCallback((e: React.PointerEvent) => {
+    e.preventDefault()
+    resizeRef.current = { startX: e.clientX, startW: width }
+    ;(e.target as HTMLElement).setPointerCapture(e.pointerId)
+  }, [width])
+
+  const handleResizeMove = useCallback((e: React.PointerEvent) => {
+    if (!resizeRef.current) return
+    const newW = resizeRef.current.startW + (e.clientX - resizeRef.current.startX)
+    onResize(Math.max(SIDEBAR_MIN, Math.min(SIDEBAR_MAX, newW)))
+  }, [onResize])
+
+  const handleResizeEnd = useCallback((e: React.PointerEvent) => {
+    if (!resizeRef.current) return
+    resizeRef.current = null
+    ;(e.target as HTMLElement).releasePointerCapture(e.pointerId)
+  }, [])
 
   // Insertion cursor — position between slides where a new slide would go
   const [insertionIndex, setInsertionIndex] = useState<number | null>(null)
@@ -166,9 +192,17 @@ export default function Sidebar({
 
   return (
     <div
-      className="fixed left-0 top-0 h-screen w-56 z-40 hidden xl:flex flex-col border-r overflow-y-auto sidebar-scroll"
-      style={{ background: colors.card, borderColor: colors.border }}
+      className="fixed left-0 top-0 h-screen z-40 hidden xl:flex flex-col border-r overflow-y-auto sidebar-scroll"
+      style={{ width, background: colors.card, borderColor: colors.border }}
     >
+      {/* Resize handle */}
+      <div
+        className="fixed top-0 h-screen w-1 cursor-col-resize z-50 hover:bg-gray-400/30 active:bg-gray-400/50 transition-colors"
+        style={{ left: width - 2 }}
+        onPointerDown={handleResizeStart}
+        onPointerMove={handleResizeMove}
+        onPointerUp={handleResizeEnd}
+      />
       {onBack && (
         <button
           onClick={onBack}

@@ -13,6 +13,11 @@ body {
   border-radius: 2px;
 }
 
+/* Sidebar responsive margin — only apply at xl+ where sidebar is visible */
+@media (min-width: 1280px) {
+  .sidebar-margin { margin-left: var(--sidebar-w, 260px); }
+}
+
 /* Sidebar thin scrollbar */
 .sidebar-scroll::-webkit-scrollbar { width: 4px; }
 .sidebar-scroll::-webkit-scrollbar-track { background: transparent; }
