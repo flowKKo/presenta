@@ -1,4 +1,4 @@
-import { useRef, useCallback, useMemo } from 'react'
+import { useRef, useCallback, useMemo, useState } from 'react'
 import { colors } from '../theme/swiss'
 import type { SlideData } from '../data/types'
 import Slide from './Slide'
@@ -35,6 +35,7 @@ function SlideDeckInner({ slides, onBack }: { slides: SlideData[]; onBack?: () =
     [slides, addedSlides],
   )
 
+  const [spotlight, setSpotlight] = useState(false)
   const activeIndex = useActiveSlideIndex(slideRefs, allSlides.length)
   const fullscreen = useFullscreen(allSlides.length)
 
@@ -48,8 +49,10 @@ function SlideDeckInner({ slides, onBack }: { slides: SlideData[]; onBack?: () =
   }, [])
 
   const handleEnterFullscreen = useCallback(() => {
+    // Exit edit mode when entering fullscreen
+    if (editMode) toggleEditMode()
     fullscreen.enter(activeIndex)
-  }, [fullscreen, activeIndex])
+  }, [fullscreen, activeIndex, editMode, toggleEditMode])
 
   const handleExitFullscreen = useCallback(() => {
     const idx = fullscreen.currentIndex
@@ -135,6 +138,24 @@ function SlideDeckInner({ slides, onBack }: { slides: SlideData[]; onBack?: () =
           </svg>
         </button>
 
+        {/* Spotlight toggle */}
+        <button
+          onClick={() => setSpotlight((s) => !s)}
+          className="w-10 h-10 flex items-center justify-center rounded-lg cursor-pointer transition-colors hover:bg-black/5"
+          style={{
+            color: spotlight ? '#1565C0' : colors.textSecondary,
+            background: spotlight ? '#E3F2FD' : colors.card,
+            border: `1px solid ${spotlight ? '#42A5F5' : colors.border}`,
+            boxShadow: '0 2px 8px rgba(0,0,0,0.06)',
+          }}
+          title={spotlight ? '关闭聚光灯' : '开启聚光灯'}
+        >
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+            <circle cx="12" cy="12" r="3" />
+            <path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42" />
+          </svg>
+        </button>
+
         {/* Fullscreen button */}
         <button
           onClick={handleEnterFullscreen}
@@ -176,6 +197,7 @@ function SlideDeckInner({ slides, onBack }: { slides: SlideData[]; onBack?: () =
           onNext={fullscreen.next}
           onPrev={fullscreen.prev}
           onExit={handleExitFullscreen}
+          spotlight={spotlight}
         />
       )}
     </div>

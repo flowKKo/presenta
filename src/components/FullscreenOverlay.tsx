@@ -1,10 +1,11 @@
 import { AnimatePresence, motion } from 'framer-motion'
-import { useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { colors } from '../theme/swiss'
 import type { SlideData } from '../data/types'
 import SlideContent from './SlideContent'
 import ContentBoxWrapper from './editor/ContentBoxWrapper'
 import OverlayLayer from './editor/OverlayLayer'
+import { SpotlightProvider } from '../hooks/useSpotlight'
 
 interface FullscreenOverlayProps {
   slides: SlideData[]
@@ -12,6 +13,11 @@ interface FullscreenOverlayProps {
   onNext: () => void
   onPrev: () => void
   onExit: () => void
+  spotlight: boolean
+}
+
+function getBlockCount(slide: SlideData): number {
+  return slide.type === 'block-slide' ? slide.blocks.length : 0
 }
 
 export default function FullscreenOverlay({
@@ -20,14 +26,79 @@ export default function FullscreenOverlay({
   onNext,
   onPrev,
   onExit,
+  spotlight,
 }: FullscreenOverlayProps) {
   const [direction, setDirection] = useState(0)
+  const [revealedCount, setRevealedCount] = useState(0)
+  // Track whether a slide just changed — suppress transition on initial render
+  const slideJustChanged = useRef(true)
   const prevIndex = useRef(currentIndex)
 
+  const currentSlide = slides[currentIndex]
+  const blockCount = getBlockCount(currentSlide)
+
+  // Track slide changes for direction animation
   if (currentIndex !== prevIndex.current) {
     setDirection(currentIndex > prevIndex.current ? 1 : -1)
     prevIndex.current = currentIndex
+    slideJustChanged.current = true
   }
+
+  // Reset revealed count when slide changes
+  useEffect(() => {
+    if (direction >= 0) {
+      setRevealedCount(0)
+    } else {
+      setRevealedCount(getBlockCount(slides[currentIndex]))
+    }
+    // Clear the "just changed" flag after the first render frame
+    const raf = requestAnimationFrame(() => {
+      slideJustChanged.current = false
+    })
+    return () => cancelAnimationFrame(raf)
+  }, [currentIndex, direction, slides])
+
+  const handleNext = useCallback(() => {
+    if (spotlight && blockCount > 0 && revealedCount < blockCount) {
+      setRevealedCount((c) => c + 1)
+    } else {
+      onNext()
+    }
+  }, [spotlight, blockCount, revealedCount, onNext])
+
+  const handlePrev = useCallback(() => {
+    if (spotlight && revealedCount > 0) {
+      setRevealedCount((c) => c - 1)
+    } else {
+      onPrev()
+    }
+  }, [spotlight, revealedCount, onPrev])
+
+  // Keyboard navigation
+  useEffect(() => {
+    const handleKey = (e: KeyboardEvent) => {
+      switch (e.key) {
+        case 'ArrowRight':
+        case 'ArrowDown':
+        case ' ':
+        case 'Enter':
+          e.preventDefault()
+          handleNext()
+          break
+        case 'ArrowLeft':
+        case 'ArrowUp':
+          e.preventDefault()
+          handlePrev()
+          break
+        case 'Escape':
+          e.preventDefault()
+          onExit()
+          break
+      }
+    }
+    window.addEventListener('keydown', handleKey)
+    return () => window.removeEventListener('keydown', handleKey)
+  }, [handleNext, handlePrev, onExit])
 
   const isFirst = currentIndex === 0
 
@@ -39,28 +110,17 @@ export default function FullscreenOverlay({
       {/* Left 20% — prev */}
       {!isFirst && (
         <div
-          onClick={onPrev}
+          onClick={handlePrev}
           className="absolute left-0 top-0 bottom-0 w-[20%] z-10 cursor-pointer"
         />
       )}
 
       {/* Right 80% — next */}
       <div
-        onClick={onNext}
+        onClick={handleNext}
         className="absolute right-0 top-0 bottom-0 z-10 cursor-pointer"
         style={{ left: isFirst ? '0' : '20%' }}
       />
-
-      {/* Close button */}
-      <button
-        onClick={(e) => { e.stopPropagation(); onExit() }}
-        className="absolute top-4 right-4 z-20 w-10 h-10 flex items-center justify-center rounded-full cursor-pointer transition-colors hover:bg-black/10"
-        style={{ color: colors.textSecondary }}
-      >
-        <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-          <path d="M4 4l12 12M16 4L4 16" />
-        </svg>
-      </button>
 
       {/* Full-bleed slide */}
       <AnimatePresence mode="popLayout" custom={direction}>
@@ -75,14 +135,15 @@ export default function FullscreenOverlay({
           style={{ background: colors.slide }}
         >
           <div className="relative w-full h-full">
-            <ContentBoxWrapper slideIndex={currentIndex} slideData={slides[currentIndex]}>
-              <SlideContent data={slides[currentIndex]} slideIndex={currentIndex} />
-            </ContentBoxWrapper>
+            <SpotlightProvider value={{ active: spotlight, revealedCount }}>
+              <ContentBoxWrapper slideIndex={currentIndex} slideData={slides[currentIndex]}>
+                <SlideContent data={slides[currentIndex]} slideIndex={currentIndex} />
+              </ContentBoxWrapper>
+            </SpotlightProvider>
             <OverlayLayer slideIndex={currentIndex} readOnly />
           </div>
         </motion.div>
       </AnimatePresence>
-
     </div>
   )
 }

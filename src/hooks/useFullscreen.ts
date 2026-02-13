@@ -43,33 +43,5 @@ export function useFullscreen(totalSlides: number) {
     return () => document.removeEventListener('fullscreenchange', handleChange)
   }, [currentIndex])
 
-  // Keyboard navigation — only when active
-  useEffect(() => {
-    if (!isActive) return
-
-    const handleKey = (e: KeyboardEvent) => {
-      switch (e.key) {
-        case 'ArrowRight':
-        case 'ArrowDown':
-        case ' ':
-        case 'Enter':
-          e.preventDefault()
-          next()
-          break
-        case 'ArrowLeft':
-        case 'ArrowUp':
-          e.preventDefault()
-          prev()
-          break
-        case 'Escape':
-          e.preventDefault()
-          exit()
-          break
-      }
-    }
-    window.addEventListener('keydown', handleKey)
-    return () => window.removeEventListener('keydown', handleKey)
-  }, [isActive, next, prev, exit])
-
   return { currentIndex, isActive, enter, exit, next, prev }
 }

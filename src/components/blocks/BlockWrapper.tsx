@@ -1,4 +1,4 @@
-import { useCallback, useRef, type ReactNode } from 'react'
+import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react'
 import ResizeHandles from '../editor/ResizeHandles'
 import type { ContentBlock } from '../../data/types'
 
@@ -10,6 +10,7 @@ interface BlockWrapperProps {
   onUpdate: (bounds: { x: number; y: number; width: number; height: number }) => void
   onUpdateQuiet: (bounds: { x: number; y: number; width: number; height: number }) => void
   onDragStart: () => void
+  spotlightRevealed?: boolean
   children: ReactNode
 }
 
@@ -21,6 +22,7 @@ export default function BlockWrapper({
   onUpdate,
   onUpdateQuiet,
   onDragStart,
+  spotlightRevealed = true,
   children,
 }: BlockWrapperProps) {
   const bounds = { x: block.x, y: block.y, width: block.width, height: block.height }
@@ -72,6 +74,13 @@ export default function BlockWrapper({
     onUpdateQuiet(newBounds)
   }, [onUpdateQuiet])
 
+  // Only enable transition after first render to avoid flash on mount
+  const [mounted, setMounted] = useState(false)
+  useEffect(() => {
+    const raf = requestAnimationFrame(() => setMounted(true))
+    return () => { cancelAnimationFrame(raf); setMounted(false) }
+  }, [])
+
   if (!editMode) {
     return (
       <div
@@ -81,6 +90,9 @@ export default function BlockWrapper({
           top: `${bounds.y}%`,
           width: `${bounds.width}%`,
           height: `${bounds.height}%`,
+          filter: spotlightRevealed ? 'none' : 'blur(4px)',
+          opacity: spotlightRevealed ? 1 : 0.1,
+          transition: mounted ? 'filter 0.4s ease, opacity 0.4s ease' : 'none',
         }}
       >
         {children}

@@ -1,5 +1,6 @@
 import type { BlockSlideData } from '../../data/types'
 import { useEditor } from '../editor/EditorProvider'
+import { useSpotlight } from '../../hooks/useSpotlight'
 import BlockRenderer from './BlockRenderer'
 import BlockWrapper from './BlockWrapper'
 
@@ -16,6 +17,7 @@ export default function BlockSlideRenderer({ data, slideIndex }: BlockSlideRende
     beginDrag,
     updateBlockQuiet,
   } = useEditor()
+  const { active: spotlightActive, revealedCount } = useSpotlight()
 
   const handleBlockSelect = (blockId: string) => {
     setSelection({ type: 'block', slideIndex, blockId })
@@ -35,11 +37,13 @@ export default function BlockSlideRenderer({ data, slideIndex }: BlockSlideRende
       className="relative w-full h-full"
       onClick={handleCanvasClick}
     >
-      {data.blocks.map((block) => {
+      {data.blocks.map((block, blockIndex) => {
         const isSelected =
           selection?.type === 'block' &&
           selection.slideIndex === slideIndex &&
           selection.blockId === block.id
+
+        const isRevealed = !spotlightActive || blockIndex < revealedCount
 
         return (
           <BlockWrapper
@@ -51,6 +55,7 @@ export default function BlockSlideRenderer({ data, slideIndex }: BlockSlideRende
             onUpdate={(bounds) => updateBlockQuiet(slideIndex, block.id, bounds)}
             onUpdateQuiet={(bounds) => updateBlockQuiet(slideIndex, block.id, bounds)}
             onDragStart={beginDrag}
+            spotlightRevealed={isRevealed}
           >
             <BlockRenderer data={block.data} blockId={block.id} />
           </BlockWrapper>
