@@ -71,7 +71,7 @@ export default function Sidebar({
   useEffect(() => {
     const el = thumbRefs.current[activeIndex]
     if (el) {
-      el.scrollIntoView({ block: 'nearest', behavior: 'instant' })
+      el.scrollIntoView({ block: 'nearest', behavior: 'smooth' })
     }
   }, [activeIndex])
 
@@ -135,7 +135,7 @@ export default function Sidebar({
 
   return (
     <div
-      className="fixed left-0 top-0 h-screen w-56 z-40 hidden xl:flex flex-col border-r overflow-y-auto"
+      className="fixed left-0 top-0 h-screen w-56 z-40 hidden xl:flex flex-col border-r overflow-y-auto sidebar-scroll"
       style={{ background: colors.card, borderColor: colors.border }}
     >
       {onBack && (
@@ -150,7 +150,7 @@ export default function Sidebar({
           返回
         </button>
       )}
-      <div className="flex flex-col gap-3 p-4">
+      <div className="flex flex-col gap-3 p-4 pr-3">
         {slides.map((slide, i) => {
           const isActive = i === activeIndex
           const isDragOver = dropTarget === i && dragIndex !== null && dragIndex !== i
@@ -189,9 +189,8 @@ export default function Sidebar({
                   className="w-full aspect-video overflow-hidden rounded-md transition-all relative"
                   style={{
                     border: isActive
-                      ? '2px solid #90CAF9'
+                      ? '2px solid #90A4AE'
                       : `1px solid ${colors.border}`,
-                    boxShadow: isActive ? '0 0 0 1px #90CAF933' : 'none',
                   }}
                 >
                   <MotionConfig reducedMotion="always">

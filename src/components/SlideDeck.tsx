@@ -5,7 +5,6 @@ import Slide from './Slide'
 import SlideContent from './SlideContent'
 import Sidebar from './Sidebar'
 import FullscreenOverlay from './FullscreenOverlay'
-import { useActiveSlideIndex } from '../hooks/useActiveSlideIndex'
 import { useFullscreen } from '../hooks/useFullscreen'
 import { EditorProvider, useEditor } from './editor/EditorProvider'
 import { InlineEditProvider } from './editor/InlineEditContext'
@@ -27,7 +26,7 @@ export default function SlideDeck({ slides, onBack, deckId }: SlideDeckProps) {
 }
 
 function SlideDeckInner({ slides, onBack }: { slides: SlideData[]; onBack?: () => void }) {
-  const slideRefs = useRef<(HTMLDivElement | null)[]>([])
+  const mainRef = useRef<HTMLDivElement>(null)
   const {
     editMode, toggleEditMode, getEffectiveSlideData, setSelection,
     allSlides, insertSlide, deleteSlide, copySlide, pasteSlide, duplicateSlide, moveSlide, clipboard,
@@ -35,7 +34,9 @@ function SlideDeckInner({ slides, onBack }: { slides: SlideData[]; onBack?: () =
   } = useEditor()
 
   const [spotlight, setSpotlight] = useState(false)
-  const activeIndex = useActiveSlideIndex(slideRefs, allSlides.length)
+  const [activeIndex, setActiveIndex] = useState(0)
+  const goNextRef = useRef(() => {})
+  const goPrevRef = useRef(() => {})
   const fullscreen = useFullscreen(allSlides.length)
 
   const effectiveSlides = useMemo(
@@ -43,14 +44,100 @@ function SlideDeckInner({ slides, onBack }: { slides: SlideData[]; onBack?: () =
     [allSlides, getEffectiveSlideData],
   )
 
-  const scrollToSlide = useCallback((index: number) => {
-    slideRefs.current[index]?.scrollIntoView({ behavior: 'instant', block: 'center' })
-    if (editMode) {
-      setSelection({ type: 'content-box', slideIndex: index })
-    }
-  }, [editMode, setSelection])
+  // ─── Navigation helpers ───
 
-  // Insert a blank slide at position → enter edit mode → scroll + select → show template picker
+  const goToSlide = useCallback((index: number) => {
+    setActiveIndex(index)
+  }, [])
+
+  const goNext = useCallback(() => {
+    setActiveIndex(prev => Math.min(prev + 1, allSlides.length - 1))
+  }, [allSlides.length])
+
+  const goPrev = useCallback(() => {
+    setActiveIndex(prev => Math.max(prev - 1, 0))
+  }, [])
+
+  // Sync selection when activeIndex changes in edit mode
+  useEffect(() => {
+    if (editMode) {
+      setSelection({ type: 'content-box', slideIndex: activeIndex })
+    }
+  }, [activeIndex, editMode, setSelection])
+
+  // Keep refs in sync so wheel handler never has stale closures
+  goNextRef.current = goNext
+  goPrevRef.current = goPrev
+
+  // ─── Wheel navigation with accumulated delta ───
+
+  useEffect(() => {
+    const el = mainRef.current
+    if (!el) return
+    let accDelta = 0
+    let cooldown = false
+    let resetTimer: ReturnType<typeof setTimeout>
+    const THRESHOLD = 4
+
+    const handleWheel = (e: WheelEvent) => {
+      e.preventDefault()
+      if (cooldown) return
+
+      accDelta += e.deltaY
+      clearTimeout(resetTimer)
+      resetTimer = setTimeout(() => { accDelta = 0 }, 120)
+
+      if (accDelta > THRESHOLD) {
+        goNextRef.current()
+        accDelta = 0
+        cooldown = true
+        setTimeout(() => { cooldown = false }, 250)
+      } else if (accDelta < -THRESHOLD) {
+        goPrevRef.current()
+        accDelta = 0
+        cooldown = true
+        setTimeout(() => { cooldown = false }, 250)
+      }
+    }
+    el.addEventListener('wheel', handleWheel, { passive: false })
+    return () => { el.removeEventListener('wheel', handleWheel); clearTimeout(resetTimer) }
+  }, [])  // stable — reads from refs
+
+  // ─── Keyboard navigation ───
+
+  useEffect(() => {
+    const handleKey = (e: KeyboardEvent) => {
+      const tag = (e.target as HTMLElement)?.tagName?.toLowerCase()
+      const editable = (e.target as HTMLElement)?.isContentEditable
+      if (tag === 'input' || tag === 'textarea' || editable) return
+
+      switch (e.key) {
+        case 'ArrowDown':
+        case 'PageDown':
+          e.preventDefault()
+          goNext()
+          break
+        case 'ArrowUp':
+        case 'PageUp':
+          e.preventDefault()
+          goPrev()
+          break
+      }
+    }
+    window.addEventListener('keydown', handleKey)
+    return () => window.removeEventListener('keydown', handleKey)
+  }, [goNext, goPrev])
+
+  // ─── Bounds protection ───
+
+  useEffect(() => {
+    if (activeIndex >= allSlides.length) {
+      setActiveIndex(Math.max(0, allSlides.length - 1))
+    }
+  }, [activeIndex, allSlides.length])
+
+  // ─── Insert blank slide ───
+
   const handleInsertBlankSlide = useCallback((position: number) => {
     const blank: SlideData = { type: 'key-point', title: '新页面', body: '' }
     insertSlide(position, blank)
@@ -58,14 +145,16 @@ function SlideDeckInner({ slides, onBack }: { slides: SlideData[]; onBack?: () =
     setPendingTemplate(position)
   }, [insertSlide, editMode, toggleEditMode, setPendingTemplate])
 
-  // Scroll to newly created slide when pendingTemplateSlideIndex is set
+  // Navigate to newly created slide when pendingTemplateSlideIndex is set
   useEffect(() => {
     if (pendingTemplateSlideIndex === null) return
     requestAnimationFrame(() => {
-      slideRefs.current[pendingTemplateSlideIndex]?.scrollIntoView({ behavior: 'instant', block: 'center' })
+      setActiveIndex(pendingTemplateSlideIndex)
       setSelection({ type: 'content-box', slideIndex: pendingTemplateSlideIndex })
     })
   }, [pendingTemplateSlideIndex, setSelection])
+
+  // ─── Fullscreen ───
 
   const handleEnterFullscreen = useCallback(() => {
     if (editMode) toggleEditMode()
@@ -75,33 +164,52 @@ function SlideDeckInner({ slides, onBack }: { slides: SlideData[]; onBack?: () =
   const handleExitFullscreen = useCallback(() => {
     const idx = fullscreen.currentIndex
     fullscreen.exit()
-    // Re-enter edit mode after exiting fullscreen
     requestAnimationFrame(() => {
       if (!editMode) toggleEditMode()
     })
     if (idx !== null) {
-      requestAnimationFrame(() => {
-        slideRefs.current[idx]?.scrollIntoView({ behavior: 'smooth', block: 'center' })
-      })
+      setActiveIndex(idx)
     }
   }, [fullscreen, editMode, toggleEditMode])
 
-  // Reorder slides via drag (atomic operation)
+  // ─── Delete slide wrapper — adjust activeIndex ───
+
+  const handleDeleteSlide = useCallback((position: number) => {
+    deleteSlide(position)
+    setActiveIndex((prev) => {
+      if (prev > position) return prev - 1
+      if (prev === position && prev >= allSlides.length - 1) return Math.max(0, prev - 1)
+      return prev
+    })
+  }, [deleteSlide, allSlides.length])
+
+  // ─── Reorder slide wrapper — track activeIndex ───
+
   const handleReorderSlide = useCallback((fromIndex: number, toIndex: number) => {
     if (fromIndex === toIndex) return
     moveSlide(fromIndex, toIndex)
+    // Update activeIndex to follow the moved slide if it was active
+    setActiveIndex((prev) => {
+      if (prev === fromIndex) return toIndex
+      if (fromIndex < prev && toIndex >= prev) return prev - 1
+      if (fromIndex > prev && toIndex <= prev) return prev + 1
+      return prev
+    })
   }, [moveSlide])
 
+  const currentSlide = allSlides[activeIndex]
+  const currentEffective = effectiveSlides[activeIndex]
+
   return (
-    <div className="flex min-h-screen" style={{ background: colors.page }}>
+    <div className="flex h-screen overflow-hidden" style={{ background: colors.page }}>
       {/* Sidebar */}
       <Sidebar
         slides={effectiveSlides}
         activeIndex={activeIndex}
-        onClickSlide={scrollToSlide}
+        onClickSlide={goToSlide}
         editMode={editMode}
         onInsertBlankSlide={handleInsertBlankSlide}
-        onDeleteSlide={deleteSlide}
+        onDeleteSlide={handleDeleteSlide}
         onCopySlide={copySlide}
         onPasteSlide={pasteSlide}
         onDuplicateSlide={duplicateSlide}
@@ -110,28 +218,38 @@ function SlideDeckInner({ slides, onBack }: { slides: SlideData[]; onBack?: () =
         onBack={onBack}
       />
 
-      {/* Main content */}
+      {/* Main content — single page view */}
       <div
-        className="flex-1 xl:ml-56 flex flex-col items-center gap-10 py-10 relative transition-all"
+        ref={mainRef}
+        className="flex-1 xl:ml-56 flex items-center justify-center relative transition-all overflow-hidden h-screen"
         style={{ marginRight: editMode ? 320 : 0 }}
         onClick={(e) => {
           if (!editMode) return
           if (e.target === e.currentTarget) setSelection(null)
         }}
       >
-        {allSlides.map((slide, i) => (
+        {currentSlide && currentEffective && (
           <Slide
-            key={i}
-            ref={(el) => { slideRefs.current[i] = el }}
-            number={i + 1}
-            slideIndex={i}
-            slideData={effectiveSlides[i]}
+            number={activeIndex + 1}
+            slideIndex={activeIndex}
+            slideData={currentEffective}
           >
-            <InlineEditProvider slideIndex={i} originalData={slide}>
-              <SlideContent data={effectiveSlides[i]} slideIndex={i} />
+            <InlineEditProvider slideIndex={activeIndex} originalData={currentSlide}>
+              <SlideContent data={currentEffective} slideIndex={activeIndex} />
             </InlineEditProvider>
           </Slide>
-        ))}
+        )}
+
+        {/* Page indicator */}
+        <div
+          className="absolute bottom-6 left-1/2 -translate-x-1/2 px-3 py-1 rounded-full text-xs font-medium select-none"
+          style={{
+            color: colors.textCaption,
+            background: 'rgba(0,0,0,0.05)',
+          }}
+        >
+          {activeIndex + 1} / {allSlides.length}
+        </div>
       </div>
 
       {/* Editor toolbar */}
