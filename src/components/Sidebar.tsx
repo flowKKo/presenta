@@ -253,6 +253,7 @@ export default function Sidebar({
                   onClick={() => handleSlideClick(i)}
                   onContextMenu={(e) => handleSlideContextMenu(e, i)}
                   className="w-full text-left cursor-pointer group relative"
+                  style={{ scrollMargin: '48px 0' }}
                 >
                   <div className="flex items-start gap-3">
                     {/* Slide number */}
@@ -314,25 +315,6 @@ export default function Sidebar({
           />
         </div>
 
-        {/* Add slide button */}
-        {onInsertBlankSlide && (
-          <button
-            onClick={() => onInsertBlankSlide(slides.length)}
-            className="w-full h-10 flex items-center justify-center gap-2 rounded border-2 border-dashed cursor-pointer transition-colors hover:border-blue-400 hover:bg-blue-50/60 ml-7"
-            style={{ borderColor: colors.border }}
-          >
-            <svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke={colors.textCaption} strokeWidth="2" strokeLinecap="round">
-              <line x1="10" y1="4" x2="10" y2="16" />
-              <line x1="4" y1="10" x2="16" y2="10" />
-            </svg>
-            <span
-              className="text-xs font-medium"
-              style={{ color: colors.textCaption }}
-            >
-              添加页面
-            </span>
-          </button>
-        )}
       </div>
 
       {/* Context menu */}
@@ -348,13 +330,22 @@ export default function Sidebar({
           }}
         >
           {isGapMenu ? (
-            /* Gap menu — insert only */
-            onInsertBlankSlide && (
-              <ContextMenuItem
-                label="在此插入新页面"
-                onClick={() => { onInsertBlankSlide(contextMenu.gapPosition!); closeMenu() }}
-              />
-            )
+            /* Gap menu — insert + paste */
+            <>
+              {onInsertBlankSlide && (
+                <ContextMenuItem
+                  label="在此插入新页面"
+                  onClick={() => { onInsertBlankSlide(contextMenu.gapPosition!); closeMenu() }}
+                />
+              )}
+              {onPasteSlide && (
+                <ContextMenuItem
+                  label="粘贴"
+                  onClick={() => { onPasteSlide(contextMenu.gapPosition! - 1); closeMenu() }}
+                  disabled={!hasClipboard}
+                />
+              )}
+            </>
           ) : (
             /* Slide menu — full actions */
             <>
