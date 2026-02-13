@@ -536,7 +536,7 @@ export function EditorProvider({ deckId, originalSlides, children }: EditorProvi
     editMode: true,
     activeTool: 'select' as ActiveTool,
     selection: null,
-    activeColor: '#EF4444',
+    activeColor: '#000000',
     deckState: loadFromStorage(id),
     history: [] as DeckEditorState[],
     historyIndex: -1,
