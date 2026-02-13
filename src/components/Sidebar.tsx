@@ -61,9 +61,11 @@ export default function Sidebar({
   const menuRef = useRef<HTMLDivElement | null>(null)
   const scale = THUMB_W / SLIDE_W
 
-  // Drag state
+  // Drag state — refs for reliable reads in handleDragEnd, state for rendering indicators
   const [dragIndex, setDragIndex] = useState<number | null>(null)
   const [dropTarget, setDropTarget] = useState<number | null>(null)
+  const dragIndexRef = useRef<number | null>(null)
+  const dropTargetRef = useRef<number | null>(null)
 
   // Auto-scroll active thumbnail into view
   useEffect(() => {
@@ -102,31 +104,33 @@ export default function Sidebar({
 
   // ─── Drag handlers ───
   const handleDragStart = useCallback((e: React.DragEvent, index: number) => {
+    dragIndexRef.current = index
     setDragIndex(index)
     e.dataTransfer.effectAllowed = 'move'
     e.dataTransfer.setData('text/plain', String(index))
-    // Make the drag image slightly transparent
     const el = e.currentTarget as HTMLElement
     requestAnimationFrame(() => el.style.opacity = '0.5')
   }, [])
 
   const handleDragEnd = useCallback((e: React.DragEvent) => {
     (e.currentTarget as HTMLElement).style.opacity = '1'
-    if (dragIndex !== null && dropTarget !== null && dragIndex !== dropTarget && onReorderSlide) {
-      onReorderSlide(dragIndex, dropTarget)
+    // Read from refs to avoid stale closure — state may lag behind due to dragLeave race
+    const from = dragIndexRef.current
+    const to = dropTargetRef.current
+    if (from !== null && to !== null && from !== to && onReorderSlide) {
+      onReorderSlide(from, to)
     }
+    dragIndexRef.current = null
+    dropTargetRef.current = null
     setDragIndex(null)
     setDropTarget(null)
-  }, [dragIndex, dropTarget, onReorderSlide])
+  }, [onReorderSlide])
 
   const handleDragOver = useCallback((e: React.DragEvent, index: number) => {
     e.preventDefault()
     e.dataTransfer.dropEffect = 'move'
+    dropTargetRef.current = index
     setDropTarget(index)
-  }, [])
-
-  const handleDragLeave = useCallback(() => {
-    setDropTarget(null)
   }, [])
 
   return (
@@ -157,7 +161,6 @@ export default function Sidebar({
               onDragStart={(e) => handleDragStart(e, i)}
               onDragEnd={handleDragEnd}
               onDragOver={(e) => handleDragOver(e, i)}
-              onDragLeave={handleDragLeave}
               className={`relative ${isDragOver ? 'pt-1' : ''}`}
             >
               {/* Drop indicator line */}

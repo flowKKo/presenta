@@ -377,13 +377,13 @@ function editorReducer(state: EditorState, action: EditorAction): EditorState {
       const hist = pushHistory(state)
       const list = [...materializeSlideList(state.deckState, state.originalSlides.length)]
       const [entry] = list.splice(fromIndex, 1)
-      list.splice(toIndex > fromIndex ? toIndex - 1 : toIndex, 0, entry)
+      list.splice(toIndex, 0, entry)
       // Rebuild slides Record: move the editor state from old index to new
       const slides = { ...state.deckState.slides }
       const movedState = slides[fromIndex]
       // Remove old key and shift
       delete slides[fromIndex]
-      const adjustedTo = toIndex > fromIndex ? toIndex - 1 : toIndex
+      const adjustedTo = toIndex
       const newSlides: Record<number, SlideEditorState> = {}
       for (const [key, value] of Object.entries(slides)) {
         let k = Number(key)
