@@ -70,11 +70,12 @@ These are top-level `SlideData` types. Each renders as a full slide.
 Centered large text. Use for deck opener, section breaks, and conclusion.
 
 ```ts
-{ type: 'title', title: string, subtitle?: string, badge?: string }
+{ type: 'title', title: string, subtitle?: string, badge?: string, titleSize?: number, bodySize?: number }
 ```
 
 - `badge` — small label (e.g., version, date, category tag)
 - Layout: centered vertically and horizontally
+- **Standard**: `titleSize: 72, bodySize: 28` (deck opener: `titleSize: 80`)
 
 ---
 
@@ -83,11 +84,12 @@ Centered large text. Use for deck opener, section breaks, and conclusion.
 Large centered statement with optional body text. Use for core takeaways, quotes, section intros.
 
 ```ts
-{ type: 'key-point', title: string, subtitle?: string, body?: string }
+{ type: 'key-point', title: string, subtitle?: string, body?: string, titleSize?: number, bodySize?: number }
 ```
 
 - Best for single-message slides: one impactful statement
 - Layout: centered
+- **Standard**: `titleSize: 56, bodySize: 24`
 
 ---
 
@@ -588,6 +590,8 @@ After generating all slides, review every slide against this checklist:
 6. **No slide has >35% visual empty space** — if a block-slide looks sparse, add an image block or reduce block heights.
 7. **SVG diagram blocks maintain ~1.5:1 aspect ratio** — venn, concentric, hub-spoke use viewBox 800×480; avoid square or overly tall containers.
 8. **Block positions don't overlap and gaps are ≤5%** — blocks should tile neatly with 2-5% margins.
+9. **Every slide has explicit `titleSize` and `bodySize`** — section dividers: 72/28, key-points: 56/24, all content slides: 40/20. No slide should rely on CSS defaults.
+10. **Title sizes are consistent within each category** — all content slides share `titleSize: 40`, all section dividers share `titleSize: 72`. No mixed sizes within the same category.
 
 ---
 
@@ -658,6 +662,36 @@ Colors carry meaning. Use `valueColor` on `GridItemEntry` deliberately:
 | `negative` | Decline, loss, warning | Metrics going down, risks |
 | `neutral` | Emphasis, category label | Neutral highlights, section headers |
 
+### Typography Standards (MANDATORY)
+
+All slides support `titleSize?: number` (px) and `bodySize?: number` (px) to override default CSS font sizes. **Use these to ensure visual consistency across the entire deck.**
+
+**Default CSS sizes (when `titleSize`/`bodySize` are omitted):**
+
+| Component | Title default | Body default |
+|-----------|--------------|-------------|
+| `title` slide | `text-6xl` (60px) | subtitle: `text-2xl` (24px) |
+| `key-point` slide | `text-5xl` (48px) | body: `text-xl` (20px) |
+| All 7 diagram engines | `text-4xl` (36px) | body: `text-lg` (18px) |
+| `chart` slide | `text-4xl` (36px) | body: `text-lg` (18px) |
+
+**Standard `titleSize` / `bodySize` to set on EVERY slide:**
+
+| Slide Category | `titleSize` | `bodySize` | Notes |
+|---------------|------------|-----------|-------|
+| Section divider (`title` type) | `72` | `28` | Larger for visual impact; deck opener can go up to `80` |
+| Key takeaway (`key-point` type) | `56` | `24` | Slightly smaller than section divider |
+| Content slides (all diagram/chart types) | `40` | `20` | Unified across grid-item, sequence, compare, funnel, concentric, hub-spoke, venn, chart |
+| Block-slide title | — | — | block-slide `title` is rendered by the shell; individual blocks use their own engine defaults |
+
+**Rules:**
+
+1. **Set `titleSize` and `bodySize` on every slide** — do not rely on CSS defaults, which vary across slide types and produce inconsistent title sizes.
+2. **All content slides use the same `titleSize: 40`** — grid-item, sequence, compare, funnel, concentric, hub-spoke, venn, and chart must all share the same title size for visual coherence.
+3. **Section dividers (`title` type) get `titleSize: 72`** — these are meant to be high-impact, big-text transition pages. The deck opening slide can use `titleSize: 80`.
+4. **Subtitle and body sizes must also be consistent** — use `bodySize: 20` for all content slides, `bodySize: 28` for section dividers.
+5. **Title position is fixed by each component** — titles always appear at the top-left for content slides and centered for title/key-point slides. Do not attempt to reposition via data.
+
 ---
 
 ## Style System
@@ -696,17 +730,22 @@ The style file defines: color tokens, typography scale, card style, slide style,
 type SemanticColor = 'positive' | 'negative' | 'neutral'
 
 // ─── Slide Types ───
+// All slide types support: titleSize?: number; bodySize?: number (px overrides)
+
 interface TitleSlideData {
   type: 'title'; title: string; subtitle?: string; badge?: string
+  titleSize?: number; bodySize?: number  // Standard: titleSize:72, bodySize:28
 }
 
 interface KeyPointSlideData {
   type: 'key-point'; title: string; subtitle?: string; body?: string
+  titleSize?: number; bodySize?: number  // Standard: titleSize:56, bodySize:24
 }
 
 interface ChartSlideData {
   type: 'chart'; chartType: 'bar' | 'pie' | 'line' | 'radar'
   title: string; body?: string; highlight?: string; chartHeight?: number
+  titleSize?: number; bodySize?: number  // Standard: titleSize:40, bodySize:20
   bars?: ChartBar[]; slices?: ChartSlice[]; innerRadius?: number
   categories?: string[]; lineSeries?: LineSeries[]
   indicators?: RadarIndicator[]; radarSeries?: RadarSeries[]
@@ -714,17 +753,20 @@ interface ChartSlideData {
 
 interface GridItemSlideData {
   type: 'grid-item'; title: string; body?: string
+  titleSize?: number; bodySize?: number  // Standard: titleSize:40, bodySize:20
   items: GridItemEntry[]; variant: GridItemVariant; columns?: number
 }
 
 interface SequenceSlideData {
   type: 'sequence'; title: string; body?: string
+  titleSize?: number; bodySize?: number  // Standard: titleSize:40, bodySize:20
   steps: SequenceStep[]; variant: SequenceVariant
   direction?: 'horizontal' | 'vertical'
 }
 
 interface CompareSlideData {
   type: 'compare'; title: string; body?: string
+  titleSize?: number; bodySize?: number  // Standard: titleSize:40, bodySize:20
   mode: 'versus' | 'quadrant' | 'iceberg'
   sides?: CompareSide[]; quadrantItems?: QuadrantItem[]
   xAxis?: string; yAxis?: string
@@ -733,16 +775,19 @@ interface CompareSlideData {
 
 interface FunnelSlideData {
   type: 'funnel'; title: string; body?: string
+  titleSize?: number; bodySize?: number  // Standard: titleSize:40, bodySize:20
   layers: FunnelLayer[]; variant: 'funnel' | 'pyramid' | 'slope'
 }
 
 interface ConcentricSlideData {
   type: 'concentric'; title: string; body?: string
+  titleSize?: number; bodySize?: number  // Standard: titleSize:40, bodySize:20
   rings: ConcentricRing[]; variant: 'circles' | 'diamond' | 'target'
 }
 
 interface HubSpokeSlideData {
   type: 'hub-spoke'; title: string; body?: string
+  titleSize?: number; bodySize?: number  // Standard: titleSize:40, bodySize:20
   center: { label: string; description?: string }
   spokes: { label: string; description?: string }[]
   variant: 'orbit' | 'solar' | 'pinwheel'
@@ -750,6 +795,7 @@ interface HubSpokeSlideData {
 
 interface VennSlideData {
   type: 'venn'; title: string; body?: string
+  titleSize?: number; bodySize?: number  // Standard: titleSize:40, bodySize:20
   sets: { label: string; description?: string }[]
   intersectionLabel?: string
   variant: 'classic' | 'linear' | 'linear-filled'
