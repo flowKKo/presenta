@@ -81,7 +81,7 @@ export const echartsTheme = {
 
 /** Preset color palettes — 10 schemes × 6 colors each */
 export const COLOR_PALETTES: Record<string, { name: string; colors: string[] }> = {
-  default:  { name: '经典',   colors: ['#546E7A', '#4CAF50', '#E57373', '#42A5F5', '#FFB74D', '#AB47BC'] },
+  default:  { name: '经典',   colors: ['#4E79A7', '#F28E2C', '#E15759', '#76B7B2', '#59A14F', '#EDC949'] },
   ocean:    { name: '海洋',   colors: ['#0D47A1', '#1976D2', '#42A5F5', '#0097A7', '#00ACC1', '#4DD0E1'] },
   forest:   { name: '翠林',   colors: ['#2E7D32', '#43A047', '#66BB6A', '#558B2F', '#7CB342', '#AED581'] },
   sunset:   { name: '日暮',   colors: ['#D84315', '#F4511E', '#FF7043', '#EC407A', '#AB47BC', '#FFB74D'] },

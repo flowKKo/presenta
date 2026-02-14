@@ -1,3 +1,4 @@
+import { useState, useRef, useEffect } from 'react'
 import type { SlideData, ChartSlideData, GridItemSlideData, SequenceSlideData, CompareSlideData, FunnelSlideData, ConcentricSlideData, HubSpokeSlideData, VennSlideData } from '../../data/types'
 import { colors, COLOR_PALETTES } from '../../theme/swiss'
 import ArrayEditor from './ArrayEditor'
@@ -122,12 +123,15 @@ function Section({ title, children }: { title: string; children: React.ReactNode
 
 const paletteKeys = Object.keys(COLOR_PALETTES)
 
-function PaletteColorDots({ colors: pal }: { colors: string[] }) {
+function PaletteRow({ pal, label }: { pal: string[]; label: string }) {
   return (
-    <div className="flex gap-0.5">
-      {pal.map((c, i) => (
-        <div key={i} className="w-3 h-3 rounded-full" style={{ backgroundColor: c }} />
-      ))}
+    <div className="flex items-center gap-2">
+      <div className="flex gap-0.5 shrink-0">
+        {pal.map((c, i) => (
+          <div key={i} className="w-3 h-3 rounded-full" style={{ backgroundColor: c }} />
+        ))}
+      </div>
+      <span className="text-[11px] text-gray-600 font-medium truncate">{label}</span>
     </div>
   )
 }
@@ -135,23 +139,50 @@ function PaletteColorDots({ colors: pal }: { colors: string[] }) {
 function PalettePicker({ value, onChange }: { value?: string; onChange: (v: string | undefined) => void }) {
   const current = value || 'default'
   const currentPalette = COLOR_PALETTES[current] || COLOR_PALETTES.default
+  const [open, setOpen] = useState(false)
+  const ref = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    if (!open) return
+    const handle = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false)
+    }
+    document.addEventListener('mousedown', handle)
+    return () => document.removeEventListener('mousedown', handle)
+  }, [open])
 
   return (
-    <label className="block">
-      <div className="flex items-center gap-2 mb-1.5">
-        <PaletteColorDots colors={currentPalette.colors} />
-        <span className="text-[11px] text-gray-500 font-medium">{currentPalette.name}</span>
-      </div>
-      <select
-        value={current}
-        onChange={(e) => onChange(e.target.value === 'default' ? undefined : e.target.value)}
-        className="w-full px-2.5 py-1.5 text-sm border border-gray-200 rounded-md focus:border-blue-300 focus:ring-1 focus:ring-blue-100 outline-none transition-colors"
+    <div className="relative" ref={ref}>
+      <button
+        type="button"
+        className="w-full flex items-center justify-between px-2.5 py-1.5 border border-gray-200 rounded-md cursor-pointer hover:border-gray-300 transition-colors"
+        onClick={() => setOpen(!open)}
       >
-        {paletteKeys.map((key) => (
-          <option key={key} value={key}>{COLOR_PALETTES[key].name}</option>
-        ))}
-      </select>
-    </label>
+        <PaletteRow pal={currentPalette.colors} label={currentPalette.name} />
+        <svg className={`w-3.5 h-3.5 text-gray-400 shrink-0 transition-transform ${open ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+        </svg>
+      </button>
+      {open && (
+        <div className="absolute z-50 left-0 right-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg py-1 max-h-60 overflow-y-auto">
+          {paletteKeys.map((key) => {
+            const p = COLOR_PALETTES[key]
+            const active = current === key
+            return (
+              <button
+                key={key}
+                type="button"
+                className="w-full px-2.5 py-1.5 cursor-pointer transition-colors hover:bg-gray-50"
+                style={{ background: active ? '#EFF6FF' : undefined }}
+                onClick={() => { onChange(key === 'default' ? undefined : key); setOpen(false) }}
+              >
+                <PaletteRow pal={p.colors} label={p.name} />
+              </button>
+            )
+          })}
+        </div>
+      )}
+    </div>
   )
 }
 
