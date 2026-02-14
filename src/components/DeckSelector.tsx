@@ -97,7 +97,7 @@ export default function DeckSelector({ decks, onCreateDeck, onDeleteDeck, onImpo
             <motion.a
               key={deck.id}
               href={`#${deck.id}`}
-              className="group/card relative rounded-[14px] px-8 py-6 flex flex-col gap-4 no-underline transition-shadow hover:shadow-lg h-[180px]"
+              className="group/card relative rounded-[14px] px-6 py-5 flex flex-col gap-3 no-underline transition-shadow hover:shadow-lg h-[168px]"
               style={cardStyle}
               variants={motionConfig.child}
             >
@@ -117,33 +117,33 @@ export default function DeckSelector({ decks, onCreateDeck, onDeleteDeck, onImpo
                   </svg>
                 </button>
               )}
-              <div className="flex flex-col gap-2">
+              <div className="flex flex-col gap-1.5 min-h-0">
                 <h2
-                  className="text-xl font-semibold leading-tight"
+                  className="text-lg font-semibold leading-snug line-clamp-2"
                   style={{ color: colors.textPrimary }}
                 >
                   {deck.title}
                 </h2>
                 {deck.description && (
                   <p
-                    className="text-base leading-relaxed line-clamp-2"
+                    className="text-sm leading-relaxed line-clamp-2"
                     style={{ color: colors.textSecondary }}
                   >
                     {deck.description}
                   </p>
                 )}
               </div>
-              <div className="flex items-center gap-4 mt-auto pt-2">
+              <div className="flex items-center gap-3 mt-auto">
                 {deck.date && (
                   <span
-                    className="text-base"
+                    className="text-sm"
                     style={{ color: colors.textCaption }}
                   >
                     {deck.date}
                   </span>
                 )}
                 <span
-                  className="text-base px-2 py-0.5 rounded"
+                  className="text-sm px-2 py-0.5 rounded"
                   style={{
                     color: colors.accentNeutral,
                     background: `rgba(84,110,122,0.08)`,
