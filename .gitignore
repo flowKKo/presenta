@@ -3,3 +3,4 @@ dist/
 .DS_Store
 scripts/
 src/data/user-decks/
+tsconfig.tsbuildinfo
