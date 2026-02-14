@@ -93,19 +93,19 @@ export default function BlockRenderer({ data, blockId, slideIndex }: BlockRender
     case 'image':
       return <ImageBlock data={data} blockId={blockId} slideIndex={slideIndex} />
     case 'grid-item':
-      return <DiagramWrapper><GridItemDiagram items={data.items} variant={data.variant} columns={data.columns} gap={data.gap} /></DiagramWrapper>
+      return <DiagramWrapper><GridItemDiagram items={data.items} variant={data.variant} columns={data.columns} gap={data.gap} textColor={data.textColor} /></DiagramWrapper>
     case 'sequence':
-      return <div className="flex items-center justify-center h-full"><SequenceDiagram steps={data.steps} variant={data.variant} direction={data.direction} gap={data.gap} /></div>
+      return <div className="flex items-center justify-center h-full"><SequenceDiagram steps={data.steps} variant={data.variant} direction={data.direction} gap={data.gap} textColor={data.textColor} /></div>
     case 'compare':
-      return <DiagramWrapper><CompareDiagram mode={data.mode} sides={data.sides} quadrantItems={data.quadrantItems} xAxis={data.xAxis} yAxis={data.yAxis} visible={data.visible} hidden={data.hidden} /></DiagramWrapper>
+      return <DiagramWrapper><CompareDiagram mode={data.mode} sides={data.sides} quadrantItems={data.quadrantItems} xAxis={data.xAxis} yAxis={data.yAxis} visible={data.visible} hidden={data.hidden} textColor={data.textColor} /></DiagramWrapper>
     case 'funnel':
-      return <DiagramWrapper><FunnelDiagram layers={data.layers} variant={data.variant} /></DiagramWrapper>
+      return <DiagramWrapper><FunnelDiagram layers={data.layers} variant={data.variant} textColor={data.textColor} /></DiagramWrapper>
     case 'concentric':
-      return <DiagramWrapper><ConcentricDiagram rings={data.rings} variant={data.variant} /></DiagramWrapper>
+      return <DiagramWrapper><ConcentricDiagram rings={data.rings} variant={data.variant} textColor={data.textColor} /></DiagramWrapper>
     case 'hub-spoke':
-      return <DiagramWrapper><HubSpokeDiagram center={data.center} spokes={data.spokes} variant={data.variant} /></DiagramWrapper>
+      return <DiagramWrapper><HubSpokeDiagram center={data.center} spokes={data.spokes} variant={data.variant} textColor={data.textColor} /></DiagramWrapper>
     case 'venn':
-      return <DiagramWrapper><VennDiagram sets={data.sets} variant={data.variant} intersectionLabel={data.intersectionLabel} /></DiagramWrapper>
+      return <DiagramWrapper><VennDiagram sets={data.sets} variant={data.variant} intersectionLabel={data.intersectionLabel} textColor={data.textColor} /></DiagramWrapper>
     case 'chart':
       return (
         <DiagramWrapper>

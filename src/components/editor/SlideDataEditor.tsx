@@ -417,11 +417,12 @@ function GridItemEditor({ data, onChange, commonFields, fontSizeFields, colorFie
   )
 }
 
-function SequenceEditor({ data, onChange, commonFields, fontSizeFields }: { data: SequenceSlideData; onChange: (d: SlideData) => void; commonFields: React.ReactNode; fontSizeFields?: React.ReactNode }) {
+function SequenceEditor({ data, onChange, commonFields, fontSizeFields, colorFields }: { data: SequenceSlideData; onChange: (d: SlideData) => void; commonFields: React.ReactNode; fontSizeFields?: React.ReactNode; colorFields?: React.ReactNode }) {
   return (
     <div className="space-y-4">
       {commonFields}
       {fontSizeFields}
+      {colorFields}
       <Section title="序列配置">
         <SelectInput label="方向" value={data.direction ?? 'horizontal'} options={['horizontal', 'vertical']} onChange={(v) => onChange({ ...data, direction: v })} />
         <NumberInput label="间距 (px)" value={data.gap ?? 8} onChange={(v) => onChange({ ...data, gap: v })} min={0} max={64} step={2} />
@@ -443,11 +444,12 @@ function SequenceEditor({ data, onChange, commonFields, fontSizeFields }: { data
   )
 }
 
-function CompareEditor({ data, onChange, commonFields, fontSizeFields }: { data: CompareSlideData; onChange: (d: SlideData) => void; commonFields: React.ReactNode; fontSizeFields?: React.ReactNode }) {
+function CompareEditor({ data, onChange, commonFields, fontSizeFields, colorFields }: { data: CompareSlideData; onChange: (d: SlideData) => void; commonFields: React.ReactNode; fontSizeFields?: React.ReactNode; colorFields?: React.ReactNode }) {
   return (
     <div className="space-y-4">
       {commonFields}
       {fontSizeFields}
+      {colorFields}
       {data.mode === 'versus' && data.sides && (
         <Section title="对比方">
           <ArrayEditor
@@ -518,11 +520,12 @@ function CompareEditor({ data, onChange, commonFields, fontSizeFields }: { data:
   )
 }
 
-function FunnelEditor({ data, onChange, commonFields, fontSizeFields }: { data: FunnelSlideData; onChange: (d: SlideData) => void; commonFields: React.ReactNode; fontSizeFields?: React.ReactNode }) {
+function FunnelEditor({ data, onChange, commonFields, fontSizeFields, colorFields }: { data: FunnelSlideData; onChange: (d: SlideData) => void; commonFields: React.ReactNode; fontSizeFields?: React.ReactNode; colorFields?: React.ReactNode }) {
   return (
     <div className="space-y-4">
       {commonFields}
       {fontSizeFields}
+      {colorFields}
       <Section title="层级">
         <ArrayEditor
           items={data.layers}
@@ -541,11 +544,12 @@ function FunnelEditor({ data, onChange, commonFields, fontSizeFields }: { data: 
   )
 }
 
-function ConcentricEditor({ data, onChange, commonFields, fontSizeFields }: { data: ConcentricSlideData; onChange: (d: SlideData) => void; commonFields: React.ReactNode; fontSizeFields?: React.ReactNode }) {
+function ConcentricEditor({ data, onChange, commonFields, fontSizeFields, colorFields }: { data: ConcentricSlideData; onChange: (d: SlideData) => void; commonFields: React.ReactNode; fontSizeFields?: React.ReactNode; colorFields?: React.ReactNode }) {
   return (
     <div className="space-y-4">
       {commonFields}
       {fontSizeFields}
+      {colorFields}
       <Section title="环">
         <ArrayEditor
           items={data.rings}
@@ -563,11 +567,12 @@ function ConcentricEditor({ data, onChange, commonFields, fontSizeFields }: { da
   )
 }
 
-function HubSpokeEditor({ data, onChange, commonFields, fontSizeFields }: { data: HubSpokeSlideData; onChange: (d: SlideData) => void; commonFields: React.ReactNode; fontSizeFields?: React.ReactNode }) {
+function HubSpokeEditor({ data, onChange, commonFields, fontSizeFields, colorFields }: { data: HubSpokeSlideData; onChange: (d: SlideData) => void; commonFields: React.ReactNode; fontSizeFields?: React.ReactNode; colorFields?: React.ReactNode }) {
   return (
     <div className="space-y-4">
       {commonFields}
       {fontSizeFields}
+      {colorFields}
       <Section title="中心">
         <TextInput label="标签" value={data.center.label} onChange={(v) => onChange({ ...data, center: { ...data.center, label: v } })} />
         <TextInput label="描述" value={data.center.description ?? ''} onChange={(v) => onChange({ ...data, center: { ...data.center, description: v } })} />
@@ -589,11 +594,12 @@ function HubSpokeEditor({ data, onChange, commonFields, fontSizeFields }: { data
   )
 }
 
-function VennEditor({ data, onChange, commonFields, fontSizeFields }: { data: VennSlideData; onChange: (d: SlideData) => void; commonFields: React.ReactNode; fontSizeFields?: React.ReactNode }) {
+function VennEditor({ data, onChange, commonFields, fontSizeFields, colorFields }: { data: VennSlideData; onChange: (d: SlideData) => void; commonFields: React.ReactNode; fontSizeFields?: React.ReactNode; colorFields?: React.ReactNode }) {
   return (
     <div className="space-y-4">
       {commonFields}
       {fontSizeFields}
+      {colorFields}
       <Section title="韦恩图配置">
         <TextInput label="交集标签" value={data.intersectionLabel ?? ''} onChange={(v) => onChange({ ...data, intersectionLabel: v })} />
       </Section>

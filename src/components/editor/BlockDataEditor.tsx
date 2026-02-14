@@ -40,19 +40,19 @@ function slideDataToBlock(slideData: SlideData, originalType: BlockData['type'])
   // Strip title/body from SlideData when converting back to BlockData
   switch (slideData.type) {
     case 'grid-item':
-      return { type: 'grid-item', items: slideData.items, variant: slideData.variant, columns: slideData.columns, gap: slideData.gap }
+      return { type: 'grid-item', items: slideData.items, variant: slideData.variant, columns: slideData.columns, gap: slideData.gap, textColor: slideData.textColor }
     case 'sequence':
-      return { type: 'sequence', steps: slideData.steps, variant: slideData.variant, direction: slideData.direction, gap: slideData.gap }
+      return { type: 'sequence', steps: slideData.steps, variant: slideData.variant, direction: slideData.direction, gap: slideData.gap, textColor: slideData.textColor }
     case 'compare':
-      return { type: 'compare', mode: slideData.mode, sides: slideData.sides, quadrantItems: slideData.quadrantItems, xAxis: slideData.xAxis, yAxis: slideData.yAxis, visible: slideData.visible, hidden: slideData.hidden }
+      return { type: 'compare', mode: slideData.mode, sides: slideData.sides, quadrantItems: slideData.quadrantItems, xAxis: slideData.xAxis, yAxis: slideData.yAxis, visible: slideData.visible, hidden: slideData.hidden, textColor: slideData.textColor }
     case 'funnel':
-      return { type: 'funnel', layers: slideData.layers, variant: slideData.variant }
+      return { type: 'funnel', layers: slideData.layers, variant: slideData.variant, textColor: slideData.textColor }
     case 'concentric':
-      return { type: 'concentric', rings: slideData.rings, variant: slideData.variant }
+      return { type: 'concentric', rings: slideData.rings, variant: slideData.variant, textColor: slideData.textColor }
     case 'hub-spoke':
-      return { type: 'hub-spoke', center: slideData.center, spokes: slideData.spokes, variant: slideData.variant }
+      return { type: 'hub-spoke', center: slideData.center, spokes: slideData.spokes, variant: slideData.variant, textColor: slideData.textColor }
     case 'venn':
-      return { type: 'venn', sets: slideData.sets, variant: slideData.variant, intersectionLabel: slideData.intersectionLabel }
+      return { type: 'venn', sets: slideData.sets, variant: slideData.variant, intersectionLabel: slideData.intersectionLabel, textColor: slideData.textColor }
     case 'chart':
       return { type: 'chart', chartType: slideData.chartType, bars: slideData.bars, slices: slideData.slices, innerRadius: slideData.innerRadius, categories: slideData.categories, lineSeries: slideData.lineSeries, indicators: slideData.indicators, radarSeries: slideData.radarSeries, highlight: slideData.highlight }
     default:
