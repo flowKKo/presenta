@@ -155,7 +155,7 @@ export function CompareDiagram(props: Omit<CompareSlideData, 'type' | 'title' | 
 }
 
 export default function CompareEngine(props: CompareSlideData) {
-  const { title, body, mode } = props
+  const { title, body, mode, titleSize, bodySize } = props
 
   return (
     <motion.div
@@ -165,7 +165,7 @@ export default function CompareEngine(props: CompareSlideData) {
       whileInView="visible"
       viewport={{ once: true }}
     >
-      <EngineTitle title={title} body={body} />
+      <EngineTitle title={title} body={body} titleSize={titleSize} bodySize={bodySize} />
       <CompareDiagram mode={mode} sides={props.sides} quadrantItems={props.quadrantItems} xAxis={props.xAxis} yAxis={props.yAxis} visible={props.visible} hidden={props.hidden} />
     </motion.div>
   )

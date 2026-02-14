@@ -143,7 +143,7 @@ export function GridItemDiagram({ items, variant, columns, gap = 16 }: { items: 
   )
 }
 
-export default function GridItemEngine({ title, body, items, variant, columns, gap }: GridItemSlideData) {
+export default function GridItemEngine({ title, body, items, variant, columns, gap, titleSize, bodySize }: GridItemSlideData) {
   return (
     <motion.div
       className="flex flex-col gap-6 h-full"
@@ -152,7 +152,7 @@ export default function GridItemEngine({ title, body, items, variant, columns, g
       whileInView="visible"
       viewport={{ once: true }}
     >
-      <EngineTitle title={title} body={body} />
+      <EngineTitle title={title} body={body} titleSize={titleSize} bodySize={bodySize} />
       <GridItemDiagram items={items} variant={variant} columns={columns} gap={gap} />
     </motion.div>
   )

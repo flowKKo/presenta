@@ -90,7 +90,7 @@ export function HubSpokeDiagram({ center, spokes, variant }: { center: HubSpokeS
   )
 }
 
-export default function HubSpokeEngine({ title, body, center, spokes, variant }: HubSpokeSlideData) {
+export default function HubSpokeEngine({ title, body, center, spokes, variant, titleSize, bodySize }: HubSpokeSlideData) {
   return (
     <motion.div
       className="flex flex-col gap-4 h-full"
@@ -99,7 +99,7 @@ export default function HubSpokeEngine({ title, body, center, spokes, variant }:
       whileInView="visible"
       viewport={{ once: true }}
     >
-      <EngineTitle title={title} body={body} />
+      <EngineTitle title={title} body={body} titleSize={titleSize} bodySize={bodySize} />
       <motion.div variants={motionConfig.child} className="flex-1 min-h-0 w-full">
         <HubSpokeDiagram center={center} spokes={spokes} variant={variant} />
       </motion.div>

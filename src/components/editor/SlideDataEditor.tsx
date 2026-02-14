@@ -38,6 +38,24 @@ function NumberInput({ label, value, onChange, min, max, step }: { label: string
   )
 }
 
+function OptionalNumberInput({ label, value, onChange, placeholder, min, max, step }: { label: string; value?: number; onChange: (v: number | undefined) => void; placeholder?: string; min?: number; max?: number; step?: number }) {
+  return (
+    <label className="block">
+      <span className="text-[11px] text-gray-500 font-medium">{label}</span>
+      <input
+        type="number"
+        value={value ?? ''}
+        placeholder={placeholder}
+        min={min}
+        max={max}
+        step={step}
+        onChange={(e) => onChange(e.target.value === '' ? undefined : Number(e.target.value))}
+        className="w-full px-2.5 py-1.5 text-sm border border-gray-200 rounded-md mt-1 focus:border-blue-300 focus:ring-1 focus:ring-blue-100 outline-none transition-colors"
+      />
+    </label>
+  )
+}
+
 function SelectInput<T extends string>({ label, value, options, onChange }: { label: string; value: T; options: T[]; onChange: (v: T) => void }) {
   return (
     <label className="block">
@@ -74,7 +92,48 @@ function Section({ title, children }: { title: string; children: React.ReactNode
   )
 }
 
+const defaultTitleSizes: Record<string, number> = {
+  title: 60, 'key-point': 48, chart: 36,
+  'grid-item': 36, sequence: 36, compare: 36,
+  funnel: 36, concentric: 36, 'hub-spoke': 36, venn: 36,
+}
+const defaultBodySizes: Record<string, number> = {
+  title: 24, 'key-point': 20, chart: 18,
+  'grid-item': 18, sequence: 18, compare: 18,
+  funnel: 18, concentric: 18, 'hub-spoke': 18, venn: 18,
+}
+
 export default function SlideDataEditor({ data, onChange, isBlock }: SlideDataEditorProps) {
+  // Font size controls — available for all slide types except block-slide
+  const fontSizeFields = data.type !== 'block-slide' && 'titleSize' in data || data.type !== 'block-slide' ? (
+    <Section title="字体大小">
+      <div className="flex gap-2">
+        <div className="flex-1">
+          <OptionalNumberInput
+            label="标题"
+            value={'titleSize' in data ? (data as { titleSize?: number }).titleSize : undefined}
+            placeholder={String(defaultTitleSizes[data.type] ?? 36)}
+            onChange={(v) => onChange({ ...data, titleSize: v })}
+            min={12}
+            max={200}
+            step={2}
+          />
+        </div>
+        <div className="flex-1">
+          <OptionalNumberInput
+            label="正文/副标题"
+            value={'bodySize' in data ? (data as { bodySize?: number }).bodySize : undefined}
+            placeholder={String(defaultBodySizes[data.type] ?? 18)}
+            onChange={(v) => onChange({ ...data, bodySize: v })}
+            min={10}
+            max={120}
+            step={2}
+          />
+        </div>
+      </div>
+    </Section>
+  ) : null
+
   // Common title/body fields — hidden in block mode
   const commonFields = isBlock ? null : (
     <Section title="基本信息">
@@ -97,6 +156,7 @@ export default function SlideDataEditor({ data, onChange, isBlock }: SlideDataEd
             <TextInput label="副标题" value={data.subtitle ?? ''} onChange={(v) => onChange({ ...data, subtitle: v })} />
             <TextInput label="徽标" value={data.badge ?? ''} onChange={(v) => onChange({ ...data, badge: v })} />
           </Section>
+          {fontSizeFields}
         </div>
       )
 
@@ -108,38 +168,39 @@ export default function SlideDataEditor({ data, onChange, isBlock }: SlideDataEd
             <TextInput label="副标题" value={data.subtitle ?? ''} onChange={(v) => onChange({ ...data, subtitle: v })} />
             <TextInput label="正文" value={data.body ?? ''} onChange={(v) => onChange({ ...data, body: v })} />
           </Section>
+          {fontSizeFields}
         </div>
       )
 
     case 'chart':
-      return <ChartEditor data={data} onChange={onChange} isBlock={isBlock} />
+      return <ChartEditor data={data} onChange={onChange} isBlock={isBlock} fontSizeFields={fontSizeFields} />
 
     case 'grid-item':
-      return <GridItemEditor data={data} onChange={onChange} commonFields={commonFields} />
+      return <GridItemEditor data={data} onChange={onChange} commonFields={commonFields} fontSizeFields={fontSizeFields} />
 
     case 'sequence':
-      return <SequenceEditor data={data} onChange={onChange} commonFields={commonFields} />
+      return <SequenceEditor data={data} onChange={onChange} commonFields={commonFields} fontSizeFields={fontSizeFields} />
 
     case 'compare':
-      return <CompareEditor data={data} onChange={onChange} commonFields={commonFields} />
+      return <CompareEditor data={data} onChange={onChange} commonFields={commonFields} fontSizeFields={fontSizeFields} />
 
     case 'funnel':
-      return <FunnelEditor data={data} onChange={onChange} commonFields={commonFields} />
+      return <FunnelEditor data={data} onChange={onChange} commonFields={commonFields} fontSizeFields={fontSizeFields} />
 
     case 'concentric':
-      return <ConcentricEditor data={data} onChange={onChange} commonFields={commonFields} />
+      return <ConcentricEditor data={data} onChange={onChange} commonFields={commonFields} fontSizeFields={fontSizeFields} />
 
     case 'hub-spoke':
-      return <HubSpokeEditor data={data} onChange={onChange} commonFields={commonFields} />
+      return <HubSpokeEditor data={data} onChange={onChange} commonFields={commonFields} fontSizeFields={fontSizeFields} />
 
     case 'venn':
-      return <VennEditor data={data} onChange={onChange} commonFields={commonFields} />
+      return <VennEditor data={data} onChange={onChange} commonFields={commonFields} fontSizeFields={fontSizeFields} />
   }
 }
 
 // ─── Chart Editor ───
 
-function ChartEditor({ data, onChange, isBlock }: { data: ChartSlideData; onChange: (d: SlideData) => void; isBlock?: boolean }) {
+function ChartEditor({ data, onChange, isBlock, fontSizeFields }: { data: ChartSlideData; onChange: (d: SlideData) => void; isBlock?: boolean; fontSizeFields?: React.ReactNode }) {
   return (
     <div className="space-y-4">
       {!isBlock && (
@@ -149,6 +210,7 @@ function ChartEditor({ data, onChange, isBlock }: { data: ChartSlideData; onChan
           <TextInput label="高亮" value={data.highlight ?? ''} onChange={(v) => onChange({ ...data, highlight: v })} />
         </Section>
       )}
+      {!isBlock && fontSizeFields}
 
       {data.chartType === 'bar' && data.bars && (
         <Section title="柱状图数据">
@@ -270,10 +332,11 @@ function ChartEditor({ data, onChange, isBlock }: { data: ChartSlideData; onChan
 
 // ─── Engine Editors ───
 
-function GridItemEditor({ data, onChange, commonFields }: { data: GridItemSlideData; onChange: (d: SlideData) => void; commonFields: React.ReactNode }) {
+function GridItemEditor({ data, onChange, commonFields, fontSizeFields }: { data: GridItemSlideData; onChange: (d: SlideData) => void; commonFields: React.ReactNode; fontSizeFields?: React.ReactNode }) {
   return (
     <div className="space-y-4">
       {commonFields}
+      {fontSizeFields}
       <Section title="网格配置">
         <NumberInput label="列数" value={data.columns ?? 0} onChange={(v) => onChange({ ...data, columns: v || undefined })} min={0} max={6} />
         <NumberInput label="间距 (px)" value={data.gap ?? 16} onChange={(v) => onChange({ ...data, gap: v })} min={0} max={64} step={2} />
@@ -296,10 +359,11 @@ function GridItemEditor({ data, onChange, commonFields }: { data: GridItemSlideD
   )
 }
 
-function SequenceEditor({ data, onChange, commonFields }: { data: SequenceSlideData; onChange: (d: SlideData) => void; commonFields: React.ReactNode }) {
+function SequenceEditor({ data, onChange, commonFields, fontSizeFields }: { data: SequenceSlideData; onChange: (d: SlideData) => void; commonFields: React.ReactNode; fontSizeFields?: React.ReactNode }) {
   return (
     <div className="space-y-4">
       {commonFields}
+      {fontSizeFields}
       <Section title="序列配置">
         <SelectInput label="方向" value={data.direction ?? 'horizontal'} options={['horizontal', 'vertical']} onChange={(v) => onChange({ ...data, direction: v })} />
         <NumberInput label="间距 (px)" value={data.gap ?? 8} onChange={(v) => onChange({ ...data, gap: v })} min={0} max={64} step={2} />
@@ -321,10 +385,11 @@ function SequenceEditor({ data, onChange, commonFields }: { data: SequenceSlideD
   )
 }
 
-function CompareEditor({ data, onChange, commonFields }: { data: CompareSlideData; onChange: (d: SlideData) => void; commonFields: React.ReactNode }) {
+function CompareEditor({ data, onChange, commonFields, fontSizeFields }: { data: CompareSlideData; onChange: (d: SlideData) => void; commonFields: React.ReactNode; fontSizeFields?: React.ReactNode }) {
   return (
     <div className="space-y-4">
       {commonFields}
+      {fontSizeFields}
       {data.mode === 'versus' && data.sides && (
         <Section title="对比方">
           <ArrayEditor
@@ -395,10 +460,11 @@ function CompareEditor({ data, onChange, commonFields }: { data: CompareSlideDat
   )
 }
 
-function FunnelEditor({ data, onChange, commonFields }: { data: FunnelSlideData; onChange: (d: SlideData) => void; commonFields: React.ReactNode }) {
+function FunnelEditor({ data, onChange, commonFields, fontSizeFields }: { data: FunnelSlideData; onChange: (d: SlideData) => void; commonFields: React.ReactNode; fontSizeFields?: React.ReactNode }) {
   return (
     <div className="space-y-4">
       {commonFields}
+      {fontSizeFields}
       <Section title="层级">
         <ArrayEditor
           items={data.layers}
@@ -417,10 +483,11 @@ function FunnelEditor({ data, onChange, commonFields }: { data: FunnelSlideData;
   )
 }
 
-function ConcentricEditor({ data, onChange, commonFields }: { data: ConcentricSlideData; onChange: (d: SlideData) => void; commonFields: React.ReactNode }) {
+function ConcentricEditor({ data, onChange, commonFields, fontSizeFields }: { data: ConcentricSlideData; onChange: (d: SlideData) => void; commonFields: React.ReactNode; fontSizeFields?: React.ReactNode }) {
   return (
     <div className="space-y-4">
       {commonFields}
+      {fontSizeFields}
       <Section title="环">
         <ArrayEditor
           items={data.rings}
@@ -438,10 +505,11 @@ function ConcentricEditor({ data, onChange, commonFields }: { data: ConcentricSl
   )
 }
 
-function HubSpokeEditor({ data, onChange, commonFields }: { data: HubSpokeSlideData; onChange: (d: SlideData) => void; commonFields: React.ReactNode }) {
+function HubSpokeEditor({ data, onChange, commonFields, fontSizeFields }: { data: HubSpokeSlideData; onChange: (d: SlideData) => void; commonFields: React.ReactNode; fontSizeFields?: React.ReactNode }) {
   return (
     <div className="space-y-4">
       {commonFields}
+      {fontSizeFields}
       <Section title="中心">
         <TextInput label="标签" value={data.center.label} onChange={(v) => onChange({ ...data, center: { ...data.center, label: v } })} />
         <TextInput label="描述" value={data.center.description ?? ''} onChange={(v) => onChange({ ...data, center: { ...data.center, description: v } })} />
@@ -463,10 +531,11 @@ function HubSpokeEditor({ data, onChange, commonFields }: { data: HubSpokeSlideD
   )
 }
 
-function VennEditor({ data, onChange, commonFields }: { data: VennSlideData; onChange: (d: SlideData) => void; commonFields: React.ReactNode }) {
+function VennEditor({ data, onChange, commonFields, fontSizeFields }: { data: VennSlideData; onChange: (d: SlideData) => void; commonFields: React.ReactNode; fontSizeFields?: React.ReactNode }) {
   return (
     <div className="space-y-4">
       {commonFields}
+      {fontSizeFields}
       <Section title="韦恩图配置">
         <TextInput label="交集标签" value={data.intersectionLabel ?? ''} onChange={(v) => onChange({ ...data, intersectionLabel: v })} />
       </Section>

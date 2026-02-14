@@ -94,7 +94,7 @@ export function VennDiagram({ sets, intersectionLabel, variant }: { sets: VennSl
   )
 }
 
-export default function VennEngine({ title, body, sets, intersectionLabel, variant }: VennSlideData) {
+export default function VennEngine({ title, body, sets, intersectionLabel, variant, titleSize, bodySize }: VennSlideData) {
   return (
     <motion.div
       className="flex flex-col gap-4 h-full"
@@ -103,7 +103,7 @@ export default function VennEngine({ title, body, sets, intersectionLabel, varia
       whileInView="visible"
       viewport={{ once: true }}
     >
-      <EngineTitle title={title} body={body} />
+      <EngineTitle title={title} body={body} titleSize={titleSize} bodySize={bodySize} />
       <motion.div variants={motionConfig.child} className="flex-1 min-h-0 w-full">
         <VennDiagram sets={sets} variant={variant} intersectionLabel={intersectionLabel} />
       </motion.div>

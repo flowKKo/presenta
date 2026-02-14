@@ -3,7 +3,7 @@ import type { KeyPointSlideData } from '../../data/types'
 import { colors, motionConfig } from '../../theme/swiss'
 import EditableText from '../editor/EditableText'
 
-export default function KeyPointSlide({ title, subtitle, body }: KeyPointSlideData) {
+export default function KeyPointSlide({ title, subtitle, body, titleSize, bodySize }: KeyPointSlideData) {
   return (
     <motion.div className="flex flex-col items-center justify-center text-center gap-8 h-full"
       variants={motionConfig.stagger} initial="hidden" whileInView="visible" viewport={{ once: true }}>
@@ -12,7 +12,7 @@ export default function KeyPointSlide({ title, subtitle, body }: KeyPointSlideDa
         field="title"
         as="h2"
         className="text-5xl font-bold leading-tight"
-        style={{ color: colors.textPrimary }}
+        style={{ color: colors.textPrimary, fontSize: titleSize }}
         variants={motionConfig.child}
       />
       {subtitle && (
@@ -31,7 +31,7 @@ export default function KeyPointSlide({ title, subtitle, body }: KeyPointSlideDa
           field="body"
           as="p"
           className="text-xl max-w-3xl leading-relaxed"
-          style={{ color: colors.textSecondary }}
+          style={{ color: colors.textSecondary, fontSize: bodySize }}
           variants={motionConfig.child}
           singleLine={false}
         />

@@ -3,7 +3,7 @@ import type { TitleSlideData } from '../../data/types'
 import { colors, motionConfig } from '../../theme/swiss'
 import EditableText from '../editor/EditableText'
 
-export default function TitleSlide({ title, subtitle, badge }: TitleSlideData) {
+export default function TitleSlide({ title, subtitle, badge, titleSize, bodySize }: TitleSlideData) {
   return (
     <motion.div className="flex flex-col items-center justify-center text-center gap-8 h-full"
       variants={motionConfig.stagger} initial="hidden" whileInView="visible" viewport={{ once: true }}>
@@ -22,7 +22,7 @@ export default function TitleSlide({ title, subtitle, badge }: TitleSlideData) {
         field="title"
         as="h1"
         className="text-6xl font-bold leading-tight"
-        style={{ color: colors.textPrimary }}
+        style={{ color: colors.textPrimary, fontSize: titleSize }}
         variants={motionConfig.child}
       />
       {subtitle && (
@@ -31,7 +31,7 @@ export default function TitleSlide({ title, subtitle, badge }: TitleSlideData) {
           field="subtitle"
           as="p"
           className="text-2xl font-medium"
-          style={{ color: colors.textSecondary }}
+          style={{ color: colors.textSecondary, fontSize: bodySize }}
           variants={motionConfig.child}
         />
       )}

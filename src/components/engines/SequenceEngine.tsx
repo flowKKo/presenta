@@ -114,7 +114,7 @@ export function SequenceDiagram({ steps, variant, direction = 'horizontal', gap 
   )
 }
 
-export default function SequenceEngine({ title, body, steps, variant, direction = 'horizontal', gap }: SequenceSlideData) {
+export default function SequenceEngine({ title, body, steps, variant, direction = 'horizontal', gap, titleSize, bodySize }: SequenceSlideData) {
   return (
     <motion.div
       className="flex flex-col gap-6 h-full justify-center"
@@ -123,7 +123,7 @@ export default function SequenceEngine({ title, body, steps, variant, direction 
       whileInView="visible"
       viewport={{ once: true }}
     >
-      <EngineTitle title={title} body={body} />
+      <EngineTitle title={title} body={body} titleSize={titleSize} bodySize={bodySize} />
       <SequenceDiagram steps={steps} variant={variant} direction={direction} gap={gap} />
     </motion.div>
   )

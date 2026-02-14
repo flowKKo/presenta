@@ -58,7 +58,7 @@ function renderChart(data: ChartSlideData) {
 }
 
 export default function ChartSlide(data: ChartSlideData) {
-  const { title, body, highlight } = data
+  const { title, body, highlight, titleSize, bodySize } = data
 
   return (
     <motion.div
@@ -75,7 +75,7 @@ export default function ChartSlide(data: ChartSlideData) {
             field="title"
             as="h2"
             className="text-4xl font-bold"
-            style={{ color: colors.textPrimary }}
+            style={{ color: colors.textPrimary, fontSize: titleSize }}
             variants={motionConfig.child}
           />
           {body && (
@@ -84,7 +84,7 @@ export default function ChartSlide(data: ChartSlideData) {
               field="body"
               as="p"
               className="text-lg mt-2"
-              style={{ color: colors.textSecondary }}
+              style={{ color: colors.textSecondary, fontSize: bodySize }}
               variants={motionConfig.child}
             />
           )}

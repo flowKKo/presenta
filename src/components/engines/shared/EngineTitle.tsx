@@ -4,9 +4,11 @@ import EditableText from '../../editor/EditableText'
 interface EngineTitleProps {
   title: string
   body?: string
+  titleSize?: number
+  bodySize?: number
 }
 
-export default function EngineTitle({ title, body }: EngineTitleProps) {
+export default function EngineTitle({ title, body, titleSize, bodySize }: EngineTitleProps) {
   return (
     <div>
       <EditableText
@@ -14,7 +16,7 @@ export default function EngineTitle({ title, body }: EngineTitleProps) {
         field="title"
         as="h2"
         className="text-4xl font-bold"
-        style={{ color: colors.textPrimary }}
+        style={{ color: colors.textPrimary, fontSize: titleSize }}
         variants={motionConfig.child}
       />
       {body && (
@@ -23,7 +25,7 @@ export default function EngineTitle({ title, body }: EngineTitleProps) {
           field="body"
           as="p"
           className="text-lg mt-2"
-          style={{ color: colors.textSecondary }}
+          style={{ color: colors.textSecondary, fontSize: bodySize }}
           variants={motionConfig.child}
         />
       )}

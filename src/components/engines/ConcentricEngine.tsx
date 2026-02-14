@@ -82,7 +82,7 @@ export function ConcentricDiagram({ rings, variant }: { rings: ConcentricSlideDa
   )
 }
 
-export default function ConcentricEngine({ title, body, rings, variant }: ConcentricSlideData) {
+export default function ConcentricEngine({ title, body, rings, variant, titleSize, bodySize }: ConcentricSlideData) {
   return (
     <motion.div
       className="flex flex-col gap-4 h-full"
@@ -91,7 +91,7 @@ export default function ConcentricEngine({ title, body, rings, variant }: Concen
       whileInView="visible"
       viewport={{ once: true }}
     >
-      <EngineTitle title={title} body={body} />
+      <EngineTitle title={title} body={body} titleSize={titleSize} bodySize={bodySize} />
       <motion.div variants={motionConfig.child} className="flex-1 min-h-0 w-full">
         <ConcentricDiagram rings={rings} variant={variant} />
       </motion.div>

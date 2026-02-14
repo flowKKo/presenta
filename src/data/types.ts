@@ -7,6 +7,8 @@ export interface TitleSlideData {
   title: string
   subtitle?: string
   badge?: string
+  titleSize?: number
+  bodySize?: number
 }
 
 // ─── 2. KeyPoint ───
@@ -15,6 +17,8 @@ export interface KeyPointSlideData {
   title: string
   subtitle?: string
   body?: string
+  titleSize?: number
+  bodySize?: number
 }
 
 // ─── 3. Chart (expanded) ───
@@ -36,6 +40,8 @@ export interface ChartSlideData {
   body?: string
   highlight?: string
   chartHeight?: number           // px, default auto-fills available space
+  titleSize?: number
+  bodySize?: number
   // bar
   bars?: ChartBar[]
   // pie
@@ -70,6 +76,8 @@ export interface GridItemSlideData {
   variant: GridItemVariant
   columns?: number
   gap?: number               // px, default 16
+  titleSize?: number
+  bodySize?: number
 }
 
 // ─── 5. Sequence Engine ───
@@ -90,6 +98,8 @@ export interface SequenceSlideData {
   variant: SequenceVariant
   direction?: 'horizontal' | 'vertical'
   gap?: number               // px, default 8
+  titleSize?: number
+  bodySize?: number
 }
 
 // ─── 6. Compare Engine ───
@@ -112,6 +122,8 @@ export interface CompareSlideData {
   title: string
   body?: string
   mode: 'versus' | 'quadrant' | 'iceberg'
+  titleSize?: number
+  bodySize?: number
   // versus
   sides?: CompareSide[]
   // quadrant
@@ -138,6 +150,8 @@ export interface FunnelSlideData {
   body?: string
   layers: FunnelLayer[]
   variant: FunnelVariant
+  titleSize?: number
+  bodySize?: number
 }
 
 // ─── 8. Concentric Engine ───
@@ -154,6 +168,8 @@ export interface ConcentricSlideData {
   body?: string
   rings: ConcentricRing[]
   variant: ConcentricVariant
+  titleSize?: number
+  bodySize?: number
 }
 
 // ─── 9. HubSpoke Engine ───
@@ -166,6 +182,8 @@ export interface HubSpokeSlideData {
   center: { label: string; description?: string }
   spokes: { label: string; description?: string }[]
   variant: HubSpokeVariant
+  titleSize?: number
+  bodySize?: number
 }
 
 // ─── 10. Venn Engine ───
@@ -178,6 +196,8 @@ export interface VennSlideData {
   sets: { label: string; description?: string }[]
   intersectionLabel?: string
   variant: VennVariant
+  titleSize?: number
+  bodySize?: number
 }
 
 // ─── Union ───
