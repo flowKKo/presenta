@@ -6,8 +6,8 @@ import EngineTitle from './shared/EngineTitle'
 const VB_W = 800
 const VB_H = 480
 
-export function VennDiagram({ sets, intersectionLabel, variant, textColor }: { sets: VennSlideData['sets']; variant: VennSlideData['variant']; intersectionLabel?: string; textColor?: string }) {
-  const palette = generateGradientColors(sets.length)
+export function VennDiagram({ sets, intersectionLabel, variant, textColor, colorPalette }: { sets: VennSlideData['sets']; variant: VennSlideData['variant']; intersectionLabel?: string; textColor?: string; colorPalette?: string }) {
+  const palette = generateGradientColors(sets.length, colorPalette)
   const count = sets.length
 
   const centerX = VB_W / 2
@@ -94,7 +94,7 @@ export function VennDiagram({ sets, intersectionLabel, variant, textColor }: { s
   )
 }
 
-export default function VennEngine({ title, body, sets, intersectionLabel, variant, titleSize, bodySize, titleColor, textColor }: VennSlideData) {
+export default function VennEngine({ title, body, sets, intersectionLabel, variant, titleSize, bodySize, titleColor, textColor, colorPalette }: VennSlideData) {
   return (
     <motion.div
       className="flex flex-col gap-4 h-full"
@@ -105,7 +105,7 @@ export default function VennEngine({ title, body, sets, intersectionLabel, varia
     >
       <EngineTitle title={title} body={body} titleSize={titleSize} bodySize={bodySize} titleColor={titleColor} textColor={textColor} />
       <motion.div variants={motionConfig.child} className="flex-1 min-h-0 w-full">
-        <VennDiagram sets={sets} variant={variant} intersectionLabel={intersectionLabel} textColor={textColor} />
+        <VennDiagram sets={sets} variant={variant} intersectionLabel={intersectionLabel} textColor={textColor} colorPalette={colorPalette} />
       </motion.div>
     </motion.div>
   )

@@ -6,8 +6,8 @@ import EngineTitle from './shared/EngineTitle'
 const VB_W = 800
 const VB_H = 480
 
-export function HubSpokeDiagram({ center, spokes, variant, textColor }: { center: HubSpokeSlideData['center']; spokes: HubSpokeSlideData['spokes']; variant: HubSpokeSlideData['variant']; textColor?: string }) {
-  const palette = generateGradientColors(spokes.length)
+export function HubSpokeDiagram({ center, spokes, variant, textColor, colorPalette }: { center: HubSpokeSlideData['center']; spokes: HubSpokeSlideData['spokes']; variant: HubSpokeSlideData['variant']; textColor?: string; colorPalette?: string }) {
+  const palette = generateGradientColors(spokes.length, colorPalette)
 
   const cx = VB_W / 2
   const cy = VB_H / 2
@@ -90,7 +90,7 @@ export function HubSpokeDiagram({ center, spokes, variant, textColor }: { center
   )
 }
 
-export default function HubSpokeEngine({ title, body, center, spokes, variant, titleSize, bodySize, titleColor, textColor }: HubSpokeSlideData) {
+export default function HubSpokeEngine({ title, body, center, spokes, variant, titleSize, bodySize, titleColor, textColor, colorPalette }: HubSpokeSlideData) {
   return (
     <motion.div
       className="flex flex-col gap-4 h-full"
@@ -101,7 +101,7 @@ export default function HubSpokeEngine({ title, body, center, spokes, variant, t
     >
       <EngineTitle title={title} body={body} titleSize={titleSize} bodySize={bodySize} titleColor={titleColor} textColor={textColor} />
       <motion.div variants={motionConfig.child} className="flex-1 min-h-0 w-full">
-        <HubSpokeDiagram center={center} spokes={spokes} variant={variant} textColor={textColor} />
+        <HubSpokeDiagram center={center} spokes={spokes} variant={variant} textColor={textColor} colorPalette={colorPalette} />
       </motion.div>
     </motion.div>
   )

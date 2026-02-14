@@ -25,11 +25,17 @@ function DiagramWrapper({ children }: { children: ReactNode }) {
 function TitleBodyBlock({ data }: { data: Extract<BlockData, { type: 'title-body' }> }) {
   return (
     <div className="flex flex-col justify-center h-full">
-      <h2 className="text-4xl font-bold" style={{ color: colors.textPrimary }}>
+      <h2 className="font-bold" style={{
+        fontSize: data.titleSize ?? 36,
+        color: data.titleColor ?? colors.textPrimary,
+      }}>
         {data.title}
       </h2>
       {data.body && (
-        <p className="text-lg mt-2" style={{ color: colors.textSecondary }}>
+        <p className="mt-2" style={{
+          fontSize: data.bodySize ?? 18,
+          color: data.textColor ?? colors.textSecondary,
+        }}>
           {data.body}
         </p>
       )}
@@ -93,19 +99,19 @@ export default function BlockRenderer({ data, blockId, slideIndex }: BlockRender
     case 'image':
       return <ImageBlock data={data} blockId={blockId} slideIndex={slideIndex} />
     case 'grid-item':
-      return <DiagramWrapper><GridItemDiagram items={data.items} variant={data.variant} columns={data.columns} gap={data.gap} textColor={data.textColor} /></DiagramWrapper>
+      return <DiagramWrapper><GridItemDiagram items={data.items} variant={data.variant} columns={data.columns} gap={data.gap} textColor={data.textColor} colorPalette={data.colorPalette} /></DiagramWrapper>
     case 'sequence':
-      return <div className="flex items-center justify-center h-full"><SequenceDiagram steps={data.steps} variant={data.variant} direction={data.direction} gap={data.gap} textColor={data.textColor} /></div>
+      return <div className="flex items-center justify-center h-full"><SequenceDiagram steps={data.steps} variant={data.variant} direction={data.direction} gap={data.gap} textColor={data.textColor} colorPalette={data.colorPalette} /></div>
     case 'compare':
-      return <DiagramWrapper><CompareDiagram mode={data.mode} sides={data.sides} quadrantItems={data.quadrantItems} xAxis={data.xAxis} yAxis={data.yAxis} visible={data.visible} hidden={data.hidden} textColor={data.textColor} /></DiagramWrapper>
+      return <DiagramWrapper><CompareDiagram mode={data.mode} sides={data.sides} quadrantItems={data.quadrantItems} xAxis={data.xAxis} yAxis={data.yAxis} visible={data.visible} hidden={data.hidden} textColor={data.textColor} colorPalette={data.colorPalette} /></DiagramWrapper>
     case 'funnel':
-      return <DiagramWrapper><FunnelDiagram layers={data.layers} variant={data.variant} textColor={data.textColor} /></DiagramWrapper>
+      return <DiagramWrapper><FunnelDiagram layers={data.layers} variant={data.variant} textColor={data.textColor} colorPalette={data.colorPalette} /></DiagramWrapper>
     case 'concentric':
-      return <DiagramWrapper><ConcentricDiagram rings={data.rings} variant={data.variant} textColor={data.textColor} /></DiagramWrapper>
+      return <DiagramWrapper><ConcentricDiagram rings={data.rings} variant={data.variant} textColor={data.textColor} colorPalette={data.colorPalette} /></DiagramWrapper>
     case 'hub-spoke':
-      return <DiagramWrapper><HubSpokeDiagram center={data.center} spokes={data.spokes} variant={data.variant} textColor={data.textColor} /></DiagramWrapper>
+      return <DiagramWrapper><HubSpokeDiagram center={data.center} spokes={data.spokes} variant={data.variant} textColor={data.textColor} colorPalette={data.colorPalette} /></DiagramWrapper>
     case 'venn':
-      return <DiagramWrapper><VennDiagram sets={data.sets} variant={data.variant} intersectionLabel={data.intersectionLabel} textColor={data.textColor} /></DiagramWrapper>
+      return <DiagramWrapper><VennDiagram sets={data.sets} variant={data.variant} intersectionLabel={data.intersectionLabel} textColor={data.textColor} colorPalette={data.colorPalette} /></DiagramWrapper>
     case 'chart':
       return (
         <DiagramWrapper>

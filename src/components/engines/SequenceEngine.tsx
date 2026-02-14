@@ -55,9 +55,9 @@ function RibbonStep({ label, description, index, color, isLast, textColor }: { l
   )
 }
 
-export function SequenceDiagram({ steps, variant, direction = 'horizontal', gap = 8, textColor }: { steps: SequenceSlideData['steps']; variant: SequenceSlideData['variant']; direction?: 'horizontal' | 'vertical'; gap?: number; textColor?: string }) {
+export function SequenceDiagram({ steps, variant, direction = 'horizontal', gap = 8, textColor, colorPalette }: { steps: SequenceSlideData['steps']; variant: SequenceSlideData['variant']; direction?: 'horizontal' | 'vertical'; gap?: number; textColor?: string; colorPalette?: string }) {
   const isH = direction === 'horizontal'
-  const palette = generateGradientColors(steps.length)
+  const palette = generateGradientColors(steps.length, colorPalette)
 
   const renderSteps = () => {
     switch (variant) {
@@ -114,7 +114,7 @@ export function SequenceDiagram({ steps, variant, direction = 'horizontal', gap 
   )
 }
 
-export default function SequenceEngine({ title, body, steps, variant, direction = 'horizontal', gap, titleSize, bodySize, titleColor, textColor }: SequenceSlideData) {
+export default function SequenceEngine({ title, body, steps, variant, direction = 'horizontal', gap, titleSize, bodySize, titleColor, textColor, colorPalette }: SequenceSlideData) {
   return (
     <motion.div
       className="flex flex-col gap-6 h-full justify-center"
@@ -124,7 +124,7 @@ export default function SequenceEngine({ title, body, steps, variant, direction 
       viewport={{ once: true }}
     >
       <EngineTitle title={title} body={body} titleSize={titleSize} bodySize={bodySize} titleColor={titleColor} textColor={textColor} />
-      <SequenceDiagram steps={steps} variant={variant} direction={direction} gap={gap} textColor={textColor} />
+      <SequenceDiagram steps={steps} variant={variant} direction={direction} gap={gap} textColor={textColor} colorPalette={colorPalette} />
     </motion.div>
   )
 }

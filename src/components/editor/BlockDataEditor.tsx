@@ -1,6 +1,7 @@
 import { useRef } from 'react'
 import type { BlockData } from '../../data/types'
 import type { SlideData } from '../../data/types'
+import { colors } from '../../theme/swiss'
 import SlideDataEditor from './SlideDataEditor'
 
 interface BlockDataEditorProps {
@@ -40,21 +41,21 @@ function slideDataToBlock(slideData: SlideData, originalType: BlockData['type'])
   // Strip title/body from SlideData when converting back to BlockData
   switch (slideData.type) {
     case 'grid-item':
-      return { type: 'grid-item', items: slideData.items, variant: slideData.variant, columns: slideData.columns, gap: slideData.gap, textColor: slideData.textColor }
+      return { type: 'grid-item', items: slideData.items, variant: slideData.variant, columns: slideData.columns, gap: slideData.gap, textColor: slideData.textColor, colorPalette: slideData.colorPalette }
     case 'sequence':
-      return { type: 'sequence', steps: slideData.steps, variant: slideData.variant, direction: slideData.direction, gap: slideData.gap, textColor: slideData.textColor }
+      return { type: 'sequence', steps: slideData.steps, variant: slideData.variant, direction: slideData.direction, gap: slideData.gap, textColor: slideData.textColor, colorPalette: slideData.colorPalette }
     case 'compare':
-      return { type: 'compare', mode: slideData.mode, sides: slideData.sides, quadrantItems: slideData.quadrantItems, xAxis: slideData.xAxis, yAxis: slideData.yAxis, visible: slideData.visible, hidden: slideData.hidden, textColor: slideData.textColor }
+      return { type: 'compare', mode: slideData.mode, sides: slideData.sides, quadrantItems: slideData.quadrantItems, xAxis: slideData.xAxis, yAxis: slideData.yAxis, visible: slideData.visible, hidden: slideData.hidden, textColor: slideData.textColor, colorPalette: slideData.colorPalette }
     case 'funnel':
-      return { type: 'funnel', layers: slideData.layers, variant: slideData.variant, textColor: slideData.textColor }
+      return { type: 'funnel', layers: slideData.layers, variant: slideData.variant, textColor: slideData.textColor, colorPalette: slideData.colorPalette }
     case 'concentric':
-      return { type: 'concentric', rings: slideData.rings, variant: slideData.variant, textColor: slideData.textColor }
+      return { type: 'concentric', rings: slideData.rings, variant: slideData.variant, textColor: slideData.textColor, colorPalette: slideData.colorPalette }
     case 'hub-spoke':
-      return { type: 'hub-spoke', center: slideData.center, spokes: slideData.spokes, variant: slideData.variant, textColor: slideData.textColor }
+      return { type: 'hub-spoke', center: slideData.center, spokes: slideData.spokes, variant: slideData.variant, textColor: slideData.textColor, colorPalette: slideData.colorPalette }
     case 'venn':
-      return { type: 'venn', sets: slideData.sets, variant: slideData.variant, intersectionLabel: slideData.intersectionLabel, textColor: slideData.textColor }
+      return { type: 'venn', sets: slideData.sets, variant: slideData.variant, intersectionLabel: slideData.intersectionLabel, textColor: slideData.textColor, colorPalette: slideData.colorPalette }
     case 'chart':
-      return { type: 'chart', chartType: slideData.chartType, bars: slideData.bars, slices: slideData.slices, innerRadius: slideData.innerRadius, categories: slideData.categories, lineSeries: slideData.lineSeries, indicators: slideData.indicators, radarSeries: slideData.radarSeries, highlight: slideData.highlight }
+      return { type: 'chart', chartType: slideData.chartType, bars: slideData.bars, slices: slideData.slices, innerRadius: slideData.innerRadius, categories: slideData.categories, lineSeries: slideData.lineSeries, indicators: slideData.indicators, radarSeries: slideData.radarSeries, highlight: slideData.highlight, colorPalette: slideData.colorPalette }
     default:
       // Should not happen, but return original
       return { type: 'title-body', title: '', body: '' }
@@ -72,6 +73,60 @@ function TextInput({ label, value, onChange }: { label: string; value: string; o
         className="w-full px-2.5 py-1.5 text-sm border border-gray-200 rounded-md mt-1 focus:border-blue-300 focus:ring-1 focus:ring-blue-100 outline-none transition-colors"
       />
     </label>
+  )
+}
+
+function OptionalNumberInput({ label, value, onChange, placeholder, min, max, step }: { label: string; value?: number; onChange: (v: number | undefined) => void; placeholder?: string; min?: number; max?: number; step?: number }) {
+  return (
+    <label className="block">
+      <span className="text-[11px] text-gray-500 font-medium">{label}</span>
+      <input
+        type="number"
+        value={value ?? ''}
+        placeholder={placeholder}
+        min={min}
+        max={max}
+        step={step}
+        onChange={(e) => onChange(e.target.value === '' ? undefined : Number(e.target.value))}
+        className="w-full px-2.5 py-1.5 text-sm border border-gray-200 rounded-md mt-1 focus:border-blue-300 focus:ring-1 focus:ring-blue-100 outline-none transition-colors"
+      />
+    </label>
+  )
+}
+
+function OptionalColorInput({ label, value, onChange, defaultValue }: { label: string; value?: string; onChange: (v: string | undefined) => void; defaultValue: string }) {
+  const displayColor = value || defaultValue
+  return (
+    <label className="block">
+      <span className="text-[11px] text-gray-500 font-medium">{label}</span>
+      <div className="flex items-center gap-2 mt-1">
+        <input
+          type="color"
+          value={displayColor}
+          onChange={(e) => onChange(e.target.value)}
+          className="w-8 h-8 rounded border border-gray-200 cursor-pointer p-0.5"
+        />
+        <span className="text-xs text-gray-400 font-mono flex-1">{value || defaultValue}</span>
+        {value && (
+          <button
+            type="button"
+            onClick={() => onChange(undefined)}
+            className="text-[10px] text-gray-400 hover:text-red-500 cursor-pointer px-1"
+          >
+            清除
+          </button>
+        )}
+      </div>
+    </label>
+  )
+}
+
+function SectionHeader({ title }: { title: string }) {
+  return (
+    <div className="text-[11px] font-semibold text-gray-500 tracking-wide uppercase flex items-center gap-2">
+      <span>{title}</span>
+      <span className="flex-1 h-px bg-gray-100" />
+    </div>
   )
 }
 
@@ -154,16 +209,31 @@ function ImageBlockEditor({ data, onChange }: { data: Extract<BlockData, { type:
 }
 
 export default function BlockDataEditor({ data, onChange }: BlockDataEditorProps) {
-  // Title-body block: simple inline editor
+  // Title-body block: text + style controls
   if (data.type === 'title-body') {
     return (
-      <div className="space-y-2">
-        <div className="text-[11px] font-semibold text-gray-500 tracking-wide uppercase flex items-center gap-2">
-          <span>文本内容</span>
-          <span className="flex-1 h-px bg-gray-100" />
+      <div className="space-y-3">
+        <div className="space-y-2">
+          <SectionHeader title="文本内容" />
+          <TextInput label="标题" value={data.title} onChange={(v) => onChange({ ...data, title: v })} />
+          <TextInput label="正文" value={data.body ?? ''} onChange={(v) => onChange({ ...data, body: v })} />
         </div>
-        <TextInput label="标题" value={data.title} onChange={(v) => onChange({ ...data, title: v })} />
-        <TextInput label="正文" value={data.body ?? ''} onChange={(v) => onChange({ ...data, body: v })} />
+        <div className="space-y-2">
+          <SectionHeader title="字体大小" />
+          <div className="flex gap-2">
+            <div className="flex-1">
+              <OptionalNumberInput label="标题" value={data.titleSize} placeholder="36" onChange={(v) => onChange({ ...data, titleSize: v })} min={12} max={200} step={2} />
+            </div>
+            <div className="flex-1">
+              <OptionalNumberInput label="正文" value={data.bodySize} placeholder="18" onChange={(v) => onChange({ ...data, bodySize: v })} min={10} max={120} step={2} />
+            </div>
+          </div>
+        </div>
+        <div className="space-y-2">
+          <SectionHeader title="文字颜色" />
+          <OptionalColorInput label="标题颜色" value={data.titleColor} defaultValue={colors.textPrimary} onChange={(v) => onChange({ ...data, titleColor: v })} />
+          <OptionalColorInput label="正文颜色" value={data.textColor} defaultValue={colors.textSecondary} onChange={(v) => onChange({ ...data, textColor: v })} />
+        </div>
       </div>
     )
   }

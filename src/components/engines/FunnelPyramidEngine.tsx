@@ -27,8 +27,8 @@ function getClipPath(variant: FunnelSlideData['variant'], index: number, total: 
   return `polygon(0 0, ${topWidth}% 0, ${bottomWidth}% 100%, 0 100%)`
 }
 
-export function FunnelDiagram({ layers, variant, textColor }: { layers: FunnelSlideData['layers']; variant: FunnelSlideData['variant']; textColor?: string }) {
-  const palette = generateGradientColors(layers.length)
+export function FunnelDiagram({ layers, variant, textColor, colorPalette }: { layers: FunnelSlideData['layers']; variant: FunnelSlideData['variant']; textColor?: string; colorPalette?: string }) {
+  const palette = generateGradientColors(layers.length, colorPalette)
 
   return (
     <div className="flex flex-col items-center gap-1 flex-1">
@@ -54,7 +54,7 @@ export function FunnelDiagram({ layers, variant, textColor }: { layers: FunnelSl
   )
 }
 
-export default function FunnelPyramidEngine({ title, body, layers, variant, titleSize, bodySize, titleColor, textColor }: FunnelSlideData) {
+export default function FunnelPyramidEngine({ title, body, layers, variant, titleSize, bodySize, titleColor, textColor, colorPalette }: FunnelSlideData) {
   return (
     <motion.div
       className="flex flex-col gap-6 h-full justify-center"
@@ -64,7 +64,7 @@ export default function FunnelPyramidEngine({ title, body, layers, variant, titl
       viewport={{ once: true }}
     >
       <EngineTitle title={title} body={body} titleSize={titleSize} bodySize={bodySize} titleColor={titleColor} textColor={textColor} />
-      <FunnelDiagram layers={layers} variant={variant} textColor={textColor} />
+      <FunnelDiagram layers={layers} variant={variant} textColor={textColor} colorPalette={colorPalette} />
     </motion.div>
   )
 }

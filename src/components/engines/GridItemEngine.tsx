@@ -111,10 +111,10 @@ function TopCircleCard({ item, index, color, textColor }: { item: GridItemEntry;
   )
 }
 
-export function GridItemDiagram({ items, variant, columns, gap = 16, textColor }: { items: GridItemEntry[]; variant: GridItemSlideData['variant']; columns?: number; gap?: number; textColor?: string }) {
+export function GridItemDiagram({ items, variant, columns, gap = 16, textColor, colorPalette }: { items: GridItemEntry[]; variant: GridItemSlideData['variant']; columns?: number; gap?: number; textColor?: string; colorPalette?: string }) {
   const cols = getColumns(items.length, columns)
   const rows = Math.ceil(items.length / cols)
-  const palette = generateGradientColors(items.length)
+  const palette = generateGradientColors(items.length, colorPalette)
 
   return (
     <div
@@ -143,7 +143,7 @@ export function GridItemDiagram({ items, variant, columns, gap = 16, textColor }
   )
 }
 
-export default function GridItemEngine({ title, body, items, variant, columns, gap, titleSize, bodySize, titleColor, textColor }: GridItemSlideData) {
+export default function GridItemEngine({ title, body, items, variant, columns, gap, titleSize, bodySize, titleColor, textColor, colorPalette }: GridItemSlideData) {
   return (
     <motion.div
       className="flex flex-col gap-6 h-full"
@@ -153,7 +153,7 @@ export default function GridItemEngine({ title, body, items, variant, columns, g
       viewport={{ once: true }}
     >
       <EngineTitle title={title} body={body} titleSize={titleSize} bodySize={bodySize} titleColor={titleColor} textColor={textColor} />
-      <GridItemDiagram items={items} variant={variant} columns={columns} gap={gap} textColor={textColor} />
+      <GridItemDiagram items={items} variant={variant} columns={columns} gap={gap} textColor={textColor} colorPalette={colorPalette} />
     </motion.div>
   )
 }
