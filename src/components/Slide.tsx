@@ -18,11 +18,11 @@ const Slide = forwardRef<HTMLDivElement, SlideProps>(
   function Slide({ number, slideIndex, slideData, children }, ref) {
     const { editMode, setSelection } = useEditor()
 
-    // Click on the slide padding area (outside content box / overlay layer) → deselect
+    // Click on the slide padding area (outside content box / overlay layer) → deselect to content-box level
     const handlePaddingClick = useCallback((e: React.MouseEvent) => {
       if (!editMode) return
-      if (e.target === e.currentTarget) setSelection(null)
-    }, [editMode, setSelection])
+      if (e.target === e.currentTarget) setSelection({ type: 'content-box', slideIndex })
+    }, [editMode, setSelection, slideIndex])
 
     return (
       <motion.div

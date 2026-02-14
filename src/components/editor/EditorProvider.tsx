@@ -69,6 +69,18 @@ function setSlideState(deck: DeckEditorState, index: number, state: SlideEditorS
   return { ...deck, slides: { ...deck.slides, [index]: state } }
 }
 
+/** Resolve BlockSlideData from override or originalSlides fallback */
+function resolveBlockSlideData(state: EditorState, slideIndex: number): BlockSlideData | null {
+  const slide = getSlideState(state.deckState, slideIndex)
+  if (slide.slideDataOverride?.type === 'block-slide') return slide.slideDataOverride as BlockSlideData
+  // Fall back to originalSlides
+  const entries = materializeSlideList(state.deckState, state.originalSlides.length)
+  const entry = entries[slideIndex]
+  if (!entry) return null
+  const original = entry.kind === 'original' ? state.originalSlides[entry.index] : entry.data
+  return original.type === 'block-slide' ? original as BlockSlideData : null
+}
+
 /** Push current deckState to history, truncating future and capping size */
 function pushHistory(state: EditorState): Pick<EditorState, 'history' | 'historyIndex'> {
   const truncated = state.history.slice(0, state.historyIndex + 1)
@@ -234,8 +246,8 @@ function editorReducer(state: EditorState, action: EditorAction): EditorState {
     case 'ADD_BLOCK': {
       const hist = pushHistory(state)
       const slide = getSlideState(state.deckState, action.slideIndex)
-      const blockData = slide.slideDataOverride as BlockSlideData | undefined
-      if (!blockData || blockData.type !== 'block-slide') return state
+      const blockData = resolveBlockSlideData(state, action.slideIndex)
+      if (!blockData) return state
       const updated: BlockSlideData = { ...blockData, blocks: [...blockData.blocks, action.block] }
       return {
         ...state,
@@ -249,8 +261,8 @@ function editorReducer(state: EditorState, action: EditorAction): EditorState {
     case 'UPDATE_BLOCK': {
       const hist = pushHistory(state)
       const slide = getSlideState(state.deckState, action.slideIndex)
-      const blockData = slide.slideDataOverride as BlockSlideData | undefined
-      if (!blockData || blockData.type !== 'block-slide') return state
+      const blockData = resolveBlockSlideData(state, action.slideIndex)
+      if (!blockData) return state
       const updated: BlockSlideData = {
         ...blockData,
         blocks: blockData.blocks.map((b) =>
@@ -268,8 +280,8 @@ function editorReducer(state: EditorState, action: EditorAction): EditorState {
     }
     case 'UPDATE_BLOCK_QUIET': {
       const slide = getSlideState(state.deckState, action.slideIndex)
-      const blockData = slide.slideDataOverride as BlockSlideData | undefined
-      if (!blockData || blockData.type !== 'block-slide') return state
+      const blockData = resolveBlockSlideData(state, action.slideIndex)
+      if (!blockData) return state
       const updated: BlockSlideData = {
         ...blockData,
         blocks: blockData.blocks.map((b) =>
@@ -287,8 +299,8 @@ function editorReducer(state: EditorState, action: EditorAction): EditorState {
     case 'REMOVE_BLOCK': {
       const hist = pushHistory(state)
       const slide = getSlideState(state.deckState, action.slideIndex)
-      const blockData = slide.slideDataOverride as BlockSlideData | undefined
-      if (!blockData || blockData.type !== 'block-slide') return state
+      const blockData = resolveBlockSlideData(state, action.slideIndex)
+      if (!blockData) return state
       const newSelection =
         state.selection?.type === 'block' && state.selection.blockId === action.blockId
           ? null
@@ -310,8 +322,8 @@ function editorReducer(state: EditorState, action: EditorAction): EditorState {
     case 'UPDATE_BLOCK_DATA': {
       const hist = pushHistory(state)
       const slide = getSlideState(state.deckState, action.slideIndex)
-      const blockData = slide.slideDataOverride as BlockSlideData | undefined
-      if (!blockData || blockData.type !== 'block-slide') return state
+      const blockData = resolveBlockSlideData(state, action.slideIndex)
+      if (!blockData) return state
       const updated: BlockSlideData = {
         ...blockData,
         blocks: blockData.blocks.map((b) =>

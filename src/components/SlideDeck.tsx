@@ -246,7 +246,7 @@ function SlideDeckInner({ slides, onBack }: Omit<SlideDeckProps, 'deckId' | 'dec
         style={{ '--sidebar-w': `${sidebarWidth}px` } as React.CSSProperties}
         onClick={(e) => {
           if (!editMode) return
-          if (e.target === e.currentTarget) setSelection(null)
+          if (e.target === e.currentTarget) setSelection({ type: 'content-box', slideIndex: activeIndex })
         }}
       >
         {currentSlide && currentEffective && (
