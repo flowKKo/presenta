@@ -1,4 +1,4 @@
-# Web PPT Playground
+# Presenta
 
 [English](./README.md)
 
