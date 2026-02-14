@@ -6,7 +6,7 @@ import EngineTitle from './shared/EngineTitle'
 const VB_W = 800
 const VB_H = 480
 
-export function HubSpokeDiagram({ center, spokes, variant }: { center: HubSpokeSlideData['center']; spokes: HubSpokeSlideData['spokes']; variant: HubSpokeSlideData['variant'] }) {
+export function HubSpokeDiagram({ center, spokes, variant, textColor }: { center: HubSpokeSlideData['center']; spokes: HubSpokeSlideData['spokes']; variant: HubSpokeSlideData['variant']; textColor?: string }) {
   const palette = generateGradientColors(spokes.length)
 
   const cx = VB_W / 2
@@ -60,12 +60,12 @@ export function HubSpokeDiagram({ center, spokes, variant }: { center: HubSpokeS
             <text
               x={sx} y={spoke.description ? sy - 4 : sy + 1}
               textAnchor="middle" dominantBaseline="middle"
-              fontSize="14" fontWeight="700" fill="white"
+              fontSize="14" fontWeight="700" fill={textColor || 'white'}
             >
               {spoke.label}
             </text>
             {spoke.description && (
-              <text x={sx} y={sy + 14} textAnchor="middle" dominantBaseline="middle" fontSize="11" fill="white" opacity={0.8}>
+              <text x={sx} y={sy + 14} textAnchor="middle" dominantBaseline="middle" fontSize="11" fill={textColor || 'white'} opacity={0.8}>
                 {spoke.description}
               </text>
             )}
@@ -77,12 +77,12 @@ export function HubSpokeDiagram({ center, spokes, variant }: { center: HubSpokeS
       <text
         x={cx} y={center.description ? cy - 7 : cy}
         textAnchor="middle" dominantBaseline="middle"
-        fontSize="15" fontWeight="800" fill="white"
+        fontSize="15" fontWeight="800" fill={textColor || 'white'}
       >
         {center.label}
       </text>
       {center.description && (
-        <text x={cx} y={cy + 13} textAnchor="middle" dominantBaseline="middle" fontSize="11" fill="white" opacity={0.8}>
+        <text x={cx} y={cy + 13} textAnchor="middle" dominantBaseline="middle" fontSize="11" fill={textColor || 'white'} opacity={0.8}>
           {center.description}
         </text>
       )}
@@ -90,7 +90,7 @@ export function HubSpokeDiagram({ center, spokes, variant }: { center: HubSpokeS
   )
 }
 
-export default function HubSpokeEngine({ title, body, center, spokes, variant, titleSize, bodySize }: HubSpokeSlideData) {
+export default function HubSpokeEngine({ title, body, center, spokes, variant, titleSize, bodySize, titleColor, textColor }: HubSpokeSlideData) {
   return (
     <motion.div
       className="flex flex-col gap-4 h-full"
@@ -99,9 +99,9 @@ export default function HubSpokeEngine({ title, body, center, spokes, variant, t
       whileInView="visible"
       viewport={{ once: true }}
     >
-      <EngineTitle title={title} body={body} titleSize={titleSize} bodySize={bodySize} />
+      <EngineTitle title={title} body={body} titleSize={titleSize} bodySize={bodySize} titleColor={titleColor} textColor={textColor} />
       <motion.div variants={motionConfig.child} className="flex-1 min-h-0 w-full">
-        <HubSpokeDiagram center={center} spokes={spokes} variant={variant} />
+        <HubSpokeDiagram center={center} spokes={spokes} variant={variant} textColor={textColor} />
       </motion.div>
     </motion.div>
   )

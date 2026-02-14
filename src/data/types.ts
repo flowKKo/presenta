@@ -9,6 +9,8 @@ export interface TitleSlideData {
   badge?: string
   titleSize?: number
   bodySize?: number
+  titleColor?: string
+  textColor?: string
 }
 
 // ─── 2. KeyPoint ───
@@ -19,6 +21,8 @@ export interface KeyPointSlideData {
   body?: string
   titleSize?: number
   bodySize?: number
+  titleColor?: string
+  textColor?: string
 }
 
 // ─── 3. Chart (expanded) ───
@@ -42,6 +46,8 @@ export interface ChartSlideData {
   chartHeight?: number           // px, default auto-fills available space
   titleSize?: number
   bodySize?: number
+  titleColor?: string
+  textColor?: string
   // bar
   bars?: ChartBar[]
   // pie
@@ -78,6 +84,8 @@ export interface GridItemSlideData {
   gap?: number               // px, default 16
   titleSize?: number
   bodySize?: number
+  titleColor?: string
+  textColor?: string
 }
 
 // ─── 5. Sequence Engine ───
@@ -100,6 +108,8 @@ export interface SequenceSlideData {
   gap?: number               // px, default 8
   titleSize?: number
   bodySize?: number
+  titleColor?: string
+  textColor?: string
 }
 
 // ─── 6. Compare Engine ───
@@ -124,6 +134,8 @@ export interface CompareSlideData {
   mode: 'versus' | 'quadrant' | 'iceberg'
   titleSize?: number
   bodySize?: number
+  titleColor?: string
+  textColor?: string
   // versus
   sides?: CompareSide[]
   // quadrant
@@ -152,6 +164,8 @@ export interface FunnelSlideData {
   variant: FunnelVariant
   titleSize?: number
   bodySize?: number
+  titleColor?: string
+  textColor?: string
 }
 
 // ─── 8. Concentric Engine ───
@@ -170,6 +184,8 @@ export interface ConcentricSlideData {
   variant: ConcentricVariant
   titleSize?: number
   bodySize?: number
+  titleColor?: string
+  textColor?: string
 }
 
 // ─── 9. HubSpoke Engine ───
@@ -184,6 +200,8 @@ export interface HubSpokeSlideData {
   variant: HubSpokeVariant
   titleSize?: number
   bodySize?: number
+  titleColor?: string
+  textColor?: string
 }
 
 // ─── 10. Venn Engine ───
@@ -198,6 +216,8 @@ export interface VennSlideData {
   variant: VennVariant
   titleSize?: number
   bodySize?: number
+  titleColor?: string
+  textColor?: string
 }
 
 // ─── Union ───
@@ -218,13 +238,13 @@ export type SlideData =
 
 export type BlockData =
   | { type: 'title-body'; title: string; body?: string }
-  | { type: 'grid-item'; items: GridItemEntry[]; variant: GridItemVariant; columns?: number; gap?: number }
-  | { type: 'sequence'; steps: SequenceStep[]; variant: SequenceVariant; direction?: 'horizontal' | 'vertical'; gap?: number }
-  | { type: 'compare'; mode: 'versus' | 'quadrant' | 'iceberg'; sides?: CompareSide[]; quadrantItems?: QuadrantItem[]; xAxis?: string; yAxis?: string; visible?: IcebergItem[]; hidden?: IcebergItem[] }
-  | { type: 'funnel'; layers: FunnelLayer[]; variant: FunnelVariant }
-  | { type: 'concentric'; rings: ConcentricRing[]; variant: ConcentricVariant }
-  | { type: 'hub-spoke'; center: { label: string; description?: string }; spokes: { label: string; description?: string }[]; variant: HubSpokeVariant }
-  | { type: 'venn'; sets: { label: string; description?: string }[]; intersectionLabel?: string; variant: VennVariant }
+  | { type: 'grid-item'; items: GridItemEntry[]; variant: GridItemVariant; columns?: number; gap?: number; textColor?: string }
+  | { type: 'sequence'; steps: SequenceStep[]; variant: SequenceVariant; direction?: 'horizontal' | 'vertical'; gap?: number; textColor?: string }
+  | { type: 'compare'; mode: 'versus' | 'quadrant' | 'iceberg'; sides?: CompareSide[]; quadrantItems?: QuadrantItem[]; xAxis?: string; yAxis?: string; visible?: IcebergItem[]; hidden?: IcebergItem[]; textColor?: string }
+  | { type: 'funnel'; layers: FunnelLayer[]; variant: FunnelVariant; textColor?: string }
+  | { type: 'concentric'; rings: ConcentricRing[]; variant: ConcentricVariant; textColor?: string }
+  | { type: 'hub-spoke'; center: { label: string; description?: string }; spokes: { label: string; description?: string }[]; variant: HubSpokeVariant; textColor?: string }
+  | { type: 'venn'; sets: { label: string; description?: string }[]; intersectionLabel?: string; variant: VennVariant; textColor?: string }
   | { type: 'chart'; chartType: ChartType; bars?: ChartBar[]; slices?: ChartSlice[]; innerRadius?: number; categories?: string[]; lineSeries?: LineSeries[]; indicators?: RadarIndicator[]; radarSeries?: RadarSeries[]; highlight?: string }
   | { type: 'image'; src?: string; alt?: string; fit?: 'cover' | 'contain' | 'fill'; placeholder?: string }
 

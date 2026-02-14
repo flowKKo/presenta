@@ -6,7 +6,7 @@ import EngineTitle from './shared/EngineTitle'
 const VB_W = 800
 const VB_H = 480
 
-export function VennDiagram({ sets, intersectionLabel, variant }: { sets: VennSlideData['sets']; variant: VennSlideData['variant']; intersectionLabel?: string }) {
+export function VennDiagram({ sets, intersectionLabel, variant, textColor }: { sets: VennSlideData['sets']; variant: VennSlideData['variant']; intersectionLabel?: string; textColor?: string }) {
   const palette = generateGradientColors(sets.length)
   const count = sets.length
 
@@ -73,7 +73,7 @@ export function VennDiagram({ sets, intersectionLabel, variant }: { sets: VennSl
 
         return (
           <g key={`l-${i}`}>
-            <text x={lx} y={sets[i].description ? ly - 8 : ly} textAnchor="middle" dominantBaseline="middle" fontSize="18" fontWeight="700" fill={colors.textPrimary}>
+            <text x={lx} y={sets[i].description ? ly - 8 : ly} textAnchor="middle" dominantBaseline="middle" fontSize="18" fontWeight="700" fill={textColor || colors.textPrimary}>
               {sets[i].label}
             </text>
             {sets[i].description && (
@@ -94,7 +94,7 @@ export function VennDiagram({ sets, intersectionLabel, variant }: { sets: VennSl
   )
 }
 
-export default function VennEngine({ title, body, sets, intersectionLabel, variant, titleSize, bodySize }: VennSlideData) {
+export default function VennEngine({ title, body, sets, intersectionLabel, variant, titleSize, bodySize, titleColor, textColor }: VennSlideData) {
   return (
     <motion.div
       className="flex flex-col gap-4 h-full"
@@ -103,9 +103,9 @@ export default function VennEngine({ title, body, sets, intersectionLabel, varia
       whileInView="visible"
       viewport={{ once: true }}
     >
-      <EngineTitle title={title} body={body} titleSize={titleSize} bodySize={bodySize} />
+      <EngineTitle title={title} body={body} titleSize={titleSize} bodySize={bodySize} titleColor={titleColor} textColor={textColor} />
       <motion.div variants={motionConfig.child} className="flex-1 min-h-0 w-full">
-        <VennDiagram sets={sets} variant={variant} intersectionLabel={intersectionLabel} />
+        <VennDiagram sets={sets} variant={variant} intersectionLabel={intersectionLabel} textColor={textColor} />
       </motion.div>
     </motion.div>
   )

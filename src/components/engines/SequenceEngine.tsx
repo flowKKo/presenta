@@ -26,36 +26,36 @@ function ChainStep({ label, description, index, color }: { label: string; descri
   )
 }
 
-function ArrowStep({ label, description, index, color }: { label: string; description?: string; index: number; color: string }) {
+function ArrowStep({ label, description, index, color, textColor }: { label: string; description?: string; index: number; color: string; textColor?: string }) {
   return (
     <motion.div variants={motionConfig.child} className="flex-1 min-w-0 rounded-lg p-4 text-center" style={{ background: color }}>
-      <EditableText value={label} field={`steps.${index}.label`} as="div" className="text-sm font-bold text-white" />
-      {description && <EditableText value={description} field={`steps.${index}.description`} as="div" className="text-xs mt-1 text-white/80" />}
+      <EditableText value={label} field={`steps.${index}.label`} as="div" className="text-sm font-bold" style={{ color: textColor || 'white' }} />
+      {description && <EditableText value={description} field={`steps.${index}.description`} as="div" className="text-xs mt-1" style={{ color: textColor || 'white', opacity: 0.8 }} />}
     </motion.div>
   )
 }
 
-function PillStep({ label, description, index, color }: { label: string; description?: string; index: number; color: string }) {
+function PillStep({ label, description, index, color, textColor }: { label: string; description?: string; index: number; color: string; textColor?: string }) {
   return (
     <motion.div variants={motionConfig.child} className="flex-1 min-w-0 flex flex-col items-center text-center">
-      <EditableText value={label} field={`steps.${index}.label`} as="div" className="rounded-full px-5 py-2 text-sm font-semibold text-white" style={{ backgroundColor: color }} />
+      <EditableText value={label} field={`steps.${index}.label`} as="div" className="rounded-full px-5 py-2 text-sm font-semibold" style={{ backgroundColor: color, color: textColor || 'white' }} />
       {description && <EditableText value={description} field={`steps.${index}.description`} as="div" className="text-xs mt-2" style={{ color: colors.textSecondary }} />}
     </motion.div>
   )
 }
 
-function RibbonStep({ label, description, index, color, isLast }: { label: string; description?: string; index: number; color: string; isLast: boolean }) {
+function RibbonStep({ label, description, index, color, isLast, textColor }: { label: string; description?: string; index: number; color: string; isLast: boolean; textColor?: string }) {
   return (
     <motion.div variants={motionConfig.child} className="flex-1 min-w-0 relative">
       <div className="p-4 text-center" style={{ backgroundColor: color, clipPath: isLast ? undefined : 'polygon(0 0, 90% 0, 100% 50%, 90% 100%, 0 100%)' }}>
-        <EditableText value={label} field={`steps.${index}.label`} as="div" className="text-sm font-bold text-white" />
-        {description && <EditableText value={description} field={`steps.${index}.description`} as="div" className="text-xs mt-1 text-white/80" />}
+        <EditableText value={label} field={`steps.${index}.label`} as="div" className="text-sm font-bold" style={{ color: textColor || 'white' }} />
+        {description && <EditableText value={description} field={`steps.${index}.description`} as="div" className="text-xs mt-1" style={{ color: textColor || 'white', opacity: 0.8 }} />}
       </div>
     </motion.div>
   )
 }
 
-export function SequenceDiagram({ steps, variant, direction = 'horizontal', gap = 8 }: { steps: SequenceSlideData['steps']; variant: SequenceSlideData['variant']; direction?: 'horizontal' | 'vertical'; gap?: number }) {
+export function SequenceDiagram({ steps, variant, direction = 'horizontal', gap = 8, textColor }: { steps: SequenceSlideData['steps']; variant: SequenceSlideData['variant']; direction?: 'horizontal' | 'vertical'; gap?: number; textColor?: string }) {
   const isH = direction === 'horizontal'
   const palette = generateGradientColors(steps.length)
 
@@ -67,15 +67,15 @@ export function SequenceDiagram({ steps, variant, direction = 'horizontal', gap 
         ))
       case 'arrows':
         return steps.map((s, i) => (
-          <ArrowStep key={i} label={s.label} description={s.description} index={i} color={palette[i]} />
+          <ArrowStep key={i} label={s.label} description={s.description} index={i} color={palette[i]} textColor={textColor} />
         ))
       case 'pills':
         return steps.map((s, i) => (
-          <PillStep key={i} label={s.label} description={s.description} index={i} color={palette[i]} />
+          <PillStep key={i} label={s.label} description={s.description} index={i} color={palette[i]} textColor={textColor} />
         ))
       case 'ribbon-arrows':
         return steps.map((s, i) => (
-          <RibbonStep key={i} label={s.label} description={s.description} index={i} color={palette[i]} isLast={i === steps.length - 1} />
+          <RibbonStep key={i} label={s.label} description={s.description} index={i} color={palette[i]} isLast={i === steps.length - 1} textColor={textColor} />
         ))
       case 'timeline':
       default:
@@ -114,7 +114,7 @@ export function SequenceDiagram({ steps, variant, direction = 'horizontal', gap 
   )
 }
 
-export default function SequenceEngine({ title, body, steps, variant, direction = 'horizontal', gap, titleSize, bodySize }: SequenceSlideData) {
+export default function SequenceEngine({ title, body, steps, variant, direction = 'horizontal', gap, titleSize, bodySize, titleColor, textColor }: SequenceSlideData) {
   return (
     <motion.div
       className="flex flex-col gap-6 h-full justify-center"
@@ -123,8 +123,8 @@ export default function SequenceEngine({ title, body, steps, variant, direction 
       whileInView="visible"
       viewport={{ once: true }}
     >
-      <EngineTitle title={title} body={body} titleSize={titleSize} bodySize={bodySize} />
-      <SequenceDiagram steps={steps} variant={variant} direction={direction} gap={gap} />
+      <EngineTitle title={title} body={body} titleSize={titleSize} bodySize={bodySize} titleColor={titleColor} textColor={textColor} />
+      <SequenceDiagram steps={steps} variant={variant} direction={direction} gap={gap} textColor={textColor} />
     </motion.div>
   )
 }

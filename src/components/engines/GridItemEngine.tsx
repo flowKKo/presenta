@@ -97,12 +97,12 @@ function ToplineCard({ item, index, color }: { item: GridItemEntry; index: numbe
   )
 }
 
-function TopCircleCard({ item, index, color }: { item: GridItemEntry; index: number; color: string }) {
+function TopCircleCard({ item, index, color, textColor }: { item: GridItemEntry; index: number; color: string; textColor?: string }) {
   return (
     <motion.div variants={motionConfig.child} className="flex flex-col items-center text-center justify-center h-full">
       <div
-        className="w-14 h-14 rounded-full flex items-center justify-center text-white text-xl font-bold mb-3"
-        style={{ backgroundColor: color }}
+        className="w-14 h-14 rounded-full flex items-center justify-center text-xl font-bold mb-3"
+        style={{ backgroundColor: color, color: textColor || 'white' }}
       >
         {index + 1}
       </div>
@@ -111,7 +111,7 @@ function TopCircleCard({ item, index, color }: { item: GridItemEntry; index: num
   )
 }
 
-export function GridItemDiagram({ items, variant, columns, gap = 16 }: { items: GridItemEntry[]; variant: GridItemSlideData['variant']; columns?: number; gap?: number }) {
+export function GridItemDiagram({ items, variant, columns, gap = 16, textColor }: { items: GridItemEntry[]; variant: GridItemSlideData['variant']; columns?: number; gap?: number; textColor?: string }) {
   const cols = getColumns(items.length, columns)
   const rows = Math.ceil(items.length / cols)
   const palette = generateGradientColors(items.length)
@@ -134,7 +134,7 @@ export function GridItemDiagram({ items, variant, columns, gap = 16 }: { items: 
           case 'topline':
             return <ToplineCard key={i} item={item} index={i} color={palette[i]} />
           case 'top-circle':
-            return <TopCircleCard key={i} item={item} index={i} color={palette[i]} />
+            return <TopCircleCard key={i} item={item} index={i} color={palette[i]} textColor={textColor} />
           default: // solid + all others fallback
             return <SolidCard key={i} item={item} index={i} />
         }
@@ -143,7 +143,7 @@ export function GridItemDiagram({ items, variant, columns, gap = 16 }: { items: 
   )
 }
 
-export default function GridItemEngine({ title, body, items, variant, columns, gap, titleSize, bodySize }: GridItemSlideData) {
+export default function GridItemEngine({ title, body, items, variant, columns, gap, titleSize, bodySize, titleColor, textColor }: GridItemSlideData) {
   return (
     <motion.div
       className="flex flex-col gap-6 h-full"
@@ -152,8 +152,8 @@ export default function GridItemEngine({ title, body, items, variant, columns, g
       whileInView="visible"
       viewport={{ once: true }}
     >
-      <EngineTitle title={title} body={body} titleSize={titleSize} bodySize={bodySize} />
-      <GridItemDiagram items={items} variant={variant} columns={columns} gap={gap} />
+      <EngineTitle title={title} body={body} titleSize={titleSize} bodySize={bodySize} titleColor={titleColor} textColor={textColor} />
+      <GridItemDiagram items={items} variant={variant} columns={columns} gap={gap} textColor={textColor} />
     </motion.div>
   )
 }

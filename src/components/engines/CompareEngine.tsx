@@ -4,7 +4,7 @@ import { colors, motionConfig, generateGradientColors } from '../../theme/swiss'
 import EngineTitle from './shared/EngineTitle'
 import EditableText from '../editor/EditableText'
 
-function VersusMode({ sides }: { sides: CompareSlideData['sides'] }) {
+function VersusMode({ sides, textColor }: { sides: CompareSlideData['sides']; textColor?: string }) {
   if (!sides || sides.length < 2) return null
   const palette = generateGradientColors(sides.length)
   return (
@@ -15,8 +15,8 @@ function VersusMode({ sides }: { sides: CompareSlideData['sides'] }) {
           <div className="flex flex-col gap-3">
             {side.items.map((item, ii) => (
               <div key={ii} className="flex justify-between items-center py-1" style={{ borderBottom: `1px solid ${colors.border}` }}>
-                <EditableText value={item.label} field={`sides.${si}.items.${ii}.label`} as="span" className="text-sm" style={{ color: colors.textSecondary }} />
-                <EditableText value={item.value} field={`sides.${si}.items.${ii}.value`} as="span" className="text-sm font-semibold" style={{ color: colors.textPrimary }} />
+                <EditableText value={item.label} field={`sides.${si}.items.${ii}.label`} as="span" className="text-sm" style={{ color: textColor || colors.textSecondary }} />
+                <EditableText value={item.value} field={`sides.${si}.items.${ii}.value`} as="span" className="text-sm font-semibold" style={{ color: textColor || colors.textPrimary }} />
               </div>
             ))}
           </div>
@@ -143,11 +143,11 @@ function IcebergMode({ visible, hidden }: Pick<CompareSlideData, 'visible' | 'hi
   )
 }
 
-export function CompareDiagram(props: Omit<CompareSlideData, 'type' | 'title' | 'body'>) {
-  const { mode } = props
+export function CompareDiagram(props: Omit<CompareSlideData, 'type' | 'title' | 'body'> & { textColor?: string }) {
+  const { mode, textColor } = props
   return (
     <>
-      {mode === 'versus' && <VersusMode sides={props.sides} />}
+      {mode === 'versus' && <VersusMode sides={props.sides} textColor={textColor} />}
       {mode === 'quadrant' && <QuadrantMode quadrantItems={props.quadrantItems} xAxis={props.xAxis} yAxis={props.yAxis} />}
       {mode === 'iceberg' && <IcebergMode visible={props.visible} hidden={props.hidden} />}
     </>
@@ -155,7 +155,7 @@ export function CompareDiagram(props: Omit<CompareSlideData, 'type' | 'title' | 
 }
 
 export default function CompareEngine(props: CompareSlideData) {
-  const { title, body, mode, titleSize, bodySize } = props
+  const { title, body, mode, titleSize, bodySize, titleColor, textColor } = props
 
   return (
     <motion.div
@@ -165,8 +165,8 @@ export default function CompareEngine(props: CompareSlideData) {
       whileInView="visible"
       viewport={{ once: true }}
     >
-      <EngineTitle title={title} body={body} titleSize={titleSize} bodySize={bodySize} />
-      <CompareDiagram mode={mode} sides={props.sides} quadrantItems={props.quadrantItems} xAxis={props.xAxis} yAxis={props.yAxis} visible={props.visible} hidden={props.hidden} />
+      <EngineTitle title={title} body={body} titleSize={titleSize} bodySize={bodySize} titleColor={titleColor} textColor={textColor} />
+      <CompareDiagram mode={mode} sides={props.sides} quadrantItems={props.quadrantItems} xAxis={props.xAxis} yAxis={props.yAxis} visible={props.visible} hidden={props.hidden} textColor={textColor} />
     </motion.div>
   )
 }

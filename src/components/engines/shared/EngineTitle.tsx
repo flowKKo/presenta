@@ -6,9 +6,11 @@ interface EngineTitleProps {
   body?: string
   titleSize?: number
   bodySize?: number
+  titleColor?: string
+  textColor?: string
 }
 
-export default function EngineTitle({ title, body, titleSize, bodySize }: EngineTitleProps) {
+export default function EngineTitle({ title, body, titleSize, bodySize, titleColor, textColor }: EngineTitleProps) {
   return (
     <div>
       <EditableText
@@ -16,7 +18,7 @@ export default function EngineTitle({ title, body, titleSize, bodySize }: Engine
         field="title"
         as="h2"
         className="text-4xl font-bold"
-        style={{ color: colors.textPrimary, fontSize: titleSize }}
+        style={{ color: titleColor || colors.textPrimary, fontSize: titleSize }}
         variants={motionConfig.child}
       />
       {body && (
@@ -25,7 +27,7 @@ export default function EngineTitle({ title, body, titleSize, bodySize }: Engine
           field="body"
           as="p"
           className="text-lg mt-2"
-          style={{ color: colors.textSecondary, fontSize: bodySize }}
+          style={{ color: textColor || colors.textSecondary, fontSize: bodySize }}
           variants={motionConfig.child}
         />
       )}

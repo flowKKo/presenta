@@ -27,7 +27,7 @@ function getClipPath(variant: FunnelSlideData['variant'], index: number, total: 
   return `polygon(0 0, ${topWidth}% 0, ${bottomWidth}% 100%, 0 100%)`
 }
 
-export function FunnelDiagram({ layers, variant }: { layers: FunnelSlideData['layers']; variant: FunnelSlideData['variant'] }) {
+export function FunnelDiagram({ layers, variant, textColor }: { layers: FunnelSlideData['layers']; variant: FunnelSlideData['variant']; textColor?: string }) {
   const palette = generateGradientColors(layers.length)
 
   return (
@@ -44,9 +44,9 @@ export function FunnelDiagram({ layers, variant }: { layers: FunnelSlideData['la
           }}
         >
           <div className="px-6 py-2">
-            <EditableText value={layer.label} field={`layers.${i}.label`} as="div" className="text-sm font-bold text-white" />
-            {layer.description && <EditableText value={layer.description} field={`layers.${i}.description`} as="div" className="text-xs text-white/80" />}
-            {layer.value !== undefined && <div className="text-xs text-white/70 font-semibold">{layer.value}</div>}
+            <EditableText value={layer.label} field={`layers.${i}.label`} as="div" className="text-sm font-bold" style={{ color: textColor || 'white' }} />
+            {layer.description && <EditableText value={layer.description} field={`layers.${i}.description`} as="div" className="text-xs" style={{ color: textColor || 'white', opacity: 0.8 }} />}
+            {layer.value !== undefined && <div className="text-xs font-semibold" style={{ color: textColor || 'white', opacity: 0.7 }}>{layer.value}</div>}
           </div>
         </div>
       ))}
@@ -54,7 +54,7 @@ export function FunnelDiagram({ layers, variant }: { layers: FunnelSlideData['la
   )
 }
 
-export default function FunnelPyramidEngine({ title, body, layers, variant, titleSize, bodySize }: FunnelSlideData) {
+export default function FunnelPyramidEngine({ title, body, layers, variant, titleSize, bodySize, titleColor, textColor }: FunnelSlideData) {
   return (
     <motion.div
       className="flex flex-col gap-6 h-full justify-center"
@@ -63,8 +63,8 @@ export default function FunnelPyramidEngine({ title, body, layers, variant, titl
       whileInView="visible"
       viewport={{ once: true }}
     >
-      <EngineTitle title={title} body={body} titleSize={titleSize} bodySize={bodySize} />
-      <FunnelDiagram layers={layers} variant={variant} />
+      <EngineTitle title={title} body={body} titleSize={titleSize} bodySize={bodySize} titleColor={titleColor} textColor={textColor} />
+      <FunnelDiagram layers={layers} variant={variant} textColor={textColor} />
     </motion.div>
   )
 }

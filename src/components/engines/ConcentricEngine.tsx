@@ -7,7 +7,7 @@ import EngineTitle from './shared/EngineTitle'
 const VB_W = 800
 const VB_H = 480
 
-export function ConcentricDiagram({ rings, variant }: { rings: ConcentricSlideData['rings']; variant: ConcentricSlideData['variant'] }) {
+export function ConcentricDiagram({ rings, variant, textColor }: { rings: ConcentricSlideData['rings']; variant: ConcentricSlideData['variant']; textColor?: string }) {
   const palette = generateGradientColors(rings.length)
   const count = rings.length
 
@@ -67,7 +67,7 @@ export function ConcentricDiagram({ rings, variant }: { rings: ConcentricSlideDa
               stroke={color} strokeWidth="1.5" strokeDasharray="4 3" opacity={0.4}
             />
             <circle cx={labelX - 8} cy={labelY - 2} r={3} fill={color} opacity={0.6} />
-            <text x={labelX} y={ring.description ? labelY - 6 : labelY} fontSize="16" fontWeight="700" fill={colors.textPrimary}>
+            <text x={labelX} y={ring.description ? labelY - 6 : labelY} fontSize="16" fontWeight="700" fill={textColor || colors.textPrimary}>
               {ring.label}
             </text>
             {ring.description && (
@@ -82,7 +82,7 @@ export function ConcentricDiagram({ rings, variant }: { rings: ConcentricSlideDa
   )
 }
 
-export default function ConcentricEngine({ title, body, rings, variant, titleSize, bodySize }: ConcentricSlideData) {
+export default function ConcentricEngine({ title, body, rings, variant, titleSize, bodySize, titleColor, textColor }: ConcentricSlideData) {
   return (
     <motion.div
       className="flex flex-col gap-4 h-full"
@@ -91,9 +91,9 @@ export default function ConcentricEngine({ title, body, rings, variant, titleSiz
       whileInView="visible"
       viewport={{ once: true }}
     >
-      <EngineTitle title={title} body={body} titleSize={titleSize} bodySize={bodySize} />
+      <EngineTitle title={title} body={body} titleSize={titleSize} bodySize={bodySize} titleColor={titleColor} textColor={textColor} />
       <motion.div variants={motionConfig.child} className="flex-1 min-h-0 w-full">
-        <ConcentricDiagram rings={rings} variant={variant} />
+        <ConcentricDiagram rings={rings} variant={variant} textColor={textColor} />
       </motion.div>
     </motion.div>
   )
