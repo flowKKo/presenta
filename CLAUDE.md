@@ -1,15 +1,15 @@
-# Web PPT Playground — Claude Test
+# Web PPT Playground
 
 ## Project Overview
 
-Web-based PPT presentation generator. Each slide is 16:9, rendered vertically with scroll.
+Web-based presentation editor and viewer. Single-page navigation (one slide at a time, wheel/keyboard to advance). 16:9 slides with WYSIWYG editing, block-based layouts, and rich diagram support.
 
 ## Tech Stack
 
 - **Vite + React + TypeScript** — component-based slide system
 - **Tailwind CSS** — styling via utility classes + design tokens
 - **Framer Motion** — entrance animations
-- **ECharts + echarts-for-react** — data visualization
+- **ECharts + echarts-for-react** — data visualization (bar, pie, line, radar)
 
 ## Usage
 
@@ -21,26 +21,128 @@ Use the `/web-ppt` skill to generate or update slides:
 
 ## URL Scheme
 
-- `localhost:5173/` — deck selector (all decks)
-- `localhost:5173/#terminal-bench` — specific deck
+- `localhost:5173/` — deck selector (create, import, delete decks)
+- `localhost:5173/#deck-id` — specific deck (hash-based routing)
+
+## Architecture
+
+### Slide Types (11 types — discriminated union in `src/data/types.ts`)
+
+| Type | Description | Variants |
+|------|-------------|----------|
+| `title` | Title + subtitle + badge | — |
+| `key-point` | Key point with body text | — |
+| `chart` | ECharts visualization | bar, pie, line, radar |
+| `grid-item` | Card grid layout | 12 variants (solid, outline, sideline, topline, top-circle, joined, leaf, labeled, alternating, pillar, diamonds, signs) |
+| `sequence` | Step-by-step flow | 7 variants (timeline, chain, arrows, pills, ribbon-arrows, numbered, zigzag) |
+| `compare` | Comparison views | 3 modes (versus, quadrant, iceberg) |
+| `funnel` | Funnel/pyramid charts | 3 variants (funnel, pyramid, slope) |
+| `concentric` | Concentric ring diagrams | 3 variants (circles, diamond, target) |
+| `hub-spoke` | Hub and spoke layouts | 3 variants (orbit, solar, pinwheel) |
+| `venn` | Venn diagrams | 3 variants (classic, linear, linear-filled) |
+| `block-slide` | Free-layout canvas with positioned `ContentBlock[]` | — |
+
+### Engine Architecture (7 engines)
+
+Each engine renders a specific diagram type and exports both a full-slide component (`*Engine`) and a headless diagram function (`*Diagram`) for use in blocks:
+
+- `GridItemEngine` / `GridItemDiagram`
+- `SequenceEngine` / `SequenceDiagram`
+- `CompareEngine` / `CompareDiagram`
+- `FunnelPyramidEngine` / `FunnelDiagram`
+- `ConcentricEngine` / `ConcentricDiagram`
+- `HubSpokeEngine` / `HubSpokeDiagram`
+- `VennEngine` / `VennDiagram`
+
+### Block Model
+
+`BlockSlideData` contains `ContentBlock[]`, each block has `id/x/y/width/height` (percentage-based) + `BlockData` (9 types: title-body, grid-item, sequence, compare, funnel, concentric, hub-spoke, venn, chart).
+
+### Editor System
+
+- **EditorProvider** (`useReducer` + Context) — central state with 20+ actions, undo/redo (50-item history), clipboard, selection, localStorage persistence per deck
+- **Selection model** — three targets: `content-box`, `overlay` (text/rect/line), `block`
+- **Tools** — select, text, rect, line (toolbar at top-center)
+- **Property panel** — right sidebar (320px) with type-specific editors
+- **Inline editing** — double-click text fields via `EditableText` + `InlineEditContext`
+- **Keyboard shortcuts** — Ctrl+Z undo, Ctrl+Shift+Z redo, Delete/Backspace remove
+
+### Navigation
+
+- Single-page view with wheel (accumulated delta + cooldown) and keyboard (Arrow/PageUp/PageDown)
+- Sidebar thumbnail panel (left, resizable 200–400px) with context menu and drag-to-reorder
+- Fullscreen overlay with spotlight (block-by-block reveal)
+
+### Deck Management
+
+- Runtime deck create/delete (in-memory state in App)
+- JSON import/export (`src/data/deck-io.ts`)
+- Editable deck title/description in sidebar header
 
 ## Key Files
 
-- `slides.md` — slide content script (one `## Slide N` per page)
+### App Shell
+- `src/App.tsx` — root router, runtime deck CRUD, hash-based navigation
+- `src/components/SlideDeck.tsx` — deck container, navigation, toolbar buttons, layout
+- `src/components/Sidebar.tsx` — left thumbnail panel, context menu, drag reorder, resize
+- `src/components/DeckSelector.tsx` — landing page with create/import/delete
+- `src/components/FullscreenOverlay.tsx` — fullscreen presenter with spotlight
+
+### Slide Rendering
+- `src/components/Slide.tsx` — 16:9 wrapper with animation
+- `src/components/SlideContent.tsx` — type router to slide components
+- `src/components/slides/` — TitleSlide, KeyPointSlide, ChartSlide
+
+### Engines
+- `src/components/engines/*.tsx` — 7 diagram engines
+- `src/components/engines/shared/` — EngineTitle, ConnectorArrow
+
+### Block System
+- `src/components/blocks/BlockSlideRenderer.tsx` — positions blocks on canvas
+- `src/components/blocks/BlockWrapper.tsx` — drag/resize individual blocks
+- `src/components/blocks/BlockRenderer.tsx` — routes block data to diagram components
+
+### Editor
+- `src/components/editor/EditorProvider.tsx` — state management, actions, context
+- `src/components/editor/PropertyPanel.tsx` — right panel with type/block/overlay editors
+- `src/components/editor/EditorToolbar.tsx` — top toolbar (tools, undo/redo, color)
+- `src/components/editor/ContentBoxWrapper.tsx` — slide content selection/drag/resize
+- `src/components/editor/OverlayLayer.tsx` — overlay creation and editing
+- `src/components/editor/LayoutPicker.tsx` — slide type converter + variant selector
+- `src/components/editor/BlockLayoutPicker.tsx` — block type + variant picker
+- `src/components/editor/SlideDataEditor.tsx` — type-specific property fields
+- `src/components/editor/EditableText.tsx` — inline text editing
+- `src/components/editor/InlineEditContext.tsx` — per-slide edit context
+- `src/components/editor/TypeThumbnails.tsx` — slide type selector thumbnails
+- `src/components/editor/ArrayEditor.tsx` — array field editing (items, steps, etc.)
+
+### Data
+- `src/data/types.ts` — SlideData union, BlockData, ContentBlock, DeckMeta, DeckExportPayload
+- `src/data/editor-types.ts` — editor state types, SlideEntry, selection targets
+- `src/data/deck-io.ts` — export/import JSON files
+- `src/data/type-converter.ts` — convert between slide types, create defaults
+- `src/data/block-adapter.ts` — legacy slide → block-slide conversion
+- `src/data/decks/index.ts` — deck registry
+- `src/data/decks/<deck-id>.ts` — individual deck data
+
+### Charts & Theme
+- `src/charts/{BarChart,PieChart,LineChart,RadarChart}.tsx` — ECharts wrappers
+- `src/theme/swiss.ts` — colors, cardStyle, motionConfig, echartsTheme, generateGradientColors
+
+### Hooks
+- `src/hooks/useFullscreen.ts` — fullscreen enter/exit, keyboard nav
+- `src/hooks/useSpotlight.ts` — spotlight state context
+
+### Skills
 - `.claude/skills/web-ppt/SKILL.md` — generation rules and component architecture
 - `.claude/skills/web-ppt/styles/swiss.md` — Swiss Style theme tokens
-- `src/data/decks/index.ts` — deck registry (`Record<string, DeckMeta>`)
-- `src/data/decks/<deck-id>.ts` — individual deck data (generated from script)
-- `src/data/types.ts` — `SlideData` and `DeckMeta` type definitions
-- `src/theme/swiss.ts` — generated theme (from style file)
-- `src/components/DeckSelector.tsx` — landing page grid of deck cards
-- `src/components/Slide.tsx` — base 16:9 slide wrapper
-- `src/components/slides/` — slide type components (TitleSlide, ChartSlide, etc.)
 
 ## Conventions
 
-- All styling via Tailwind — no custom CSS except `index.css` for directives
-- Slide type components are generic and data-driven via props
-- All slide data is typed in TypeScript
+- All styling via Tailwind — no custom CSS except `index.css` for directives and scrollbar
+- Slide components are generic and data-driven via props
+- All slide data is typed in TypeScript (discriminated unions)
 - ECharts uses registered theme matching the active style
 - No images — use CSS, SVG, or placeholder boxes
+- Chinese language preferred for UI labels and slide content
+- Editor state persisted per-deck in localStorage (`editor-{deckId}`)

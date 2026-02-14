@@ -6,18 +6,7 @@ argument-hint: "--lang <language> --style <style> --script <file> [--source <fil
 
 # Web PPT Generator
 
-Generate web-based slide presentations using a React + Vite project. Slides are 16:9 aspect ratio, rendered vertically with gaps. Each slide is a React component.
-
-## Tech Stack
-
-| Layer | Choice | Purpose |
-|-------|--------|---------|
-| Build | Vite | Dev server + production build |
-| Framework | React + TypeScript | Component-based slide system |
-| Styling | Tailwind CSS | Utility-first, design token via theme config |
-| Animation | Framer Motion | Declarative entrance/transition animations |
-| Charts | ECharts + echarts-for-react | Data visualization with theme support |
-| Fonts | Google Fonts (Inter) | Typography, CJK fallback to system fonts |
+Generate web-based slide presentations using a React + Vite project. Slides are 16:9 aspect ratio. Each slide is a typed data object rendered by engine components.
 
 ## Argument Parsing
 
@@ -26,288 +15,499 @@ Parse `$ARGUMENTS` for these flags:
 | Flag | Required | Default | Description |
 |------|----------|---------|-------------|
 | `--lang` | Yes | — | Output language: `zh`, `en`, `ja`, etc. |
-| `--style` | Yes | — | Style name matching a file in `.claude/skills/web-ppt/styles/` or a built-in ID |
+| `--style` | Yes | — | Style name matching `.claude/skills/web-ppt/styles/{value}.md` |
 | `--script` | Yes | — | Path to the slide script Markdown file |
 | `--slides` | No | all | Comma-separated slide numbers to regenerate (e.g., `5,8,12`) |
-| `--source` | No | — | Path to the full reference document (e.g., `full.md`) for detailed data research |
-| `--deck` | No | slugified from script filename | Deck ID for multi-deck support (e.g., `terminal-bench`). Determines output file: `src/data/decks/<deck-id>.ts` |
+| `--source` | No | — | Path to the full reference document for data extraction |
+| `--deck` | No | from script filename | Deck ID (e.g., `terminal-bench`) → `src/data/decks/<deck-id>.ts` |
 
 Positional shorthand: `/web-ppt zh swiss slides.md` → lang=zh, style=swiss, script=slides.md
 
-If a `full.md` (or similarly named source document) exists in the project root, **always read it** even if `--source` is not explicitly provided. The script file (`--script`) is the slide outline; the source document is the data reservoir.
+If a `full.md` (or similarly named source document) exists in the project root, **always read it** even if `--source` is not explicitly provided.
 
 ---
 
-## Project Structure
+## Architecture Overview
+
+### Data-Driven Rendering
+
+All slides are pure **data objects** (`SlideData` union type) — no custom components per deck. Each slide type maps to a built-in renderer.
 
 ```
-src/
-├── App.tsx                  # Main app: hash routing, deck selector or slide deck
-├── main.tsx                 # Entry point
-├── index.css                # Tailwind directives + Google Fonts import
-├── theme/
-│   └── swiss.ts             # Style theme: colors, echarts theme, tailwind overrides
-├── components/
-│   ├── SlideDeck.tsx         # Vertical slide container with gap + optional back button
-│   ├── DeckSelector.tsx      # Landing page: grid of deck cards
-│   ├── Slide.tsx             # Base 16:9 slide wrapper (aspect-ratio, padding, bg)
-│   └── slides/               # One component per slide type
-│       ├── TitleSlide.tsx
-│       ├── DataComparisonSlide.tsx
-│       ├── KeyPointSlide.tsx
-│       ├── ComparisonSlide.tsx
-│       ├── GridSlide.tsx
-│       ├── ChartSlide.tsx
-│       ├── PlayerCardSlide.tsx
-│       ├── DiagramSlide.tsx
-│       ├── ListSlide.tsx
-│       └── PlaceholderSlide.tsx
-├── charts/
-│   └── BarChart.tsx          # ECharts bar chart wrapper with theme
-└── data/
-    ├── types.ts              # Slide and DeckMeta type definitions
-    └── decks/
-        ├── index.ts          # Deck registry (Record<string, DeckMeta>)
-        └── terminal-bench.ts # Terminal-Bench deck data (generated from script)
+Script (slides.md)
+  → Analyze available layouts & charts (Phase 1)
+  → Design slide-by-slide plan (Phase 2)
+  → Generate typed SlideData[] (Phase 3)
+  → Engines auto-render each slide
 ```
+
+### Key Files
+
+| File | Purpose |
+|------|---------|
+| `src/data/types.ts` | `SlideData` union, `BlockData`, `ContentBlock`, `DeckMeta` type definitions |
+| `src/data/decks/<deck-id>.ts` | Deck data: export `DeckMeta` with `slides: SlideData[]` |
+| `src/data/decks/index.ts` | Deck registry: `Record<string, DeckMeta>` |
+| `src/theme/swiss.ts` | Theme: colors, echarts theme, motion config, card style |
+| `src/components/engines/*.tsx` | 7 diagram engines (GridItem, Sequence, Compare, Funnel, Concentric, HubSpoke, Venn) |
+| `src/components/slides/ChartSlide.tsx` | ECharts renderer (bar, pie, line, radar) |
+| `src/components/blocks/` | Block model: BlockRenderer, BlockSlideRenderer, BlockWrapper |
+
+---
+
+## Available Slide Assets — Complete Catalog
+
+> **CRITICAL**: Before designing any slide, review this catalog. Every slide you generate MUST use one of these types with the exact data shape specified. There are NO other options.
+
+### A. Standalone Slide Types (10 types)
+
+These are top-level `SlideData` types. Each renders as a full slide.
+
+---
+
+#### 1. `title` — Title / Section Divider
+
+Centered large text. Use for deck opener, section breaks, and conclusion.
+
+```ts
+{ type: 'title', title: string, subtitle?: string, badge?: string }
+```
+
+- `badge` — small label (e.g., version, date, category tag)
+- Layout: centered vertically and horizontally
+
+---
+
+#### 2. `key-point` — Key Insight / Callout
+
+Large centered statement with optional body text. Use for core takeaways, quotes, section intros.
+
+```ts
+{ type: 'key-point', title: string, subtitle?: string, body?: string }
+```
+
+- Best for single-message slides: one impactful statement
+- Layout: centered
+
+---
+
+#### 3. `chart` — Data Visualization (ECharts)
+
+Full-width chart with title. **4 chart sub-types:**
+
+```ts
+{
+  type: 'chart',
+  chartType: 'bar' | 'pie' | 'line' | 'radar',
+  title: string,
+  body?: string,
+  highlight?: string,    // big number callout (e.g., "¥12.8M")
+  chartHeight?: number,  // px, default auto
+  // bar-specific:
+  bars?: ChartBar[],     // { category, values: { name, value, color? }[] }
+  // pie-specific:
+  slices?: ChartSlice[], // { name, value }
+  innerRadius?: number,  // 0-100 for donut effect
+  // line-specific:
+  categories?: string[],
+  lineSeries?: LineSeries[], // { name, data: number[], area?: boolean }
+  // radar-specific:
+  indicators?: RadarIndicator[], // { name, max }
+  radarSeries?: RadarSeries[],   // { name, values: number[] }
+}
+```
+
+**When to use which chart:**
+
+| Chart | Best For | Data Shape |
+|-------|----------|------------|
+| `bar` | Category comparison, rankings, time series | 3-8 categories, 1-3 series per category |
+| `pie` | Proportional breakdown, market share | 3-6 slices (use `innerRadius: 40` for donut) |
+| `line` | Trends over time, growth curves | 4-12 time points, 1-3 series |
+| `radar` | Multi-dimensional comparison, capability profiles | 4-6 dimensions, 2-3 items compared |
+
+---
+
+#### 4. `grid-item` — Card Grid / Metrics Dashboard
+
+Grid of cards showing structured items. The most versatile layout engine.
+
+```ts
+{
+  type: 'grid-item',
+  title: string,
+  body?: string,
+  items: GridItemEntry[],  // { title, description?, value?, valueColor? }
+  variant: GridItemVariant,
+  columns?: number,        // override auto (default: based on item count)
+}
+```
+
+**12 visual variants:**
+
+| Variant | Visual Style | Best For |
+|---------|-------------|----------|
+| `solid` | White cards with shadow | KPI dashboards, metric cards |
+| `outline` | Border-only cards, no fill | Feature lists, capability grids |
+| `sideline` | Left accent border | Attribute lists, key points |
+| `topline` | Top accent border | Category overviews |
+| `top-circle` | Circle icon above title | Team members, feature highlights |
+| `joined` | Connected seamless strip | Sequential categories |
+| `leaf` | Organic rounded shape | Soft/creative content |
+| `labeled` | Tag/label style | Taxonomy, classification |
+| `alternating` | Alternating background | Before/after, odd/even |
+| `pillar` | Tall column style | Pricing tiers, comparison columns |
+| `diamonds` | Diamond/rotated shapes | Creative highlights |
+| `signs` | Signpost/banner style | Directional items, milestones |
+
+**`valueColor`** options: `'positive'` (green), `'negative'` (red), `'neutral'` (blue-grey)
+
+**Column recommendations**: 2 items → 2 cols, 3 items → 3 cols, 4 items → 2 or 4 cols, 5-6 items → 3 cols
+
+---
+
+#### 5. `sequence` — Process Flow / Timeline
+
+Sequential steps with connectors. Use for workflows, timelines, process descriptions.
+
+```ts
+{
+  type: 'sequence',
+  title: string,
+  body?: string,
+  steps: SequenceStep[],   // { label, description? }
+  variant: SequenceVariant,
+  direction?: 'horizontal' | 'vertical', // default: horizontal
+}
+```
+
+**7 visual variants:**
+
+| Variant | Visual Style | Best For |
+|---------|-------------|----------|
+| `timeline` | Dot + line timeline | Chronological events, project phases |
+| `chain` | Linked chain nodes | Dependencies, linked processes |
+| `arrows` | Arrow-connected boxes | Input→output flows, pipelines |
+| `pills` | Pill-shaped badges in row | Simple step lists, status progression |
+| `ribbon-arrows` | Chevron/ribbon arrows | Funnel-like processes, stage gates |
+| `numbered` | Numbered circle steps | Ordered instructions, methodology |
+| `zigzag` | Alternating up/down path | Journey mapping, multi-phase processes |
+
+---
+
+#### 6. `compare` — Comparison / Analysis
+
+Three comparison modes for different analytical needs.
+
+```ts
+{
+  type: 'compare',
+  title: string,
+  body?: string,
+  mode: 'versus' | 'quadrant' | 'iceberg',
+  // versus mode:
+  sides?: CompareSide[],  // { name, items: { label, value }[] }
+  // quadrant mode:
+  quadrantItems?: QuadrantItem[], // { label, x: 0-100, y: 0-100 }
+  xAxis?: string,
+  yAxis?: string,
+  // iceberg mode:
+  visible?: IcebergItem[],  // { label, description? }
+  hidden?: IcebergItem[],
+}
+```
+
+| Mode | Visual | Best For |
+|------|--------|----------|
+| `versus` | Side-by-side columns | A vs B feature comparison, pros/cons |
+| `quadrant` | 2×2 scatter plot | Strategic positioning, priority matrix |
+| `iceberg` | Above/below waterline | Visible vs hidden aspects, surface vs depth |
+
+---
+
+#### 7. `funnel` — Funnel / Pyramid / Conversion Flow
+
+Layered narrowing visualization for conversion paths and hierarchies.
+
+```ts
+{
+  type: 'funnel',
+  title: string,
+  body?: string,
+  layers: FunnelLayer[],  // { label, description?, value?: number }
+  variant: 'funnel' | 'pyramid' | 'slope',
+}
+```
+
+| Variant | Visual | Best For |
+|---------|--------|----------|
+| `funnel` | Top-wide, bottom-narrow trapezoids | Sales funnel, conversion rates |
+| `pyramid` | Bottom-wide, top-narrow triangle | Hierarchy, Maslow's pyramid |
+| `slope` | Angled descending bars | Decline trends, drop-off rates |
+
+---
+
+#### 8. `concentric` — Concentric Rings / Layers
+
+Nested circles showing layered relationships (inside-out or core-to-edge).
+
+```ts
+{
+  type: 'concentric',
+  title: string,
+  body?: string,
+  rings: ConcentricRing[],  // { label, description? } — first = innermost
+  variant: 'circles' | 'diamond' | 'target',
+}
+```
+
+| Variant | Visual | Best For |
+|---------|--------|----------|
+| `circles` | Concentric round rings | Ecosystem layers, onion model |
+| `diamond` | Rotated square layers | Alternative concentric style |
+| `target` | Bullseye target rings | Goal focus, priority rings |
+
+---
+
+#### 9. `hub-spoke` — Radial / Hub-and-Spoke
+
+Central node with radiating connections. Use for showing relationships to a core concept.
+
+```ts
+{
+  type: 'hub-spoke',
+  title: string,
+  body?: string,
+  center: { label: string, description?: string },
+  spokes: { label: string, description?: string }[],  // 3-8 spokes recommended
+  variant: 'orbit' | 'solar' | 'pinwheel',
+}
+```
+
+| Variant | Visual | Best For |
+|---------|--------|----------|
+| `orbit` | Orbital ring layout | Ecosystem, platform capabilities |
+| `solar` | Sun + planets radial | Core + satellite concepts |
+| `pinwheel` | Rotating blade layout | Balanced multi-aspect relationships |
+
+---
+
+#### 10. `venn` — Venn Diagram / Set Intersection
+
+Overlapping sets showing shared and unique attributes.
+
+```ts
+{
+  type: 'venn',
+  title: string,
+  body?: string,
+  sets: { label: string, description?: string }[],  // 2-4 sets
+  intersectionLabel?: string,
+  variant: 'classic' | 'linear' | 'linear-filled',
+}
+```
+
+| Variant | Visual | Best For |
+|---------|--------|----------|
+| `classic` | Traditional overlapping circles | Concept overlap, shared traits |
+| `linear` | Horizontal overlapping bars | Simpler 2-set comparisons |
+| `linear-filled` | Filled horizontal overlap | Stronger visual emphasis |
+
+---
+
+### B. Block-Slide (Free Layout Composition)
+
+The `block-slide` type enables **multiple diagrams on a single slide** via positioned blocks on a canvas.
+
+```ts
+{
+  type: 'block-slide',
+  title: string,
+  blocks: ContentBlock[],  // positioned diagram blocks
+}
+
+// Each ContentBlock:
+{
+  id: string,         // unique ID (e.g., 'b1', 'b2')
+  x: number,          // percentage 0-100 (left edge)
+  y: number,          // percentage 0-100 (top edge)
+  width: number,      // percentage 0-100
+  height: number,     // percentage 0-100
+  data: BlockData,    // one of 9 block types
+}
+```
+
+**9 block data types** (same engines as standalone slides, but without title/body wrappers):
+
+| Block `type` | Fields (same as standalone minus `title`/`body`) |
+|-------------|------------------------------------------------|
+| `title-body` | `{ title, body? }` |
+| `grid-item` | `{ items, variant, columns? }` |
+| `sequence` | `{ steps, variant, direction? }` |
+| `compare` | `{ mode, sides?, quadrantItems?, xAxis?, yAxis?, visible?, hidden? }` |
+| `funnel` | `{ layers, variant }` |
+| `concentric` | `{ rings, variant }` |
+| `hub-spoke` | `{ center, spokes, variant }` |
+| `venn` | `{ sets, intersectionLabel?, variant }` |
+| `chart` | `{ chartType, bars?, slices?, innerRadius?, categories?, lineSeries?, indicators?, radarSeries?, highlight? }` |
+
+**Common block layout patterns:**
+
+```
+Two-column (text + diagram):
+  title-body:  { x: 2, y: 2,  width: 35, height: 96 }
+  diagram:     { x: 40, y: 2, width: 58, height: 96 }
+
+Two-row (stacked):
+  top block:   { x: 2, y: 2,  width: 96, height: 45 }
+  bottom block:{ x: 2, y: 52, width: 96, height: 46 }
+
+Dashboard (2×2):
+  top-left:    { x: 2, y: 2,  width: 47, height: 46 }
+  top-right:   { x: 51, y: 2, width: 47, height: 46 }
+  bottom-left: { x: 2, y: 52, width: 47, height: 46 }
+  bottom-right:{ x: 51, y: 52, width: 47, height: 46 }
+```
+
+**When to use block-slide:**
+- Combining a text explanation with a diagram side by side
+- Dashboard-style slides with multiple small charts/diagrams
+- Complex layouts that don't fit a single slide type
+- When you need a title + body PLUS a diagram on the same slide
+
+---
+
+## Design Workflow (MANDATORY 3-Phase Process)
+
+### Phase 1: Analyze — Inventory & Research
+
+Before writing ANY slide data:
+
+1. **Read the source document** (`--source` or auto-detect `full.md`) thoroughly. Extract all numbers, comparisons, rankings, and key insights.
+2. **Read the script file** (`--script`). Understand each slide's intent.
+3. **Review the asset catalog above.** For each slide in the script, identify which slide type and variant best communicates the message.
+
+### Phase 2: Design — Slide-by-Slide Plan
+
+For EACH slide, produce a brief design rationale:
+
+```
+Slide 3: "季度增长趋势"
+  → Data: Q1-Q4 revenue from source doc (280, 340, 410, 520)
+  → Layout: chart (line) — shows trend over time
+  → Why not bar? Trend continuity is the message, not category comparison
+
+Slide 5: "技术栈全景"
+  → Data: 6 technology domains from source doc
+  → Layout: grid-item, variant: outline, columns: 3
+  → Why outline? No numeric values, just category + description
+
+Slide 7: "用户转化路径"
+  → Data: Visit→Register→Pay with exact numbers
+  → Layout: funnel, variant: funnel
+  → Why not sequence? Funnel emphasizes volume drop-off
+```
+
+**Slide type selection guide:**
+
+| Content Intent | Recommended Type | Key Signal |
+|---------------|-----------------|------------|
+| Opening / section break | `title` | Needs visual breathing room |
+| One big takeaway | `key-point` | Single statement, no data |
+| Trend over time | `chart` (line) | Time-series, growth curves |
+| Category comparison | `chart` (bar) | Comparing values across categories |
+| Proportion breakdown | `chart` (pie) | Parts of a whole, market share |
+| Multi-dimension assessment | `chart` (radar) | Comparing items across 4-6 dimensions |
+| KPI dashboard / metrics | `grid-item` (solid) | Multiple numeric values with labels |
+| Feature/capability list | `grid-item` (outline/sideline) | Text-heavy items without values |
+| Process / workflow | `sequence` (arrows/timeline) | Ordered steps with progression |
+| A vs B comparison | `compare` (versus) | Side-by-side feature comparison |
+| Strategic positioning | `compare` (quadrant) | 2-axis classification |
+| Surface vs depth | `compare` (iceberg) | Visible vs hidden aspects |
+| Conversion / drop-off | `funnel` (funnel) | Narrowing quantities |
+| Hierarchy / priority | `funnel` (pyramid) | Layered importance |
+| Core + ecosystem | `hub-spoke` (orbit) | Central concept with satellites |
+| Layered architecture | `concentric` (circles) | Nested layers, inside-out |
+| Concept overlap | `venn` (classic) | Shared and unique traits |
+| Mixed content | `block-slide` | Text + diagram on same slide |
+
+### Phase 3: Implement — Generate Typed Data
+
+Generate `src/data/decks/<deck-id>.ts`:
+
+```ts
+import type { DeckMeta } from '../types'
+
+export const myDeck: DeckMeta = {
+  id: 'my-deck',
+  title: 'Deck Title',
+  description: 'Brief description',
+  date: '2026-02',
+  slides: [
+    // SlideData objects here
+  ],
+}
+```
+
+Update `src/data/decks/index.ts` to register the deck.
+
+---
+
+## Content Rules
+
+### Data Enrichment (MANDATORY)
+
+Every slide must contain **real data from the source document**:
+
+- `items[].value` → exact number (e.g., `"87.3"`, `"¥1,234"`, `"+42%"`)
+- `items[].description` → meaningful detail, not placeholder text
+- `bars[].values` → actual data points from source
+- `body` → 1-2 sentence insight with real data, not generic filler
+- `highlight` → actual key metric from source
+
+**NEVER generate:**
+- Empty slides with only a title
+- Placeholder values like `"XX%"`, `"N/A"`, `"待填"`
+- Invented data — every number must come from the source
+- Vague body text like `"以下是数据"` or `"如图所示"`
+
+### Content Density
+
+| Slide Type | Minimum Content |
+|------------|----------------|
+| `chart` | 3+ data points, real values |
+| `grid-item` | 3-6 items, each with title + description or value |
+| `sequence` | 3-7 steps, each with label + description |
+| `compare` (versus) | 2-3 sides, each with 3+ items |
+| `funnel` | 3-5 layers with labels + values |
+| `hub-spoke` | 1 center + 3-8 spokes |
+| `concentric` | 3-5 rings |
+| `venn` | 2-4 sets |
+
+### Visual Rhythm
+
+- **Alternate slide types** — avoid 3+ consecutive slides of the same type
+- **Section dividers** — use `title` or `key-point` between content groups
+- **Start with `title`**, end with `key-point` or `title` (conclusion)
+- **Mix variants** — don't use `solid` grid-item for every grid slide; try `outline`, `sideline`, `topline`
+
+### Semantic Color Usage
+
+Colors carry meaning. Use `valueColor` on `GridItemEntry` deliberately:
+
+| Color | Meaning | When to Use |
+|-------|---------|-------------|
+| `positive` | Growth, win, improvement | Metrics going up, good outcomes |
+| `negative` | Decline, loss, warning | Metrics going down, risks |
+| `neutral` | Emphasis, category label | Neutral highlights, section headers |
+
+---
 
 ## Style System
 
-### Style Resolution
+Read the style definition file at `.claude/skills/web-ppt/styles/{style}.md`. The theme is already implemented at `src/theme/{style}.ts`. Do NOT regenerate the theme file — it exists.
 
-When resolving `--style`:
-1. **Custom style file** — look for `.claude/skills/web-ppt/styles/{value}.md` relative to project root. Read the file and generate/update `src/theme/{value}.ts` accordingly.
-2. **Free-text description** — infer colors, typography, and generate a theme file.
-
-The style `.md` file defines design tokens. The generated `src/theme/{style}.ts` exports:
-- `colors` — object with page, slide, card, text, accent color values
-- `typography` — font families, size scale
-- `echartsTheme` — ECharts theme object for `echarts.registerTheme()`
-- `tailwindExtend` — values to merge into `tailwind.config.ts` → `theme.extend`
-
-### Available Styles
-
-| File | Name | Description |
-|------|------|-------------|
-| `swiss.md` | Swiss Style | 极简米白底、深炭灰文字、扁平化图表、慷慨留白、无衬线字体 |
-
----
-
-## Slide Component Architecture
-
-### Base `<Slide>` Wrapper
-
-Every slide is wrapped in the base `<Slide>` component:
-
-```tsx
-// components/Slide.tsx
-<motion.div
-  id={`slide-${number}`}
-  className="w-[min(90vw,1600px)] aspect-video overflow-hidden relative
-             rounded-xl shadow-lg px-20 py-16"
-  style={{ background: theme.colors.slide }}
-  {...motionConfig.slide}
->
-  {children}
-</motion.div>
-```
-
-Key rules:
-- `aspect-video` enforces 16:9
-- Fixed padding `px-20 py-16` defines the safe area (BP-1)
-- Framer Motion entrance animation via `motionConfig.slide`
-
-### Inner Layout Grid (BP-13)
-
-Non-centered slides use CSS Grid for fixed title positioning:
-
-```tsx
-// Inside each slide type component (except TitleSlide/KeyPointSlide):
-<div className="grid grid-rows-[auto_1fr_auto] h-full gap-6">
-  <div className="self-start">{/* Title Zone */}</div>
-  <div className="self-center">{/* Content Zone */}</div>
-  <div className="self-end">{/* Caption Zone (optional) */}</div>
-</div>
-```
-
-TitleSlide and KeyPointSlide use `flex items-center justify-center` (centered).
-
-### `<SlideDeck>` Container
-
-```tsx
-// components/SlideDeck.tsx
-<div className="flex flex-col items-center gap-10 py-10 min-h-screen"
-     style={{ background: theme.colors.page }}>
-  {slides.map((slide, i) => <SlideRenderer key={i} slide={slide} number={i + 1} />)}
-</div>
-```
-
-### Slide Type Components
-
-Each slide type is a separate component receiving typed props:
-
-**TitleSlide** — centered title (text-5xl to text-7xl font-bold) + subtitle + optional date badge
-
-**DataComparisonSlide** — 2-3 metric cards side by side, each with a big number (text-7xl to text-9xl font-extrabold) + label. Numbers use accent colors for positive/negative.
-
-**KeyPointSlide** — large centered text (text-4xl to text-5xl) with minimal decoration
-
-**ComparisonSlide** — 2-3 columns, each a card with title + bullet points. Cards use `bg-white rounded-xl shadow-sm border` pattern.
-
-**GridSlide** — 2x3 or 3x2 grid of cards, each with number badge + title + short description
-
-**ChartSlide** — ECharts bar/comparison chart taking full slide width. Use `echarts-for-react` with registered theme.
-
-**PlayerCardSlide** — left side: rank badge + name + big score number. Right side: feature list or comparison chart.
-
-**DiagramSlide** — flexbox flow diagram with arrow connectors (SVG or CSS pseudo-elements)
-
-**ListSlide** — ordered/unordered list with stagger animation per item
-
-**PlaceholderSlide** — dashed border box for screenshots:
-```tsx
-<div className="border-2 border-dashed border-black/10 rounded-xl
-                flex items-center justify-center text-black/30 text-lg min-h-[200px]">
-  {label}
-</div>
-```
-
----
-
-## Slide Design Rules
-
-> **Detailed rules and anti-rules: see "PPT Design Best Practices" section below.**
-> This is the quick-reference summary.
-
-### Typography (Tailwind Classes)
-
-| Element | Classes | Min Size |
-|---------|---------|----------|
-| Title slide heading (H1) | `text-6xl font-bold` | 60px |
-| Slide title (H2) | `text-5xl font-bold` | 48px |
-| Key numbers | `text-7xl font-extrabold` | 80px |
-| Card title (H3) | `text-xl font-semibold` | 20px |
-| Body | `text-lg` or `text-xl` | 18px |
-| Caption | `text-base` | 18px (minimum) |
-
-**Never go below `text-base` (18px).** See BP-3.
-
-### Spacing Tokens
-
-| Token | Tailwind | Usage |
-|-------|----------|-------|
-| SECTION_GAP | `gap-8` (32px) | Between title and content blocks |
-| CARD_GAP | `gap-6` (24px) | Between cards/columns |
-| ITEM_GAP | `gap-4` (16px) | Between items inside a card |
-
-See BP-2.
-
-### Content Presentation
-
-- Cards are NOT the default — choose layout by data type. See BP-12.
-- Alternative layouts: table rows, accent-border items, borderless grid, timeline, inline highlights.
-- Max 50% of content slides should use white cards.
-
-### Layout Grid
-
-- Non-centered slides: `grid grid-rows-[auto_1fr_auto] h-full gap-6`. See BP-13.
-- Title zone: `self-start` (pinned top). Content zone: `self-center`. Caption zone: `self-end`.
-- TitleSlide / KeyPointSlide: `flex items-center justify-center`.
-
-### Data Visualization
-
-- Prefer CSS/Tailwind horizontal bars over ECharts for ≤8 items. See BP-14.
-- Horizontal bars: label left (`w-32`), bar middle (`h-8 rounded-r-lg`), value right.
-- Big numbers get micro progress bars below them (`h-2 rounded-full`).
-- Animate bar growth with Framer Motion `animate={{ width }}`.
-- Keep ECharts only for complex multi-series charts (8+ data points).
-
-### Body Text
-
-- Keywords: `font-semibold text-primary` within `textSecondary` body. See BP-15.
-- Data pills: `bg-accent/10 text-accent px-2 py-0.5 rounded`.
-- Max width: `max-w-[75%]`. Line height: `leading-loose`.
-
-### Fragment Animations
-
-- Click/Space/→ reveals next fragment within a slide. See BP-16.
-- Types: `appear`, `countUp` (numbers), `growBar` (bars), `highlight`, `revealGroup`.
-- Fragment 0 always includes title + body.
-- Falls back to scroll-triggered stagger if `fragments` is not set.
-
-### Card Style (when cards ARE used)
-
-All cards: `rounded-[14px] px-8 py-6` + `cardStyle` object from theme. See BP-4.
-
-### Framer Motion Patterns
-
-All defined in `motionConfig` from theme file:
-- Slide entrance: `motionConfig.slide` — applied by `<Slide>` wrapper
-- Stagger parent: `motionConfig.stagger` — wraps inner content
-- Stagger child: `motionConfig.child` — each direct child element
-- Fragment animations: managed by `fragmentIndex` state in `<SlideDeck>`
-
-See BP-8, BP-16.
-
----
-
-## Content Research & Data Enrichment
-
-### The Core Problem
-
-A script file (`slides.md`) only provides a slide outline — titles, rough structure, and slide types. **This is NOT enough to produce a good presentation.** Empty slides with titles and no data are useless.
-
-### The Source Document
-
-The source document (e.g., `full.md`) is the **primary data reservoir**. It contains:
-- Exact numbers, percentages, scores, benchmarks
-- Detailed comparisons and rankings
-- Quotes, findings, and analysis
-- Context, methodology, and caveats
-
-### Research Workflow (MANDATORY)
-
-Before generating ANY slide data, you MUST:
-
-1. **Read the source document thoroughly.** Not skim — read every section. Understand what data exists.
-2. **For each slide in the script**, search the source document for:
-   - **Exact numbers** — don't round or guess. Use the real values from the document.
-   - **Comparison data** — if the slide is a comparison, find ALL items being compared and their actual metrics.
-   - **Rankings / Top-N** — if the slide shows rankings, extract the full ranking with scores.
-   - **Trend data** — if the slide shows change over time, find the before/after values.
-   - **Supporting details** — bullet points, features, explanations that add substance.
-3. **Fill every data field** in the slide data with real content from the source:
-   - `items[].value` → exact number from source (e.g., `"87.3"`, `"1,234"`, `"+42%"`)
-   - `items[].label` → meaningful label, not generic (e.g., `"Claude 3.5 Sonnet 总分"` not `"得分"`)
-   - `bars[].values` → actual chart data points from source
-   - `features[].value` → specific detail, not placeholder
-   - `body` → 1-2 sentence summary with key insight from source, not generic filler
-   - `conclusion` → data-driven takeaway (e.g., `"Claude 以 87.3 分领先第二名 15.2 分"`)
-
-### Content Density Standards
-
-Each slide type has minimum content requirements:
-
-| Slide Type | Minimum Content | What to Extract from Source |
-|------------|----------------|---------------------------|
-| DataComparison | 2-4 metrics with exact values + labels | Benchmark scores, percentages, rankings |
-| Chart | 3-8 data bars with real values | Performance numbers, comparison metrics |
-| Comparison | 2-3 columns, each with 3+ detail rows | Feature-by-feature comparison data |
-| Grid | 4-6 cards, each with title + description | Key findings, capabilities, categories |
-| PlayerCard | Score + 3+ feature rows with specifics | Individual item deep-dive data |
-| List | 3-5 items, each a full sentence | Key takeaways, methodology steps, findings |
-| Placeholder | Side panel with metric + 2+ info cards | Supporting statistics alongside the placeholder |
-| Diagram | 3-5 steps with labels + descriptions | Process flow, methodology stages |
-| KeyPoint | Title + subtitle + body paragraph | Core insight with supporting sentence |
-
-### Anti-Patterns (NEVER DO)
-
-- **Never generate a slide with only a title and no data.** Every slide must have substance.
-- **Never use placeholder values** like `"XX%"`, `"N/A"`, or `"数据待填"`. If the source doesn't have the data, redesign the slide.
-- **Never invent data.** Every number must come from the source document. If you can't find it, note this to the user.
-- **Never use vague body text** like `"以下是相关数据"` or `"这里展示了对比"`. Body text must contain an actual insight.
-- **Never leave chart bars with fewer than 3 data points.** A chart with 1-2 bars is not a chart — use DataComparison instead.
-- **Never create a ComparisonSlide where each column has only 1 item.** Minimum 3 items per column to justify the comparison layout.
+The style file defines: color tokens, typography scale, card style, slide style, ECharts theme, layout principles, and Framer Motion animation config.
 
 ---
 
@@ -315,562 +515,126 @@ Each slide type has minimum content requirements:
 
 ### Full Generation (no `--slides` flag)
 
-1. **Read the source document** (`--source` path, or auto-detect `full.md` in project root). Study it thoroughly.
-2. **Read the script file** at `--script` path. This is the slide outline.
-3. **Read the style file** at `.claude/skills/web-ppt/styles/{style}.md`.
-4. **Research phase** — for each slide in the script, identify what specific data from the source document will populate it. Map source sections → slide data fields.
-5. **Check if project is initialized** — if `package.json` doesn't exist, scaffold the Vite + React + Tailwind project first (see Project Setup below).
-6. **Generate/update `src/theme/{style}.ts`** from the style definition.
-7. **Determine deck ID** — use `--deck` value if provided, otherwise slugify the script filename (e.g., `slides.md` → `slides`, `ai-scaffold.md` → `ai-scaffold`).
-8. **Generate/update `src/data/decks/<deck-id>.ts`** — export a `DeckMeta` object with `id`, `title`, `description`, `date`, and `slides` array. Populate with REAL data extracted from the source document. Every value, label, bar, and description must come from the source.
-9. **Update `src/data/decks/index.ts`** — add/update the import for the new deck and its entry in the `decks` record.
-10. **Generate/update slide components** — create any missing slide type components in `src/components/slides/`.
-11. **Run dev server** if not already running: `npm run dev`.
-12. **Report** the number of slides generated, the deck ID, and the direct URL (e.g., `localhost:5173/#<deck-id>`).
+1. **Read source document** — study it thoroughly, note all data points
+2. **Read script file** — understand each slide's intent
+3. **Phase 1: Analyze** — list available layouts/charts, match to content
+4. **Phase 2: Design** — write slide-by-slide plan with type + variant + rationale
+5. **Phase 3: Implement** — generate `src/data/decks/<deck-id>.ts` with typed `SlideData[]`
+6. **Register** — update `src/data/decks/index.ts`
+7. **Verify** — `npx tsc --noEmit` passes, dev server running
+8. **Report** — slide count, deck ID, URL `localhost:5173/#<deck-id>`
 
-### Partial Regeneration (`--slides` flag provided)
+### Partial Regeneration (`--slides` flag)
 
-1. **Read the script file** for content reference.
-2. **Determine deck ID** — use `--deck` value or slugify script filename.
-3. **Update only the specified entries in `src/data/decks/<deck-id>.ts`**.
-4. **Update corresponding slide components** if the slide type changed.
-5. **Report** which slides were updated. Vite HMR will auto-refresh.
-
-### Project Setup (First Run Only)
-
-If the project is not yet initialized, run:
-
-```bash
-npm create vite@latest . -- --template react-ts
-npm install
-npm install -D tailwindcss @tailwindcss/vite
-npm install framer-motion echarts echarts-for-react
-```
-
-Then configure:
-- `vite.config.ts` — add `@tailwindcss/vite` plugin
-- `src/index.css` — add `@import "tailwindcss"` and Google Fonts
-- `tailwind.config.ts` — extend theme with style colors/fonts
+1. Read script for context
+2. Update only specified slide entries in the deck data file
+3. Verify TypeScript compiles
+4. Report which slides were updated (HMR auto-refreshes)
 
 ---
 
-## PPT Design Best Practices (Rules & Anti-Rules)
+## TypeScript Reference — All Data Types
 
-Professional presentations follow strict visual discipline. Each rule below is a PPT design principle mapped to its concrete frontend implementation.
-
----
-
-### BP-1: Safe Area & Content Utilization
-
-**Principle:** Every slide has a fixed inner safe area. Content MUST NOT touch or exceed it. Effective utilization of the safe area should be 65-80% — enough to feel intentional, not cramped.
-
-**DO (Rules):**
-- Use fixed padding on `<Slide>` wrapper: `px-20 py-16` (80px horizontal, 64px vertical). This is the safe area.
-- Content should fill 65-80% of the safe area. Use `max-w-[90%]` or constrain flex children.
-- Title zone: reserve top ~15% height. Content zone: middle ~70%. Caption zone: bottom ~15%.
-- Use `h-full` on the inner layout container so content distributes within the full safe area.
-
-**DON'T (Anti-Rules):**
-- Never use different padding values per slide type. The safe area is global, defined once in `<Slide>`.
-- Never let text or cards touch the slide edge (0px from border). Minimum gap to slide edge = safe area padding.
-- Never fill more than 85% of the slide — whitespace IS the design.
-- Never use `overflow-visible` or allow content to bleed outside `<Slide>`.
-
-**Frontend Token:**
 ```ts
-// Defined once in <Slide> — NEVER override in slide type components
-className="px-20 py-16" // safe area = 80px x 64px
-```
+// ─── Shared ───
+type SemanticColor = 'positive' | 'negative' | 'neutral'
 
----
-
-### BP-2: Consistent Spacing Tokens
-
-**Principle:** All spacing in PPT follows a fixed scale. Varying gaps between similar elements destroys visual rhythm.
-
-**DO (Rules):**
-- Define 3 spacing tiers, used consistently across ALL slide types:
-  - `SECTION_GAP = gap-8` (32px) — between title block and content block
-  - `CARD_GAP = gap-6` (24px) — between sibling cards or columns
-  - `ITEM_GAP = gap-4` (16px) — between items inside a card
-- Top-level slide layout container always uses `gap-8` (SECTION_GAP).
-- Card grids and flex rows always use `gap-6` (CARD_GAP).
-- Stacked items within a card always use `gap-4` (ITEM_GAP) or `gap-3` (12px) for compact lists.
-
-**DON'T (Anti-Rules):**
-- Never mix `gap-6`, `gap-8`, `gap-10`, `gap-12` at the same structural level across different slide types.
-- Never use arbitrary `mt-2`, `mt-3`, `mb-4` for title-to-body spacing — use the parent's `gap` instead.
-- Never hardcode pixel values in `style={{}}` for spacing — use Tailwind gap utilities.
-
-**Frontend Token:**
-```tsx
-// Top-level layout in every slide type component:
-<motion.div className="flex flex-col gap-8 h-full justify-center" ...>
-  {/* title block */}
-  {/* content block with gap-6 between cards */}
-  {/* optional caption */}
-</motion.div>
-```
-
----
-
-### BP-3: Typography Scale Consistency
-
-**Principle:** PPT uses a strict type scale. Every text element maps to exactly one level — no ad-hoc sizes.
-
-**DO (Rules):**
-- Use exactly these 5 levels across all slides:
-
-| Level | Role | Tailwind | Usage |
-|-------|------|----------|-------|
-| H1 | Title slide heading | `text-6xl font-bold` | Only in TitleSlide |
-| H2 | Slide title (all others) | `text-5xl font-bold` | One per slide, always first |
-| H3 | Card title / subtitle | `text-xl font-semibold` | Card headers, section labels |
-| Body | Description text | `text-lg` or `text-xl` | Paragraphs, explanations |
-| Caption | Source / footnote | `text-base` | Bottom notes, labels |
-
-- Big numbers (metrics): `text-7xl font-extrabold` — always the same size across all data slides.
-- Title `leading-tight`, body `leading-relaxed`.
-- Color binding: H2 → `textPrimary`, Body → `textSecondary`, Caption → `textCaption`.
-
-**DON'T (Anti-Rules):**
-- Never use `text-4xl` for some titles and `text-5xl` for others at the same hierarchy level.
-- Never use `text-2xl` for body in one slide and `text-lg` in another — pick ONE.
-- Never use font-weight outside the scale (e.g., `font-medium` for titles that should be `font-bold`).
-- Never omit `leading-tight` on titles (default line-height creates uneven title blocks).
-- Never use `text-sm` or `text-xs` anywhere — minimum is `text-base` (18px).
-
----
-
-### BP-4: Card Component Unification
-
-**Principle:** Cards are the most repeated visual element. Even slight differences (padding, radius, shadow) break the gestalt.
-
-**DO (Rules):**
-- Every card uses the EXACT same base style:
-  ```
-  rounded-[14px] px-8 py-6
-  background: colors.card
-  border: 1px solid colors.border
-  boxShadow: '0 10px 20px rgba(0,0,0,0.04)'
-  ```
-- Extract this to a shared CSS class or a `cardStyle` object in the theme file.
-- Small cards (inside sidebars, secondary info) use the same radius/border but `px-5 py-4`.
-- Number badges: `w-12 h-12 rounded-xl text-2xl font-extrabold` + accent bg `rgba(84,110,122,0.08)`.
-
-**DON'T (Anti-Rules):**
-- Never use `rounded-xl` (12px) for some cards and `rounded-[14px]` for others.
-- Never use `p-7` for some cards and `p-8` for others — fractional differences are visible.
-- Never omit `boxShadow` on some cards while applying it to others at the same level.
-- Never use different border colors (`border-black/6` vs `border-black/10`) on cards at the same level.
-
-**Frontend Token:**
-```ts
-// In theme file, export shared card style:
-export const cardStyle = {
-  background: colors.card,
-  border: `1px solid ${colors.border}`,
-  boxShadow: '0 10px 20px rgba(0,0,0,0.04)',
+// ─── Slide Types ───
+interface TitleSlideData {
+  type: 'title'; title: string; subtitle?: string; badge?: string
 }
-// Usage: style={cardStyle} className="rounded-[14px] px-8 py-6"
-```
 
----
-
-### BP-5: Color Semantics & Accent Discipline
-
-**Principle:** Colors carry meaning. Positive data = green, negative = red, neutral emphasis = blue-grey. Never use accent colors decoratively.
-
-**DO (Rules):**
-- Strictly bind colors to meaning:
-  - `accentPositive` (#4CAF50) → growth, wins, improvements, high scores
-  - `accentNegative` (#E57373) → declines, losses, warnings, low scores
-  - `accentNeutral` (#546E7A) → neutral emphasis, category headers, section labels, badges
-- Text hierarchy bound to specific colors:
-  - `textPrimary` → titles, card values, key content
-  - `textSecondary` → body text, descriptions, subtitles
-  - `textCaption` → footnotes, labels, sources, placeholder text
-- Badge backgrounds always use the accent color at 8-10% opacity: `rgba(color, 0.08-0.10)`.
-
-**DON'T (Anti-Rules):**
-- Never use `accentPositive` for decoration (e.g., a border) when it doesn't represent positive data.
-- Never use raw hex values inline — always reference `colors.xxx` from the theme.
-- Never mix `style={{ color: '#333' }}` with `style={{ color: colors.textPrimary }}` — all colors from theme.
-- Never use more than 3 accent colors in one slide.
-
----
-
-### BP-6: Layout Patterns & Visual Hierarchy
-
-**Principle:** Each slide type has a fixed layout skeleton. The skeleton determines where title, content, and caption go — never freestyle.
-
-**DO (Rules):**
-- Every non-title slide follows this vertical skeleton:
-  ```
-  ┌─────────────────────────────────┐
-  │ [H2 Title]                      │ ← top, left-aligned
-  │ [Body text, optional]           │
-  │                                 │
-  │ ┌─────┐ ┌─────┐ ┌─────┐       │ ← content zone (cards/chart/list)
-  │ │     │ │     │ │     │       │
-  │ └─────┘ └─────┘ └─────┘       │
-  │                                 │
-  │ [Caption / source, optional]    │ ← bottom
-  └─────────────────────────────────┘
-  ```
-- Title always first. Content zone uses `flex-1` to fill available space.
-- Horizontal layouts (multi-column): use `flex` with `gap-6`. Equal column widths by default.
-- Vertical layouts (lists, stacks): use `flex flex-col` with `gap-4`.
-- Two-panel layouts (e.g., PlayerCard): left panel `w-[320px] shrink-0`, right panel `flex-1`.
-
-**DON'T (Anti-Rules):**
-- Never put the title in the middle of a data slide — title is always first/top.
-- Never use absolute positioning for layout. Use flexbox/grid exclusively.
-- Never let content zone be empty — if there's no data, show a placeholder box.
-- Never create asymmetric card sizes (e.g., one card wider than its siblings) without intentional reason.
-
----
-
-### BP-7: Data Display Standards
-
-**Principle:** Numbers are the stars of data slides. They must be immediately readable and consistently formatted.
-
-**DO (Rules):**
-- Big metric numbers: `text-7xl font-extrabold` — all metrics at the same level use the same size.
-- Always pair a number with a label directly below or beside it.
-- Bar charts: use ECharts with registered theme, `label.show: true` to display values on bars.
-- Comparison metrics: arrange horizontally with equal gaps. Use `items-end` to baseline-align numbers of different digit counts.
-- Percentages always include the `%` symbol. Scores can be bare numbers.
-- Format large numbers: `1,234` or `1.2K` — never raw `1234`.
-
-**DON'T (Anti-Rules):**
-- Never use `text-6xl` for one metric and `text-8xl` for another at the same hierarchy.
-- Never show a number without a label — context is mandatory.
-- Never use pie charts in a presentation (hard to compare; use bars instead).
-- Never show more than 6-8 bars in one chart — split into multiple slides.
-- Never use 3D effects on charts.
-
----
-
-### BP-8: Animation Consistency
-
-**Principle:** Animation should be subtle, uniform, and purposeful. It guides the eye, not entertains.
-
-**DO (Rules):**
-- Slide entrance: `opacity: 0→1, y: 20→0`, duration `0.6s`, ease `[0.16, 1, 0.3, 1]`. Applied by `<Slide>`.
-- Inner content stagger: `staggerChildren: 0.1`, each child `opacity: 0→1, y: 16→0`, duration `0.5s`.
-- EVERY slide type component wraps its content in `<motion.div variants={motionConfig.stagger}>`.
-- EVERY direct child uses `<motion.xxx variants={motionConfig.child}>`.
-- Apply `viewport={{ once: true }}` so animations fire once, not on every scroll pass.
-
-**DON'T (Anti-Rules):**
-- Never use different stagger timings per slide type.
-- Never use scale, rotate, or color transitions on slide content.
-- Never use `auto-playing` loops, pulsing, or bouncing animations.
-- Never animate individual letters or words (too distracting).
-- Never use `whileHover` effects in a presentation — it's not an interactive app.
-- Never skip the stagger wrapper — all content must animate as a choreographed sequence.
-
----
-
-### BP-9: Content Density & One-Message Rule
-
-**Principle:** Each slide delivers exactly ONE takeaway. The audience should grasp the point in 3 seconds.
-
-**DO (Rules):**
-- Max 3 information blocks per slide (e.g., title + chart + caption, or title + 3 cards).
-- Use the script's `## Slide N` title as the literal H2 — it should state the takeaway, not just the topic.
-- Body text under the title: max 2 sentences.
-- Card count per slide: 2-6 cards max. If more, split into multiple slides.
-- List items: max 5 per slide.
-
-**DON'T (Anti-Rules):**
-- Never put 2 charts on one slide.
-- Never show a data table with more than 4 rows × 4 columns.
-- Never use "wall of text" — any text block > 3 lines should be broken into bullet points or cards.
-- Never show a title without supporting content (title-only slides should use KeyPointSlide type).
-
----
-
-### BP-10: Visual Rhythm & Section Breaks
-
-**Principle:** A presentation has narrative structure. Slide types should alternate to create visual variety, and section transitions should be visually distinct.
-
-**DO (Rules):**
-- Use KeyPointSlide or TitleSlide as section dividers between content groups.
-- Alternate between slide types — avoid 3+ consecutive slides of the same type.
-- Use the script to plan a rhythm: Title → Data → Data → Key Point → Data → Chart → Key Point → ...
-- Section dividers (KeyPointSlide) use centered text, larger font, more whitespace.
-
-**DON'T (Anti-Rules):**
-- Never have 5 DataComparisonSlides in a row — break them up with a KeyPoint or Chart.
-- Never start the presentation with a data slide — always start with TitleSlide.
-- Never end the presentation without a conclusion slide (KeyPoint or Title type).
-
----
-
-### BP-11: Slide Number & Navigation Hints (unchanged)
-
-
-**Principle:** Audience needs orientation in longer decks.
-
-**DO (Rules):**
-- Each `<Slide>` receives a `number` prop and renders `id="slide-{number}"`.
-- Optionally show a subtle slide number in the bottom-right corner: `text-base text-caption`, `absolute bottom-4 right-6`.
-- Keep it subtle — never larger than caption text, never bold.
-
-**DON'T (Anti-Rules):**
-- Never show slide numbers larger than `text-base`.
-- Never put slide numbers in the content flow — they go in an `absolute` positioned corner.
-- Never show "Slide X of Y" — just the number.
-
----
-
-### BP-12: Content Presentation Diversity
-
-**Principle:** Over-reliance on white cards makes slides monotonous. Different data types demand different visual treatments. Cards are only ONE tool — not the default.
-
-**Layout Selection Matrix — choose by data type:**
-
-| Data Scenario | DON'T (anti-pattern) | DO (preferred) |
-|---------------|---------------------|----------------|
-| Side-by-side comparison (Comparison) | 3 white cards, each with stacked label-value pairs | **Table layout** — rows are dimensions, columns are subjects, cells hold values only. Clean `border-b` separators, no card backgrounds |
-| Feature/attribute list (PlayerCard) | White cards with label + value | **Left accent border** — no card background, use `border-l-3 border-accent pl-6` + text. Lighter and more editorial |
-| Dimension overview (Grid 4-6 items) | White cards with number badges | **Borderless grid** — remove card bg/shadow, use accent-colored icon or number + title + description. Separate items with whitespace, not card borders |
-| Ordered steps (List) | White cards with number badges | **Timeline** — vertical line on left (`border-l-2`), circle markers (`w-3 h-3 rounded-full bg-accent`), content to the right |
-| Short key-value pairs (≤3 items) | Cards for 2-3 items | **Inline highlights** — no container at all. Place data inline with `font-semibold text-primary` for values and `text-caption` for labels |
-
-**DO (Rules):**
-- Before using `cardStyle`, ask: "Does this data benefit from being in a box?" If not, use a lighter treatment.
-- Mix at least 2-3 different visual treatments across a full presentation.
-- Table layouts: use `<table>` or CSS grid with `border-b border-black/[0.06]` row separators, no outer border.
-- Accent border style: `border-l-[3px]` + accent color, transparent background, `pl-6`.
-- Timeline style: left line `border-l-2 border-black/[0.08]`, circle nodes `w-3 h-3 rounded-full bg-accentNeutral`.
-
-**DON'T (Anti-Rules):**
-- Never use white cards for MORE than 50% of all content slides. Consciously alternate.
-- Never show 3+ consecutive slides that all use the same card-grid layout.
-- Never use a card for a single line of text — cards need at least a title + 1 detail line to justify the visual weight.
-
----
-
-### BP-13: Fixed Title Zone & Layout Grid
-
-**Principle:** The title must appear at the EXACT same position on every slide. Varying title positions causes visual jitter when scrolling through slides.
-
-**Implementation — CSS Grid with fixed zones:**
-
-```tsx
-// Inside <Slide>, the inner layout uses CSS Grid:
-<div className="grid grid-rows-[auto_1fr_auto] h-full gap-6">
-  {/* Title Zone — always self-start, pinned to top */}
-  <div className="self-start">
-    <h2>Title</h2>
-    <p>Body text</p>
-  </div>
-
-  {/* Content Zone — fills remaining space, vertically centered */}
-  <div className="self-center">
-    {/* cards / charts / lists */}
-  </div>
-
-  {/* Caption Zone — always self-end, pinned to bottom */}
-  <div className="self-end">
-    <p>Caption</p>
-  </div>
-</div>
-```
-
-**DO (Rules):**
-- ALL non-centered slides (everything except TitleSlide and KeyPointSlide) use `grid grid-rows-[auto_1fr_auto]`.
-- Title zone: `self-start` — title always at the top of the safe area.
-- Content zone: `self-center` for small content, `self-stretch` for full-height content (charts).
-- Caption zone: `self-end` — always at the bottom. If no caption, render an empty div to maintain grid structure.
-- TitleSlide and KeyPointSlide keep `flex items-center justify-center` (centered layout).
-
-**DON'T (Anti-Rules):**
-- Never use `justify-center` on non-centered slides — it causes the title to float to different Y positions depending on content height.
-- Never let the title zone grow beyond 20% of slide height — constrain with `max-h-[20%]`.
-- Never put spacing between title and body with margins — use the title zone's internal `gap-2`.
-
----
-
-### BP-14: Data Visualization Enhancement
-
-**Principle:** Generic ECharts bar charts are visually weak and don't leverage the presentation context. Data visualization should be tailored to the comparison type and use CSS/SVG for tighter design control.
-
-**Visualization Selection by Data Type:**
-
-| Data Type | Recommended Visualization | Implementation |
-|-----------|--------------------------|----------------|
-| 2-4 big metrics (DataComparison) | **Big number + micro progress bar** | Number in `text-7xl`, below it a thin (h-2) horizontal bar colored by sentiment, width proportional to value |
-| Multi-item score ranking (Chart) | **Horizontal bar chart** | Labels on left, bars extending right, value at bar end. Use Tailwind width percentages, not ECharts |
-| Head-to-head (PlayerCard comparison) | **Ranked list with bars** | Each row: rank badge + name + horizontal progress bar + score. Top entry uses accent color |
-| Before/after or baseline+gain | **Stacked dual-color bar** | Grey portion = baseline, green/red portion = gain/loss. Shows both absolute and delta |
-| Disproportionate values (e.g., 72K vs 235K) | **Area/size comparison** | Circles or squares with area proportional to value. More visceral than bars for large ratios |
-
-**CSS Bar Chart Component** (replaces ECharts for most cases):
-```tsx
-// Horizontal bar — pure Tailwind + Framer Motion
-<motion.div className="flex items-center gap-4">
-  <span className="w-32 text-right text-base shrink-0">{label}</span>
-  <motion.div
-    className="h-8 rounded-r-lg"
-    style={{ background: color, width: 0 }}
-    animate={{ width: `${percentage}%` }}
-    transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-  />
-  <span className="text-lg font-semibold">{value}</span>
-</motion.div>
-```
-
-**DO (Rules):**
-- Prefer CSS/Tailwind horizontal bars over ECharts for ≤8 data points — better design control, animatable with Framer Motion.
-- Keep ECharts only for complex multi-series charts with 8+ data points or when interactive tooltips are needed.
-- Horizontal bars: label on left (`w-32 text-right`), bar in middle (`h-8 rounded-r-lg`), value on right.
-- Progress micro-bars under big numbers: `h-2 rounded-full`, width proportional, max-width `w-48`.
-- Bar colors follow semantic rules: `accentPositive` for best, `accentNegative` for worst, `accentNeutral` for middle.
-- Animate bar growth with Framer Motion `animate={{ width }}` — not instant, always animated.
-
-**DON'T (Anti-Rules):**
-- Never use ECharts default vertical bar charts for ≤4 items — they waste horizontal space.
-- Never show bars without value labels — the number must be visible.
-- Never make all bars the same neutral color — use semantic colors to highlight the story.
-- Never use ECharts default tooltip/legend chrome — it clashes with Swiss style.
-
----
-
-### BP-15: Body Text & Typography Enhancement
-
-**Principle:** Large blocks of body text are the #1 visual problem in data presentations. Text must be scannable, with key information visually pulled out.
-
-**Techniques:**
-
-| Technique | Implementation | When to Use |
-|-----------|---------------|-------------|
-| Keyword highlighting | `<span className="font-semibold text-primary">` for key terms within secondary-color body text | Every body paragraph with data points |
-| Inline data pills | `<span className="bg-accentNeutral/10 text-accentNeutral px-2 py-0.5 rounded text-base font-medium">+10.4pp</span>` | Numbers, percentages, deltas in body text |
-| Max text width | `max-w-[75%]` on body text blocks | Always — never let text span full slide width |
-| Generous line height | `leading-loose` (2.0x) for body text | All body/description text |
-| Short paragraphs | Split at sentence boundaries, each `<p>` ≤ 2 lines | Any body text > 2 lines |
-
-**DO (Rules):**
-- Body text color is `textSecondary`, but key terms within body text use `textPrimary` + `font-semibold`.
-- Numbers mentioned in body text should be wrapped in pill-style spans with accent background at 10% opacity.
-- Body text max width: `max-w-[75%]` — leave right margin as breathing room.
-- Line height: `leading-loose` (line-height: 2) for body, `leading-relaxed` for card content.
-- Break body text into multiple `<p>` elements if > 2 lines, with `gap-3` between them.
-
-**DON'T (Anti-Rules):**
-- Never render body text at full slide width — it creates intimidating text walls.
-- Never use uniform `textSecondary` for the entire body — highlight key terms to create visual anchors.
-- Never have more than 3 lines of continuous body text — break it up or convert to bullet points.
-- Never use `leading-normal` for body text — too tight for presentation readability.
-
----
-
-### BP-16: Fragment Animation System
-
-**Principle:** Good presentations reveal content progressively, guiding the audience's attention. A "fragment" is a numbered animation step within a single slide — content appears only when its fragment index is reached.
-
-**Interaction Model:**
-
-| Input | Action |
-|-------|--------|
-| `Space` / `→` / Click | Reveal next fragment (or scroll to next slide if all fragments shown) |
-| `←` | Hide last fragment (or scroll to previous slide if at fragment 0) |
-| `↑` / `↓` | Scroll between slides directly (skip fragment stepping) |
-| Touch swipe | Same as arrow keys |
-
-**Fragment Types:**
-
-| Type | Animation | Use Case |
-|------|-----------|----------|
-| `appear` | `opacity: 0→1, y: 16→0` (0.5s) | Default — titles, body text, cards |
-| `countUp` | Number counts from 0 to target (0.8s, ease-out) | Big metric numbers in DataComparison |
-| `growBar` | Bar width grows from 0% to target (0.8s, ease-out) | Horizontal bars, progress bars |
-| `highlight` | Other elements dim to `opacity: 0.3`, this element brightens to `1.0` | Spotlight one item during walkthrough |
-| `revealGroup` | Group appears together with internal `staggerChildren: 0.08` | Card groups, list items |
-
-**Data Model:**
-```ts
-// In SlideData types — each slide type gets an optional fragments count
-interface SlideData {
-  // ... existing fields
-  fragments?: number  // Total fragment count. If omitted, all content shows at once (scroll-only mode)
+interface KeyPointSlideData {
+  type: 'key-point'; title: string; subtitle?: string; body?: string
 }
+
+interface ChartSlideData {
+  type: 'chart'; chartType: 'bar' | 'pie' | 'line' | 'radar'
+  title: string; body?: string; highlight?: string; chartHeight?: number
+  bars?: ChartBar[]; slices?: ChartSlice[]; innerRadius?: number
+  categories?: string[]; lineSeries?: LineSeries[]
+  indicators?: RadarIndicator[]; radarSeries?: RadarSeries[]
+}
+
+interface GridItemSlideData {
+  type: 'grid-item'; title: string; body?: string
+  items: GridItemEntry[]; variant: GridItemVariant; columns?: number
+}
+
+interface SequenceSlideData {
+  type: 'sequence'; title: string; body?: string
+  steps: SequenceStep[]; variant: SequenceVariant
+  direction?: 'horizontal' | 'vertical'
+}
+
+interface CompareSlideData {
+  type: 'compare'; title: string; body?: string
+  mode: 'versus' | 'quadrant' | 'iceberg'
+  sides?: CompareSide[]; quadrantItems?: QuadrantItem[]
+  xAxis?: string; yAxis?: string
+  visible?: IcebergItem[]; hidden?: IcebergItem[]
+}
+
+interface FunnelSlideData {
+  type: 'funnel'; title: string; body?: string
+  layers: FunnelLayer[]; variant: 'funnel' | 'pyramid' | 'slope'
+}
+
+interface ConcentricSlideData {
+  type: 'concentric'; title: string; body?: string
+  rings: ConcentricRing[]; variant: 'circles' | 'diamond' | 'target'
+}
+
+interface HubSpokeSlideData {
+  type: 'hub-spoke'; title: string; body?: string
+  center: { label: string; description?: string }
+  spokes: { label: string; description?: string }[]
+  variant: 'orbit' | 'solar' | 'pinwheel'
+}
+
+interface VennSlideData {
+  type: 'venn'; title: string; body?: string
+  sets: { label: string; description?: string }[]
+  intersectionLabel?: string
+  variant: 'classic' | 'linear' | 'linear-filled'
+}
+
+interface BlockSlideData {
+  type: 'block-slide'; title: string; blocks: ContentBlock[]
+}
+
+// ─── Sub-types ───
+interface GridItemEntry { title: string; description?: string; value?: string; valueColor?: SemanticColor }
+interface SequenceStep { label: string; description?: string }
+interface CompareSide { name: string; items: { label: string; value: string }[] }
+interface QuadrantItem { label: string; x: number; y: number }
+interface IcebergItem { label: string; description?: string }
+interface FunnelLayer { label: string; description?: string; value?: number }
+interface ConcentricRing { label: string; description?: string }
+interface ChartBar { category: string; values: { name: string; value: number; color?: SemanticColor }[] }
+interface ChartSlice { name: string; value: number }
+interface LineSeries { name: string; data: number[]; area?: boolean }
+interface RadarIndicator { name: string; max: number }
+interface RadarSeries { name: string; values: number[] }
+interface ContentBlock { id: string; x: number; y: number; width: number; height: number; data: BlockData }
+
+// ─── Variant Unions ───
+type GridItemVariant = 'solid' | 'outline' | 'sideline' | 'topline' | 'top-circle' | 'joined' | 'leaf' | 'labeled' | 'alternating' | 'pillar' | 'diamonds' | 'signs'
+type SequenceVariant = 'timeline' | 'chain' | 'arrows' | 'pills' | 'ribbon-arrows' | 'numbered' | 'zigzag'
+type FunnelVariant = 'funnel' | 'pyramid' | 'slope'
+type ConcentricVariant = 'circles' | 'diamond' | 'target'
+type HubSpokeVariant = 'orbit' | 'solar' | 'pinwheel'
+type VennVariant = 'classic' | 'linear' | 'linear-filled'
+type ChartType = 'bar' | 'pie' | 'line' | 'radar'
 ```
-
-**Component Architecture:**
-```tsx
-// Global fragment state managed in SlideDeck
-const [activeSlide, setActiveSlide] = useState(0)
-const [fragmentIndex, setFragmentIndex] = useState(0)
-
-// Each slide receives fragmentIndex and checks:
-// - fragment 0: title + body visible
-// - fragment 1: first data item (countUp)
-// - fragment 2: second data item (countUp)
-// - fragment N: conclusion text
-// Elements with fragment > fragmentIndex render with opacity: 0 and no interaction
-```
-
-**Standard Fragment Assignment by Slide Type:**
-
-| Slide Type | Fragment 0 | Fragment 1 | Fragment 2+ | Final Fragment |
-|------------|-----------|-----------|------------|---------------|
-| DataComparison | Title + body | Each metric item (one per fragment, countUp) | — | Conclusion text |
-| Chart | Title + body | All bars grow together (growBar) | Highlight annotation | — |
-| Comparison | Title + body | Each column (revealGroup, one per fragment) | — | — |
-| Grid | Title | All grid items (revealGroup) | — | — |
-| PlayerCard | Left panel (rank + name + score countUp) | Right panel features (revealGroup) | Comparison chart (growBar) | — |
-| Diagram | Title + body | Each step sequentially (appear) | Side note | — |
-| List | Title | Each list item (appear, one per fragment) | — | — |
-
-**DO (Rules):**
-- Fragment 0 always includes the slide title + body text — never show an empty slide.
-- Big numbers MUST use `countUp` animation — static number appearance wastes a powerful attention-grabbing moment.
-- Horizontal bars MUST use `growBar` animation — bars growing from zero dramatically demonstrates relative differences.
-- Keep total fragments per slide ≤ 6 — too many clicks per slide breaks flow.
-- If `fragments` is not set on a slide, fall back to the existing scroll-triggered stagger animation (backwards compatible).
-
-**DON'T (Anti-Rules):**
-- Never reveal the title as a separate fragment — it must always be visible immediately (fragment 0).
-- Never use `highlight` type on more than 3 items per slide — diminishing returns.
-- Never make every single text line its own fragment — group logically (e.g., all card items in one fragment).
-- Never auto-advance fragments — user must explicitly click/press to advance.
-- Never play fragment animations on scroll — fragments are click-triggered only. Scroll triggers slide entrance.
-
----
-
-## Quality Checklist
-
-Before delivering, verify:
-- [ ] Every slide maintains 16:9 via `aspect-video`
-- [ ] Page background fills gaps between slides
-- [ ] Slides centered with consistent gap
-- [ ] Font sizes follow hierarchy, nothing below 18px / `text-base`
-- [ ] Key numbers are prominent (text-7xl+)
-- [ ] **Title position is identical across all non-centered slides** (BP-13)
-- [ ] **Content uses diverse layouts** — not all white cards (BP-12)
-- [ ] **Horizontal bars used instead of ECharts for ≤8 items** (BP-14)
-- [ ] **Body text has keyword highlights and max-w-[75%]** (BP-15)
-- [ ] **Fragment system works**: Space/→ reveals next fragment, ← goes back (BP-16)
-- [ ] **countUp animation on big numbers, growBar on bars** (BP-16)
-- [ ] No horizontal overflow on any slide
-- [ ] All text is in the specified `--lang`
-- [ ] Style theme is consistently applied
-- [ ] `npm run dev` works without errors
-- [ ] `npm run build` produces working static output
-- [ ] Framer Motion animations trigger correctly (scroll entrance + click fragments)
 
 ---
 
 ## Constraints
 
-- **React + Vite project** — not a single HTML file
-- **Tailwind CSS only** — no custom CSS files except `index.css` for directives
-- **No images** — CSS gradients, inline SVG, placeholder boxes
-- **Semantic HTML** — proper heading hierarchy within slides
-- **Type safety** — all slide data and props must be typed in TypeScript
-- **Component reuse** — slide type components are generic, data-driven via props
+- **Data only** — you generate `SlideData[]` objects. Do NOT create or modify React components
+- **Tailwind CSS only** — no custom CSS except `index.css`
+- **No images** — CSS, SVG, or placeholder boxes
+- **Type safety** — all data must conform to `SlideData` union type
+- **Real data** — every value must come from the source document
+- **Chinese preferred** — use `--lang zh` default for all Chinese content
