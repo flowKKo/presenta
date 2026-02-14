@@ -19,9 +19,6 @@ interface SidebarProps {
   onBack?: () => void
   width: number
   onResize: (width: number) => void
-  deckTitle?: string
-  deckDescription?: string
-  onUpdateDeckMeta?: (title: string, description: string) => void
 }
 
 const SLIDE_W = 1920
@@ -62,7 +59,6 @@ export default function Sidebar({
   slides, activeIndex, onClickSlide, editMode,
   onInsertBlankSlide, onDeleteSlide, onCopySlide, onPasteSlide, onDuplicateSlide,
   onReorderSlide, hasClipboard, onBack, width, onResize,
-  deckTitle, deckDescription, onUpdateDeckMeta,
 }: SidebarProps) {
   const thumbRefs = useRef<(HTMLButtonElement | null)[]>([])
   const [contextMenu, setContextMenu] = useState<ContextMenuState | null>(null)
@@ -234,24 +230,6 @@ export default function Sidebar({
             </svg>
             返回
           </button>
-        )}
-        {onUpdateDeckMeta && (
-          <div className="px-4 py-2 flex flex-col gap-1">
-            <input
-              className="text-sm font-semibold bg-transparent border-none outline-none w-full rounded px-1 -mx-1 hover:bg-black/5 focus:bg-black/5 transition-colors"
-              style={{ color: colors.textPrimary }}
-              value={deckTitle ?? ''}
-              placeholder="未命名文档"
-              onChange={(e) => onUpdateDeckMeta(e.target.value, deckDescription ?? '')}
-            />
-            <input
-              className="text-xs bg-transparent border-none outline-none w-full rounded px-1 -mx-1 hover:bg-black/5 focus:bg-black/5 transition-colors"
-              style={{ color: colors.textCaption }}
-              value={deckDescription ?? ''}
-              placeholder="添加描述..."
-              onChange={(e) => onUpdateDeckMeta(deckTitle ?? '', e.target.value)}
-            />
-          </div>
         )}
       </div>
       <div className="flex flex-col pt-0 pl-2 pr-5">

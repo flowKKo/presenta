@@ -38,11 +38,6 @@ function SlideDeckInner({ slides, onBack }: Omit<SlideDeckProps, 'deckId' | 'dec
     deckTitle, deckDescription, setDeckTitle, setDeckDescription,
   } = useEditor()
 
-  const handleUpdateDeckMeta = useCallback((title: string, description: string) => {
-    setDeckTitle(title)
-    setDeckDescription(description)
-  }, [setDeckTitle, setDeckDescription])
-
   const [spotlight, setSpotlight] = useState(false)
   const [activeIndex, setActiveIndex] = useState(0)
   const [sidebarWidth, setSidebarWidth] = useState(260)
@@ -235,116 +230,119 @@ function SlideDeckInner({ slides, onBack }: Omit<SlideDeckProps, 'deckId' | 'dec
         onBack={onBack}
         width={sidebarWidth}
         onResize={setSidebarWidth}
-        deckTitle={deckTitle}
-        deckDescription={deckDescription}
-        onUpdateDeckMeta={handleUpdateDeckMeta}
       />
 
-      {/* Main content — single page view */}
+      {/* Main area: top bar + slide view */}
       <div
-        ref={mainRef}
-        className="flex-1 flex items-center justify-center relative transition-all overflow-hidden h-screen sidebar-margin"
+        className="flex-1 flex flex-col transition-all overflow-hidden h-screen sidebar-margin"
         style={{ '--sidebar-w': `${sidebarWidth}px` } as React.CSSProperties}
-        onClick={(e) => {
-          if (!editMode) return
-          if (e.target === e.currentTarget) setSelection({ type: 'content-box', slideIndex: activeIndex })
-        }}
       >
-        {currentSlide && currentEffective && (
-          <Slide
-            number={activeIndex + 1}
-            slideIndex={activeIndex}
-            slideData={currentEffective}
-          >
-            <InlineEditProvider slideIndex={activeIndex} originalData={currentSlide}>
-              <SlideContent data={currentEffective} slideIndex={activeIndex} />
-            </InlineEditProvider>
-          </Slide>
-        )}
-
-        {/* Page indicator */}
+        {/* Top breadcrumb bar */}
         <div
-          className="absolute bottom-6 left-1/2 -translate-x-1/2 px-3 py-1 rounded-full text-xs font-medium select-none"
-          style={{
-            color: colors.textCaption,
-            background: 'rgba(0,0,0,0.05)',
-          }}
+          className="shrink-0 h-12 flex items-center px-4 gap-3 border-b"
+          style={{ background: colors.card, borderColor: colors.border }}
         >
-          {activeIndex + 1} / {allSlides.length}
+          <input
+            className="text-sm font-semibold bg-transparent border-none outline-none min-w-0 max-w-[240px] rounded px-1.5 py-0.5 hover:bg-black/5 focus:bg-black/5 transition-colors"
+            style={{ color: colors.textPrimary }}
+            value={deckTitle ?? ''}
+            placeholder="未命名文档"
+            onChange={(e) => setDeckTitle(e.target.value)}
+          />
+          <span className="text-gray-300 select-none">·</span>
+          <input
+            className="text-xs bg-transparent border-none outline-none min-w-0 flex-1 rounded px-1.5 py-0.5 hover:bg-black/5 focus:bg-black/5 transition-colors"
+            style={{ color: colors.textCaption }}
+            value={deckDescription ?? ''}
+            placeholder="添加描述..."
+            onChange={(e) => setDeckDescription(e.target.value)}
+          />
+
+          {/* Action buttons — right side */}
+          <div className="flex items-center gap-1.5 ml-auto shrink-0">
+            <button
+              onClick={handleExport}
+              className="w-8 h-8 flex items-center justify-center rounded-lg cursor-pointer transition-colors hover:bg-black/5"
+              style={{ color: colors.textSecondary }}
+              title="导出文档"
+            >
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" />
+                <polyline points="7 10 12 15 17 10" />
+                <line x1="12" y1="15" x2="12" y2="3" />
+              </svg>
+            </button>
+            <button
+              onClick={toggleEditMode}
+              className="w-8 h-8 flex items-center justify-center rounded-lg cursor-pointer transition-colors hover:bg-black/5"
+              style={{
+                color: editMode ? '#1565C0' : colors.textSecondary,
+                background: editMode ? '#E3F2FD' : undefined,
+              }}
+              title={editMode ? '退出编辑' : '编辑模式'}
+            >
+              <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M11.5 1.5l3 3L5 14H2v-3L11.5 1.5z" />
+              </svg>
+            </button>
+            <button
+              onClick={() => setSpotlight((s) => !s)}
+              className="w-8 h-8 flex items-center justify-center rounded-lg cursor-pointer transition-colors hover:bg-black/5"
+              style={{
+                color: spotlight ? '#1565C0' : colors.textSecondary,
+                background: spotlight ? '#E3F2FD' : undefined,
+              }}
+              title={spotlight ? '关闭聚光灯' : '开启聚光灯'}
+            >
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="12" cy="12" r="3" />
+                <path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42" />
+              </svg>
+            </button>
+            <button
+              onClick={handleEnterFullscreen}
+              className="w-8 h-8 flex items-center justify-center rounded-lg cursor-pointer transition-colors hover:bg-black/5"
+              style={{ color: colors.textSecondary }}
+              title="全屏预览"
+            >
+              <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M2 6V2h4M14 6V2h-4M2 10v4h4M14 10v4h-4" />
+              </svg>
+            </button>
+          </div>
         </div>
 
-        {/* Top-right buttons */}
-        <div className="absolute top-5 right-5 z-30 flex items-center gap-2">
-          {/* Export */}
-          <button
-            onClick={handleExport}
-            className="w-10 h-10 flex items-center justify-center rounded-lg cursor-pointer transition-colors hover:bg-black/5"
-            style={{
-              color: colors.textSecondary,
-              background: colors.card,
-              border: `1px solid ${colors.border}`,
-              boxShadow: '0 2px 8px rgba(0,0,0,0.06)',
-            }}
-            title="导出文档"
-          >
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" />
-              <polyline points="7 10 12 15 17 10" />
-              <line x1="12" y1="15" x2="12" y2="3" />
-            </svg>
-          </button>
+        {/* Slide view */}
+        <div
+          ref={mainRef}
+          className="flex-1 flex items-center justify-center relative overflow-hidden"
+          onClick={(e) => {
+            if (!editMode) return
+            if (e.target === e.currentTarget) setSelection({ type: 'content-box', slideIndex: activeIndex })
+          }}
+        >
+          {currentSlide && currentEffective && (
+            <Slide
+              number={activeIndex + 1}
+              slideIndex={activeIndex}
+              slideData={currentEffective}
+            >
+              <InlineEditProvider slideIndex={activeIndex} originalData={currentSlide}>
+                <SlideContent data={currentEffective} slideIndex={activeIndex} />
+              </InlineEditProvider>
+            </Slide>
+          )}
 
-          {/* Edit mode toggle */}
-          <button
-            onClick={toggleEditMode}
-            className="w-10 h-10 flex items-center justify-center rounded-lg cursor-pointer transition-colors hover:bg-black/5"
+          {/* Page indicator */}
+          <div
+            className="absolute bottom-6 left-1/2 -translate-x-1/2 px-3 py-1 rounded-full text-xs font-medium select-none"
             style={{
-              color: editMode ? '#1565C0' : colors.textSecondary,
-              background: editMode ? '#E3F2FD' : colors.card,
-              border: `1px solid ${editMode ? '#42A5F5' : colors.border}`,
-              boxShadow: '0 2px 8px rgba(0,0,0,0.06)',
+              color: colors.textCaption,
+              background: 'rgba(0,0,0,0.05)',
             }}
-            title={editMode ? '退出编辑' : '编辑模式'}
           >
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M11.5 1.5l3 3L5 14H2v-3L11.5 1.5z" />
-            </svg>
-          </button>
-
-          {/* Spotlight toggle */}
-          <button
-            onClick={() => setSpotlight((s) => !s)}
-            className="w-10 h-10 flex items-center justify-center rounded-lg cursor-pointer transition-colors hover:bg-black/5"
-            style={{
-              color: spotlight ? '#1565C0' : colors.textSecondary,
-              background: spotlight ? '#E3F2FD' : colors.card,
-              border: `1px solid ${spotlight ? '#42A5F5' : colors.border}`,
-              boxShadow: '0 2px 8px rgba(0,0,0,0.06)',
-            }}
-            title={spotlight ? '关闭聚光灯' : '开启聚光灯'}
-          >
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-              <circle cx="12" cy="12" r="3" />
-              <path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42" />
-            </svg>
-          </button>
-
-          {/* Fullscreen button */}
-          <button
-            onClick={handleEnterFullscreen}
-            className="w-10 h-10 flex items-center justify-center rounded-lg cursor-pointer transition-colors hover:bg-black/5"
-            style={{
-              color: colors.textSecondary,
-              background: colors.card,
-              border: `1px solid ${colors.border}`,
-              boxShadow: '0 2px 8px rgba(0,0,0,0.06)',
-            }}
-            title="全屏预览"
-          >
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M2 6V2h4M14 6V2h-4M2 10v4h4M14 10v4h-4" />
-            </svg>
-          </button>
+            {activeIndex + 1} / {allSlides.length}
+          </div>
         </div>
       </div>
 
