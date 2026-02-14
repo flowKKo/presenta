@@ -10,6 +10,7 @@ interface BlockWrapperProps {
   onUpdate: (bounds: { x: number; y: number; width: number; height: number }) => void
   onUpdateQuiet: (bounds: { x: number; y: number; width: number; height: number }) => void
   onDragStart: () => void
+  onContextMenu?: (e: React.MouseEvent) => void
   spotlightRevealed?: boolean
   children: ReactNode
 }
@@ -22,6 +23,7 @@ export default function BlockWrapper({
   onUpdate,
   onUpdateQuiet,
   onDragStart,
+  onContextMenu: onContextMenuProp,
   spotlightRevealed = true,
   children,
 }: BlockWrapperProps) {
@@ -104,6 +106,7 @@ export default function BlockWrapper({
     <>
       <div
         className="absolute overflow-hidden flex flex-col"
+        data-block-id={block.id}
         style={{
           left: `${bounds.x}%`,
           top: `${bounds.y}%`,
@@ -118,6 +121,12 @@ export default function BlockWrapper({
         }}
         onClick={handleClick}
         onPointerDown={handleDragStart}
+        onContextMenu={(e) => {
+          if (!editMode) return
+          e.preventDefault()
+          e.stopPropagation()
+          onContextMenuProp?.(e)
+        }}
       >
         {children}
       </div>

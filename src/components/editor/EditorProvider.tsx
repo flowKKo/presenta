@@ -532,6 +532,10 @@ interface EditorContextValue {
   redo: () => void
   canUndo: boolean
   canRedo: boolean
+  blockContextMenu: { x: number; y: number; slideIndex: number; blockId: string } | null
+  openBlockContextMenu: (x: number, y: number, slideIndex: number, blockId: string) => void
+  closeBlockContextMenu: () => void
+  duplicateBlock: (slideIndex: number, blockId: string) => void
 }
 
 const EditorContext = createContext<EditorContextValue | null>(null)
@@ -869,6 +873,37 @@ export function EditorProvider({ deckId, originalSlides, deckTitle: initialTitle
   const canUndo = state.historyIndex >= 0
   const canRedo = state.historyIndex < state.history.length - 1
 
+  // ─── Block context menu (UI state, not in reducer) ───
+  const [blockContextMenu, setBlockContextMenu] = useState<{ x: number; y: number; slideIndex: number; blockId: string } | null>(null)
+
+  const openBlockContextMenu = useCallback((x: number, y: number, slideIndex: number, blockId: string) => {
+    setBlockContextMenu({ x, y, slideIndex, blockId })
+  }, [])
+
+  const closeBlockContextMenu = useCallback(() => setBlockContextMenu(null), [])
+
+  const duplicateBlock = useCallback((slideIndex: number, blockId: string) => {
+    const override = getSlideDataOverride(slideIndex)
+    const entry = slideEntries[slideIndex]
+    const original = entry
+      ? entry.kind === 'original' ? state.originalSlides[entry.index] : entry.data
+      : undefined
+    const slideData = override ?? original
+    if (!slideData || slideData.type !== 'block-slide') return
+    const source = (slideData as BlockSlideData).blocks.find(b => b.id === blockId)
+    if (!source) return
+    const newBlock: ContentBlock = {
+      id: `blk-${Date.now()}`,
+      x: Math.min(source.x + 2, 90),
+      y: Math.min(source.y + 2, 90),
+      width: source.width,
+      height: source.height,
+      data: JSON.parse(JSON.stringify(source.data)),
+    }
+    addBlock(slideIndex, newBlock)
+    setSelection({ type: 'block', slideIndex, blockId: newBlock.id })
+  }, [getSlideDataOverride, slideEntries, state.originalSlides, addBlock, setSelection])
+
   const value: EditorContextValue = {
     editMode: state.editMode,
     activeTool: state.activeTool,
@@ -918,6 +953,10 @@ export function EditorProvider({ deckId, originalSlides, deckTitle: initialTitle
     redo,
     canUndo,
     canRedo,
+    blockContextMenu,
+    openBlockContextMenu,
+    closeBlockContextMenu,
+    duplicateBlock,
   }
 
   return <EditorContext.Provider value={value}>{children}</EditorContext.Provider>

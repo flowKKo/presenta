@@ -16,6 +16,7 @@ export default function BlockSlideRenderer({ data, slideIndex }: BlockSlideRende
     setSelection,
     beginDrag,
     updateBlockQuiet,
+    openBlockContextMenu,
   } = useEditor()
   const { active: spotlightActive, revealedCount } = useSpotlight()
 
@@ -55,6 +56,7 @@ export default function BlockSlideRenderer({ data, slideIndex }: BlockSlideRende
             onUpdate={(bounds) => updateBlockQuiet(slideIndex, block.id, bounds)}
             onUpdateQuiet={(bounds) => updateBlockQuiet(slideIndex, block.id, bounds)}
             onDragStart={beginDrag}
+            onContextMenu={(e) => openBlockContextMenu(e.clientX, e.clientY, slideIndex, block.id)}
             spotlightRevealed={isRevealed}
           >
             <BlockRenderer data={block.data} blockId={block.id} slideIndex={slideIndex} />
