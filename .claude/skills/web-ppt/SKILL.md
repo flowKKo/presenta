@@ -580,22 +580,95 @@ No manual registration needed — `import.meta.glob` auto-discovers files in `sr
 
 ### Post-Generation Visual Audit (MANDATORY)
 
-After generating all slides, review every slide against this checklist:
+After generating all slides, review EVERY slide against this checklist. **Fix violations before delivering.**
 
-1. **No gratuitous `height: 96`** — only use height ≥90% when the block content genuinely needs ~800px (e.g., 2-row grid, large chart, 5+ layer funnel). Single-row grids and horizontal sequences should be 25-35%.
-2. **Single-row grid-item height ≤ 35%** — 1 row of 3 items at height:96 creates ~260px-tall cards with sparse content. Cap at 35%.
-3. **≥50% of block-slides include an `image` block** — image placeholders enrich visual density and break monotony.
-4. **No 3+ consecutive identical layouts** — vary layout patterns across consecutive block-slides (e.g., don't use Pattern A three times in a row).
-5. **Every image block has a descriptive `placeholder`** — e.g., "数据中心服务器机房实景", not "图片" or "image".
-6. **No slide has >35% visual empty space** — if a block-slide looks sparse, add an image block or reduce block heights.
-7. **SVG diagram blocks maintain ~1.5:1 aspect ratio** — venn, concentric, hub-spoke use viewBox 800×480; avoid square or overly tall containers.
-8. **Block positions don't overlap and gaps are ≤5%** — blocks should tile neatly with 2-5% margins.
-9. **Every slide has explicit `titleSize` and `bodySize`** — section dividers: 72/28, key-points: 56/24, all content slides: 40/20. No slide should rely on CSS defaults.
-10. **Title sizes are consistent within each category** — all content slides share `titleSize: 40`, all section dividers share `titleSize: 72`. No mixed sizes within the same category.
+**Typography & Sizing:**
+1. **Every slide has explicit `titleSize` and `bodySize`** — section dividers: 72/28, key-points: 56/24, content slides: 40/20. No slide relies on CSS defaults.
+2. **Hero slide font scaling matches content density** — `title` with no subtitle: `titleSize ≥ 80`; `key-point` with no body: `titleSize ≥ 64`. Sparse hero + small title = broken.
+3. **Title sizes are consistent within category** — all content slides share `titleSize: 40`, all dividers share `titleSize: 72`.
+4. **Block title-body blocks have explicit `titleSize` and `bodySize`** — match to block height per the Block-level Typography table.
+
+**Block Sizing:**
+5. **No gratuitous `height: 96`** — only use height ≥90% when content genuinely needs ~800px (3-row grid, large chart, 5+ funnel layers).
+6. **Single-row grid-item height ≤ 35%** — 1 row of 3 items at height:96 = ~260px-tall cards with 60% wasted space. Cap at 35%.
+7. **Horizontal sequence height ≤ 30%** — a 4-step horizontal sequence is ~120px actual height. height:80 wastes 540px.
+8. **SVG diagram blocks maintain ~1.5:1 aspect ratio** — venn, concentric, hub-spoke use viewBox 800×480; avoid square containers.
+9. **Block positions don't overlap and gaps are ≤5%** — blocks tile neatly with 2-5% margins.
+
+**Content Quality:**
+10. **Every content slide title is an assertion** — states a conclusion with at least one number (not just a topic label). Check every `grid-item`, `chart`, `sequence`, `compare`, `funnel` slide title.
+11. **Text fits its container** — review text lengths against the Text Content Length Guide. `GridItemEntry.title` ≤ 8 chars, `SequenceStep.label` ≤ 10 chars, etc.
+12. **No slide has >35% visual empty space** — if sparse, add image block or reduce block heights.
+
+**Visual Variety:**
+13. **≥50% of block-slides include an `image` block** — image placeholders enrich density and break monotony.
+14. **No 3+ consecutive identical layouts** — vary patterns across consecutive block-slides.
+15. **Every image block has a descriptive `placeholder`** — e.g., "数据中心服务器机房实景", not "图片".
+16. **Block-slides ≤ 50% of total deck** — prefer standalone slide types when content fills a full slide naturally.
+17. **Deck has section dividers every 4-6 content slides** — `title` or `key-point` slides provide breathing room.
 
 ---
 
 ## Content Rules
+
+### Assertion-Based Titles (MANDATORY)
+
+Every slide title must **state the conclusion**, not merely name the topic. The audience should know the takeaway from the title alone.
+
+| Bad (topic label) | Good (assertion) | Why |
+|---|---|---|
+| `"Q3 营收"` | `"Q3 营收同比增长 23%，创历史新高"` | States the conclusion, audience doesn't need to read the chart |
+| `"技术架构"` | `"三层解耦架构支撑百万级并发"` | Tells what the architecture achieves |
+| `"用户增长"` | `"付费用户突破 50 万，转化率提升至 8.2%"` | Quantifies the growth with real data |
+| `"竞品对比"` | `"综合评分领先竞品 15-30%"` | States the comparison result |
+| `"核心能力"` | `"6 大核心能力构建技术壁垒"` | Quantifies and qualifies the capability |
+| `"性能优化"` | `"端到端延迟从 320ms 降至 45ms"` | Before/after with real numbers |
+
+**Rules:**
+1. **Include at least one number** in every content slide title (from source document)
+2. **Use action verbs or result statements** — "增长", "突破", "降至", "领先", "覆盖"
+3. **Maximum title length**: 25 characters for standalone slides, 20 characters for block-slide titles
+4. **Section dividers (`title` type) are the exception** — these can be topic labels (e.g., "技术架构") since they serve as visual breaks
+
+### Text Content Length Guide
+
+Text that's too short wastes space; text that's too long overflows. Match text length to the component size.
+
+**Standalone slide text limits:**
+
+| Element | Min | Max | Example |
+|---------|-----|-----|---------|
+| `title` (title/key-point slide) | 4 chars | 20 chars | `"AI 重新定义生产力"` |
+| `title` (content slide) | 6 chars | 25 chars | `"综合评分领先竞品 15-30%"` |
+| `subtitle` / `body` | 10 chars | 60 chars | 1-2 sentences with real data |
+| `highlight` (chart) | 2 chars | 12 chars | `"¥12.8M"`, `"+42%"` |
+
+**Block title-body text limits (inside block-slide):**
+
+| Block Height | Title Max | Body Max | Notes |
+|-------------|-----------|----------|-------|
+| ≤25% | 15 chars | 30 chars | Compact header — 1 line title, 1 line body |
+| 25-40% | 20 chars | 80 chars | Standard header — title + 1-2 line body |
+| 40-60% | 25 chars | 150 chars | Extended text block — title + paragraph |
+| ≥60% | 30 chars | 250 chars | Text-dominant block — title + multi-paragraph |
+
+**Diagram element text limits:**
+
+| Element | Max Chars | Example |
+|---------|-----------|---------|
+| `GridItemEntry.title` | 8 chars | `"响应延迟"` |
+| `GridItemEntry.description` | 30 chars | `"P99 延迟从 320ms 降至 45ms"` |
+| `GridItemEntry.value` | 8 chars | `"+42.3%"` |
+| `SequenceStep.label` | 10 chars | `"数据采集"` |
+| `SequenceStep.description` | 25 chars | `"多源异构数据实时接入"` |
+| `FunnelLayer.label` | 10 chars | `"注册转化"` |
+| `CompareSide.name` | 6 chars | `"方案 A"` |
+| `HubSpoke.center.label` | 6 chars | `"核心引擎"` |
+| `HubSpoke.spokes[].label` | 8 chars | `"数据层"` |
+| `ConcentricRing.label` | 6 chars | `"核心层"` |
+| `VennSet.label` | 8 chars | `"用户体验"` |
+
+**Why this matters:** The rendering engines have FIXED container sizes. A `GridItemEntry.title` renders at 16px in a ~200px-wide card. Text beyond 8 characters wraps awkwardly or overflows. A `HubSpoke` spoke label renders at 15px inside an 80px circle — more than 8 characters won't fit.
 
 ### Data Enrichment (MANDATORY)
 
@@ -645,12 +718,45 @@ Content density determines block sizing. **Never give a block more height than i
 - When content fills <60% of the slide, add an `image` block to complement
 - When content fills >90%, consider splitting across two slides
 
+### Prefer Standalone Slides (IMPORTANT)
+
+Block-slides are powerful but overused. **Default to standalone slide types first.** Only use block-slide when:
+- You need 2+ diagrams on one slide
+- Content genuinely needs specific height < 100% (e.g., 1-row grid at 30% + image)
+- You're composing text + diagram side by side
+
+**Decision flowchart:**
+
+```
+Is the content a single diagram (grid/sequence/chart/funnel/etc.)?
+  YES → Does the content naturally fill most of the slide?
+    YES → Use standalone slide type (grid-item, sequence, chart, etc.)
+    NO  → Use block-slide: diagram block at content-appropriate height + image block
+  NO → Are there 2+ diagrams or text + diagram?
+    YES → Use block-slide with 2-3 blocks
+    NO  → Is it a title, key-point, or single chart?
+      YES → Use standalone type
+```
+
+**Target deck composition:**
+
+| Slide Category | Target % | Purpose |
+|---|---|---|
+| `title` + `key-point` | 15-25% | Breathing room, section breaks, hero statements |
+| Standalone diagrams (`grid-item`, `sequence`, `compare`, `funnel`, `concentric`, `hub-spoke`, `venn`) | 20-35% | Full-screen diagrams that fill the slide naturally |
+| Standalone `chart` | 10-20% | Full-screen data visualizations |
+| `block-slide` | 25-40% | Multi-element compositions, text+diagram pairs |
+
+A 20-slide deck should have roughly: 4 title/key-point + 5-6 standalone diagrams + 3 charts + 7-8 block-slides. **Never exceed 50% block-slides.**
+
 ### Visual Rhythm
 
 - **Alternate slide types** — avoid 3+ consecutive slides of the same type
-- **Section dividers** — use `title` or `key-point` between content groups
+- **Section dividers** — use `title` or `key-point` between content groups (every 4-6 content slides)
 - **Start with `title`**, end with `key-point` or `title` (conclusion)
 - **Mix variants** — don't use `solid` grid-item for every grid slide; try `outline`, `sideline`, `topline`
+- **Vary layout patterns** — no 2 consecutive block-slides should use the same pattern (A-H)
+- **Alternate density** — follow a dense data slide with a lighter visual (title, key-point, or image-heavy block-slide)
 
 ### Semantic Color Usage
 
@@ -661,6 +767,67 @@ Colors carry meaning. Use `valueColor` on `GridItemEntry` deliberately:
 | `positive` | Growth, win, improvement | Metrics going up, good outcomes |
 | `negative` | Decline, loss, warning | Metrics going down, risks |
 | `neutral` | Emphasis, category label | Neutral highlights, section headers |
+
+### Rendering Pixel Budget (READ THIS FIRST)
+
+Understanding the actual pixel space prevents oversized components. All values below are at the 1920×1080 design resolution.
+
+**Slide padding eats 20% of the canvas:**
+- Horizontal: `px-40` = 160px per side → **1600px usable width**
+- Vertical: `py-32` = 128px per side → **824px usable height**
+
+**What this means for block sizing (percentage → actual pixels):**
+
+| Block height (%) | Actual pixels | Can fit... |
+|---|---|---|
+| 20% | 165px | 1 line of items (grid/sequence/pills) |
+| 30% | 247px | Title + 1 row of cards, or short sequence |
+| 45% | 371px | 2 rows of cards, or medium chart |
+| 60% | 494px | Chart with title, or SVG diagram |
+| 80% | 659px | 3-row grid, or large detailed chart |
+| 96% | 791px | Full-height content (rare — only for dense 3-row grids or tall funnels) |
+
+**Engine-internal font sizes (hardcoded, NOT configurable via data):**
+
+| Engine | Element | Size | Notes |
+|--------|---------|------|-------|
+| GridItem | card title | 16px | Fixed — text wraps at ~10 chars in 2-col |
+| GridItem | card description | 14px | Fixed — wraps at ~18 chars per line |
+| GridItem | card value | 30px | Fixed — bold callout number |
+| Sequence | step label | 14px | Fixed — fits ~8-10 chars |
+| Sequence | step description | 12px | Fixed — ~16 chars per line |
+| Compare (versus) | side name | 18px | Fixed |
+| Compare (versus) | item label/value | 14px | Fixed |
+| Funnel | layer label | 14px | Fixed |
+| HubSpoke | center label (SVG) | 15px | Fixed — inside 112px circle |
+| HubSpoke | spoke label (SVG) | 15px | Fixed — inside 80px circle |
+| Concentric | ring label (SVG) | 16px | Fixed |
+| Venn | set label (SVG) | 18px | Fixed |
+
+These sizes are NOT affected by `titleSize`/`bodySize` — those only control the **slide-level** title and body text above the diagram. Understanding this prevents confusion: making `titleSize: 60` won't make grid-item card titles bigger.
+
+**Block-slide title-body text sizing:**
+
+The `title-body` block type inside block-slides supports `titleSize`, `bodySize`, `titleColor`, `textColor`. Unlike engine titles, these ARE configurable.
+
+| Block Purpose | `titleSize` | `bodySize` | Block Height |
+|---|---|---|---|
+| Compact heading (section label) | 28-32 | 16 | 15-20% |
+| Standard header (title + 1 line body) | 32-40 | 18 | 20-30% |
+| Explanatory text (title + paragraph) | 36-44 | 20 | 30-45% |
+| Hero statement (large centered text) | 48-64 | 24 | 40-60% |
+
+**Example: title-body block at 20% height (165px actual):**
+```ts
+{ type: 'title-body', title: '核心发现', body: 'AI 编程工具使开发效率提升 3.2 倍', titleSize: 36, bodySize: 18 }
+```
+This renders: title at 36px (~40px with line-height) + body at 18px (~24px with line-height) + gap ≈ 72px content in 165px container. Good fit.
+
+**Example: title-body block at 20% height WITHOUT sizing:**
+```ts
+{ type: 'title-body', title: '核心发现', body: 'AI 编程工具使开发效率提升 3.2 倍' }
+```
+This renders: title at DEFAULT 36px + body at DEFAULT 18px. Same result, but only because the defaults happen to match. For larger or smaller blocks, you MUST set explicit sizes.
 
 ### Typography Standards (MANDATORY)
 
@@ -684,13 +851,38 @@ All slides support `titleSize?: number` (px) and `bodySize?: number` (px) to ove
 | Content slides (all diagram/chart types) | `40` | `20` | Unified across grid-item, sequence, compare, funnel, concentric, hub-spoke, venn, chart |
 | Block-slide title | — | — | block-slide `title` is rendered by the shell; individual blocks use their own engine defaults |
 
+**Font Size Scaling by Content Density (CRITICAL):**
+
+`title` and `key-point` are "hero" slides — their purpose is to make a single statement dominate the visual field. When these slides have minimal content, the title **MUST** be scaled up to fill the space. A small title on an otherwise empty slide looks broken and amateurish.
+
+| Slide Scenario | `titleSize` | `bodySize` | Why |
+|----------------|------------|-----------|-----|
+| Deck opener — title only or title + short badge | `88-96` | — | Maximum impact, first impression; the title IS the slide |
+| Deck opener — title + subtitle + badge | `80` | `28` | Full content, standard opener |
+| Section divider — title only (no subtitle) | `80-88` | — | No subtitle means more empty space → bigger title to compensate |
+| Section divider — title + subtitle | `72` | `28` | Standard section divider |
+| Key-point — title only (no subtitle, no body) | `64-72` | — | Single statement must dominate the centered space |
+| Key-point — title + subtitle, no body | `56-64` | `24-28` | Subtitle adds visual balance, title can be slightly smaller |
+| Key-point — title + body paragraph | `56` | `24` | Standard key-point with supporting text |
+| Content slides (charts, diagrams, grids) | `40` | `20` | Diagram/chart content occupies most of the slide |
+
+**Scaling principle**: The fewer content elements on a slide, the larger the title font must be. A `title` slide with nothing but a 6-word heading at `titleSize: 56` wastes 70%+ of the visual area — push it to `80` or higher. Conversely, a content-dense chart slide should keep `titleSize: 40` so the title doesn't compete with the data.
+
+**Short title boost**: Titles under ~8 characters (e.g., `"模型只是一半"`, `"Thank You"`) should use the **upper end** of their range. Short text at moderate sizes creates an awkward "floating label" effect.
+
+**Anti-patterns:**
+- `title` slide with `titleSize: 56` or below → looks like a normal paragraph, not a section divider
+- `key-point` slide with only a title at `titleSize: 48` → too small for a hero statement, wastes the centered layout
+- Deck opener at `titleSize: 72` → underwhelming first impression; opener should always be ≥ `80`
+
 **Rules:**
 
 1. **Set `titleSize` and `bodySize` on every slide** — do not rely on CSS defaults, which vary across slide types and produce inconsistent title sizes.
 2. **All content slides use the same `titleSize: 40`** — grid-item, sequence, compare, funnel, concentric, hub-spoke, venn, and chart must all share the same title size for visual coherence.
 3. **Section dividers (`title` type) get `titleSize: 72`** — these are meant to be high-impact, big-text transition pages. The deck opening slide can use `titleSize: 80`.
-4. **Subtitle and body sizes must also be consistent** — use `bodySize: 20` for all content slides, `bodySize: 28` for section dividers.
-5. **Title position is fixed by each component** — titles always appear at the top-left for content slides and centered for title/key-point slides. Do not attempt to reposition via data.
+4. **Scale hero slides by content density** — `title` and `key-point` slides with fewer elements (no subtitle, no body) must increase `titleSize` to fill the visual space. See the scaling table above.
+5. **Subtitle and body sizes must also be consistent** — use `bodySize: 20` for all content slides, `bodySize: 28` for section dividers.
+6. **Title position is fixed by each component** — titles always appear at the top-left for content slides and centered for title/key-point slides. Do not attempt to reposition via data.
 
 ---
 
