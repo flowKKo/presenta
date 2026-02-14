@@ -94,30 +94,29 @@ function OptionalNumberInput({ label, value, onChange, placeholder, min, max, st
   )
 }
 
-function OptionalColorInput({ label, value, onChange, defaultValue }: { label: string; value?: string; onChange: (v: string | undefined) => void; defaultValue: string }) {
+function CompactColorInput({ label, value, onChange, defaultValue }: { label: string; value?: string; onChange: (v: string | undefined) => void; defaultValue: string }) {
   const displayColor = value || defaultValue
   return (
-    <label className="block">
-      <span className="text-[11px] text-gray-500 font-medium">{label}</span>
-      <div className="flex items-center gap-2 mt-1">
+    <div className="flex flex-col items-center gap-0.5">
+      <div className="relative">
         <input
           type="color"
           value={displayColor}
           onChange={(e) => onChange(e.target.value)}
-          className="w-8 h-8 rounded border border-gray-200 cursor-pointer p-0.5"
+          className="w-7 h-7 rounded-md border border-gray-200 cursor-pointer p-0.5"
         />
-        <span className="text-xs text-gray-400 font-mono flex-1">{value || defaultValue}</span>
         {value && (
           <button
             type="button"
-            onClick={() => onChange(undefined)}
-            className="text-[10px] text-gray-400 hover:text-red-500 cursor-pointer px-1"
+            onClick={(e) => { e.preventDefault(); onChange(undefined) }}
+            className="absolute -top-1 -right-1 w-3.5 h-3.5 rounded-full bg-gray-400 hover:bg-red-500 text-white flex items-center justify-center text-[8px] leading-none cursor-pointer transition-colors"
           >
-            清除
+            ×
           </button>
         )}
       </div>
-    </label>
+      <span className="text-[11px] text-gray-500 font-medium">{label}</span>
+    </div>
   )
 }
 
@@ -230,9 +229,11 @@ export default function BlockDataEditor({ data, onChange }: BlockDataEditorProps
           </div>
         </div>
         <div className="space-y-2">
-          <SectionHeader title="文字颜色" />
-          <OptionalColorInput label="标题颜色" value={data.titleColor} defaultValue={colors.textPrimary} onChange={(v) => onChange({ ...data, titleColor: v })} />
-          <OptionalColorInput label="正文颜色" value={data.textColor} defaultValue={colors.textSecondary} onChange={(v) => onChange({ ...data, textColor: v })} />
+          <SectionHeader title="颜色" />
+          <div className="flex items-start gap-4">
+            <CompactColorInput label="标题色" value={data.titleColor} defaultValue={colors.textPrimary} onChange={(v) => onChange({ ...data, titleColor: v })} />
+            <CompactColorInput label="正文色" value={data.textColor} defaultValue={colors.textSecondary} onChange={(v) => onChange({ ...data, textColor: v })} />
+          </div>
         </div>
       </div>
     )

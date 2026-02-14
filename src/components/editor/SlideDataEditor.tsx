@@ -82,30 +82,29 @@ function CheckboxInput({ label, value, onChange }: { label: string; value: boole
   )
 }
 
-function OptionalColorInput({ label, value, onChange, defaultValue }: { label: string; value?: string; onChange: (v: string | undefined) => void; defaultValue: string }) {
+function CompactColorInput({ label, value, onChange, defaultValue }: { label: string; value?: string; onChange: (v: string | undefined) => void; defaultValue: string }) {
   const displayColor = value || defaultValue
   return (
-    <label className="block">
-      <span className="text-[11px] text-gray-500 font-medium">{label}</span>
-      <div className="flex items-center gap-2 mt-1">
+    <div className="flex flex-col items-center gap-0.5">
+      <div className="relative">
         <input
           type="color"
           value={displayColor}
           onChange={(e) => onChange(e.target.value)}
-          className="w-8 h-8 rounded border border-gray-200 cursor-pointer p-0.5"
+          className="w-7 h-7 rounded-md border border-gray-200 cursor-pointer p-0.5"
         />
-        <span className="text-xs text-gray-400 font-mono flex-1">{value || defaultValue}</span>
         {value && (
           <button
             type="button"
-            onClick={() => onChange(undefined)}
-            className="text-[10px] text-gray-400 hover:text-red-500 cursor-pointer px-1"
+            onClick={(e) => { e.preventDefault(); onChange(undefined) }}
+            className="absolute -top-1 -right-1 w-3.5 h-3.5 rounded-full bg-gray-400 hover:bg-red-500 text-white flex items-center justify-center text-[8px] leading-none cursor-pointer transition-colors"
           >
-            清除
+            ×
           </button>
         )}
       </div>
-    </label>
+      <span className="text-[11px] text-gray-500 font-medium">{label}</span>
+    </div>
   )
 }
 
@@ -238,31 +237,29 @@ export default function SlideDataEditor({ data, onChange, isBlock }: SlideDataEd
     </Section>
   ) : null
 
-  // Color controls — available for all slide types except block-slide
+  // Unified color section — text colors + optional palette picker
   const colorFields = data.type !== 'block-slide' ? (
-    <Section title="文字颜色">
-      <OptionalColorInput
-        label="标题颜色"
-        value={'titleColor' in data ? (data as { titleColor?: string }).titleColor : undefined}
-        defaultValue={defaultTitleColors[data.type] ?? colors.textPrimary}
-        onChange={(v) => onChange({ ...data, titleColor: v })}
-      />
-      <OptionalColorInput
-        label="内容颜色"
-        value={'textColor' in data ? (data as { textColor?: string }).textColor : undefined}
-        defaultValue={defaultTextColors[data.type] ?? colors.textSecondary}
-        onChange={(v) => onChange({ ...data, textColor: v })}
-      />
-    </Section>
-  ) : null
-
-  // Palette picker — only for diagram types that use generateGradientColors
-  const paletteField = paletteTypes.has(data.type) ? (
-    <Section title="配色方案">
-      <PalettePicker
-        value={'colorPalette' in data ? (data as { colorPalette?: string }).colorPalette : undefined}
-        onChange={(v) => onChange({ ...data, colorPalette: v } as SlideData)}
-      />
+    <Section title="颜色">
+      <div className="flex items-start gap-4">
+        <CompactColorInput
+          label="标题色"
+          value={'titleColor' in data ? (data as { titleColor?: string }).titleColor : undefined}
+          defaultValue={defaultTitleColors[data.type] ?? colors.textPrimary}
+          onChange={(v) => onChange({ ...data, titleColor: v })}
+        />
+        <CompactColorInput
+          label="内容色"
+          value={'textColor' in data ? (data as { textColor?: string }).textColor : undefined}
+          defaultValue={defaultTextColors[data.type] ?? colors.textSecondary}
+          onChange={(v) => onChange({ ...data, textColor: v })}
+        />
+      </div>
+      {paletteTypes.has(data.type) && (
+        <PalettePicker
+          value={'colorPalette' in data ? (data as { colorPalette?: string }).colorPalette : undefined}
+          onChange={(v) => onChange({ ...data, colorPalette: v } as SlideData)}
+        />
+      )}
     </Section>
   ) : null
 
@@ -282,7 +279,7 @@ export default function SlideDataEditor({ data, onChange, isBlock }: SlideDataEd
   switch (data.type) {
     case 'title':
       return (
-        <div className="space-y-4">
+        <div className="space-y-3">
           <Section title="标题页">
             <TextInput label="标题" value={data.title} onChange={(v) => onChange({ ...data, title: v })} />
             <TextInput label="副标题" value={data.subtitle ?? ''} onChange={(v) => onChange({ ...data, subtitle: v })} />
@@ -295,7 +292,7 @@ export default function SlideDataEditor({ data, onChange, isBlock }: SlideDataEd
 
     case 'key-point':
       return (
-        <div className="space-y-4">
+        <div className="space-y-3">
           <Section title="关键点">
             <TextInput label="标题" value={data.title} onChange={(v) => onChange({ ...data, title: v })} />
             <TextInput label="副标题" value={data.subtitle ?? ''} onChange={(v) => onChange({ ...data, subtitle: v })} />
@@ -307,36 +304,36 @@ export default function SlideDataEditor({ data, onChange, isBlock }: SlideDataEd
       )
 
     case 'chart':
-      return <ChartEditor data={data} onChange={onChange} isBlock={isBlock} fontSizeFields={fontSizeFields} colorFields={colorFields} paletteField={paletteField} />
+      return <ChartEditor data={data} onChange={onChange} isBlock={isBlock} fontSizeFields={fontSizeFields} colorFields={colorFields} />
 
     case 'grid-item':
-      return <GridItemEditor data={data} onChange={onChange} commonFields={commonFields} fontSizeFields={fontSizeFields} colorFields={colorFields} paletteField={paletteField} />
+      return <GridItemEditor data={data} onChange={onChange} commonFields={commonFields} fontSizeFields={fontSizeFields} colorFields={colorFields} />
 
     case 'sequence':
-      return <SequenceEditor data={data} onChange={onChange} commonFields={commonFields} fontSizeFields={fontSizeFields} colorFields={colorFields} paletteField={paletteField} />
+      return <SequenceEditor data={data} onChange={onChange} commonFields={commonFields} fontSizeFields={fontSizeFields} colorFields={colorFields} />
 
     case 'compare':
-      return <CompareEditor data={data} onChange={onChange} commonFields={commonFields} fontSizeFields={fontSizeFields} colorFields={colorFields} paletteField={paletteField} />
+      return <CompareEditor data={data} onChange={onChange} commonFields={commonFields} fontSizeFields={fontSizeFields} colorFields={colorFields} />
 
     case 'funnel':
-      return <FunnelEditor data={data} onChange={onChange} commonFields={commonFields} fontSizeFields={fontSizeFields} colorFields={colorFields} paletteField={paletteField} />
+      return <FunnelEditor data={data} onChange={onChange} commonFields={commonFields} fontSizeFields={fontSizeFields} colorFields={colorFields} />
 
     case 'concentric':
-      return <ConcentricEditor data={data} onChange={onChange} commonFields={commonFields} fontSizeFields={fontSizeFields} colorFields={colorFields} paletteField={paletteField} />
+      return <ConcentricEditor data={data} onChange={onChange} commonFields={commonFields} fontSizeFields={fontSizeFields} colorFields={colorFields} />
 
     case 'hub-spoke':
-      return <HubSpokeEditor data={data} onChange={onChange} commonFields={commonFields} fontSizeFields={fontSizeFields} colorFields={colorFields} paletteField={paletteField} />
+      return <HubSpokeEditor data={data} onChange={onChange} commonFields={commonFields} fontSizeFields={fontSizeFields} colorFields={colorFields} />
 
     case 'venn':
-      return <VennEditor data={data} onChange={onChange} commonFields={commonFields} fontSizeFields={fontSizeFields} colorFields={colorFields} paletteField={paletteField} />
+      return <VennEditor data={data} onChange={onChange} commonFields={commonFields} fontSizeFields={fontSizeFields} colorFields={colorFields} />
   }
 }
 
 // ─── Chart Editor ───
 
-function ChartEditor({ data, onChange, isBlock, fontSizeFields, colorFields, paletteField }: { data: ChartSlideData; onChange: (d: SlideData) => void; isBlock?: boolean; fontSizeFields?: React.ReactNode; colorFields?: React.ReactNode; paletteField?: React.ReactNode }) {
+function ChartEditor({ data, onChange, isBlock, fontSizeFields, colorFields }: { data: ChartSlideData; onChange: (d: SlideData) => void; isBlock?: boolean; fontSizeFields?: React.ReactNode; colorFields?: React.ReactNode }) {
   return (
-    <div className="space-y-4">
+    <div className="space-y-3">
       {!isBlock && (
         <Section title="图表">
           <TextInput label="标题" value={data.title} onChange={(v) => onChange({ ...data, title: v })} />
@@ -345,8 +342,7 @@ function ChartEditor({ data, onChange, isBlock, fontSizeFields, colorFields, pal
         </Section>
       )}
       {!isBlock && fontSizeFields}
-      {!isBlock && colorFields}
-      {paletteField}
+      {colorFields}
 
       {data.chartType === 'bar' && data.bars && (
         <Section title="柱状图数据">
@@ -468,13 +464,12 @@ function ChartEditor({ data, onChange, isBlock, fontSizeFields, colorFields, pal
 
 // ─── Engine Editors ───
 
-function GridItemEditor({ data, onChange, commonFields, fontSizeFields, colorFields, paletteField }: { data: GridItemSlideData; onChange: (d: SlideData) => void; commonFields: React.ReactNode; fontSizeFields?: React.ReactNode; colorFields?: React.ReactNode; paletteField?: React.ReactNode }) {
+function GridItemEditor({ data, onChange, commonFields, fontSizeFields, colorFields }: { data: GridItemSlideData; onChange: (d: SlideData) => void; commonFields: React.ReactNode; fontSizeFields?: React.ReactNode; colorFields?: React.ReactNode }) {
   return (
-    <div className="space-y-4">
+    <div className="space-y-3">
       {commonFields}
       {fontSizeFields}
       {colorFields}
-      {paletteField}
       <Section title="网格配置">
         <NumberInput label="列数" value={data.columns ?? 0} onChange={(v) => onChange({ ...data, columns: v || undefined })} min={0} max={6} />
         <NumberInput label="间距 (px)" value={data.gap ?? 16} onChange={(v) => onChange({ ...data, gap: v })} min={0} max={64} step={2} />
@@ -497,13 +492,12 @@ function GridItemEditor({ data, onChange, commonFields, fontSizeFields, colorFie
   )
 }
 
-function SequenceEditor({ data, onChange, commonFields, fontSizeFields, colorFields, paletteField }: { data: SequenceSlideData; onChange: (d: SlideData) => void; commonFields: React.ReactNode; fontSizeFields?: React.ReactNode; colorFields?: React.ReactNode; paletteField?: React.ReactNode }) {
+function SequenceEditor({ data, onChange, commonFields, fontSizeFields, colorFields }: { data: SequenceSlideData; onChange: (d: SlideData) => void; commonFields: React.ReactNode; fontSizeFields?: React.ReactNode; colorFields?: React.ReactNode }) {
   return (
-    <div className="space-y-4">
+    <div className="space-y-3">
       {commonFields}
       {fontSizeFields}
       {colorFields}
-      {paletteField}
       <Section title="序列配置">
         <SelectInput label="方向" value={data.direction ?? 'horizontal'} options={['horizontal', 'vertical']} onChange={(v) => onChange({ ...data, direction: v })} />
         <NumberInput label="间距 (px)" value={data.gap ?? 8} onChange={(v) => onChange({ ...data, gap: v })} min={0} max={64} step={2} />
@@ -525,13 +519,12 @@ function SequenceEditor({ data, onChange, commonFields, fontSizeFields, colorFie
   )
 }
 
-function CompareEditor({ data, onChange, commonFields, fontSizeFields, colorFields, paletteField }: { data: CompareSlideData; onChange: (d: SlideData) => void; commonFields: React.ReactNode; fontSizeFields?: React.ReactNode; colorFields?: React.ReactNode; paletteField?: React.ReactNode }) {
+function CompareEditor({ data, onChange, commonFields, fontSizeFields, colorFields }: { data: CompareSlideData; onChange: (d: SlideData) => void; commonFields: React.ReactNode; fontSizeFields?: React.ReactNode; colorFields?: React.ReactNode }) {
   return (
-    <div className="space-y-4">
+    <div className="space-y-3">
       {commonFields}
       {fontSizeFields}
       {colorFields}
-      {paletteField}
       {data.mode === 'versus' && data.sides && (
         <Section title="对比方">
           <ArrayEditor
@@ -602,13 +595,12 @@ function CompareEditor({ data, onChange, commonFields, fontSizeFields, colorFiel
   )
 }
 
-function FunnelEditor({ data, onChange, commonFields, fontSizeFields, colorFields, paletteField }: { data: FunnelSlideData; onChange: (d: SlideData) => void; commonFields: React.ReactNode; fontSizeFields?: React.ReactNode; colorFields?: React.ReactNode; paletteField?: React.ReactNode }) {
+function FunnelEditor({ data, onChange, commonFields, fontSizeFields, colorFields }: { data: FunnelSlideData; onChange: (d: SlideData) => void; commonFields: React.ReactNode; fontSizeFields?: React.ReactNode; colorFields?: React.ReactNode }) {
   return (
-    <div className="space-y-4">
+    <div className="space-y-3">
       {commonFields}
       {fontSizeFields}
       {colorFields}
-      {paletteField}
       <Section title="层级">
         <ArrayEditor
           items={data.layers}
@@ -627,13 +619,12 @@ function FunnelEditor({ data, onChange, commonFields, fontSizeFields, colorField
   )
 }
 
-function ConcentricEditor({ data, onChange, commonFields, fontSizeFields, colorFields, paletteField }: { data: ConcentricSlideData; onChange: (d: SlideData) => void; commonFields: React.ReactNode; fontSizeFields?: React.ReactNode; colorFields?: React.ReactNode; paletteField?: React.ReactNode }) {
+function ConcentricEditor({ data, onChange, commonFields, fontSizeFields, colorFields }: { data: ConcentricSlideData; onChange: (d: SlideData) => void; commonFields: React.ReactNode; fontSizeFields?: React.ReactNode; colorFields?: React.ReactNode }) {
   return (
-    <div className="space-y-4">
+    <div className="space-y-3">
       {commonFields}
       {fontSizeFields}
       {colorFields}
-      {paletteField}
       <Section title="环">
         <ArrayEditor
           items={data.rings}
@@ -651,13 +642,12 @@ function ConcentricEditor({ data, onChange, commonFields, fontSizeFields, colorF
   )
 }
 
-function HubSpokeEditor({ data, onChange, commonFields, fontSizeFields, colorFields, paletteField }: { data: HubSpokeSlideData; onChange: (d: SlideData) => void; commonFields: React.ReactNode; fontSizeFields?: React.ReactNode; colorFields?: React.ReactNode; paletteField?: React.ReactNode }) {
+function HubSpokeEditor({ data, onChange, commonFields, fontSizeFields, colorFields }: { data: HubSpokeSlideData; onChange: (d: SlideData) => void; commonFields: React.ReactNode; fontSizeFields?: React.ReactNode; colorFields?: React.ReactNode }) {
   return (
-    <div className="space-y-4">
+    <div className="space-y-3">
       {commonFields}
       {fontSizeFields}
       {colorFields}
-      {paletteField}
       <Section title="中心">
         <TextInput label="标签" value={data.center.label} onChange={(v) => onChange({ ...data, center: { ...data.center, label: v } })} />
         <TextInput label="描述" value={data.center.description ?? ''} onChange={(v) => onChange({ ...data, center: { ...data.center, description: v } })} />
@@ -679,13 +669,12 @@ function HubSpokeEditor({ data, onChange, commonFields, fontSizeFields, colorFie
   )
 }
 
-function VennEditor({ data, onChange, commonFields, fontSizeFields, colorFields, paletteField }: { data: VennSlideData; onChange: (d: SlideData) => void; commonFields: React.ReactNode; fontSizeFields?: React.ReactNode; colorFields?: React.ReactNode; paletteField?: React.ReactNode }) {
+function VennEditor({ data, onChange, commonFields, fontSizeFields, colorFields }: { data: VennSlideData; onChange: (d: SlideData) => void; commonFields: React.ReactNode; fontSizeFields?: React.ReactNode; colorFields?: React.ReactNode }) {
   return (
-    <div className="space-y-4">
+    <div className="space-y-3">
       {commonFields}
       {fontSizeFields}
       {colorFields}
-      {paletteField}
       <Section title="韦恩图配置">
         <TextInput label="交集标签" value={data.intersectionLabel ?? ''} onChange={(v) => onChange({ ...data, intersectionLabel: v })} />
       </Section>
