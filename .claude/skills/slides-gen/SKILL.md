@@ -70,27 +70,43 @@ Target audience: self-reading deck (no speaker), or data-heavy presentation wher
 
 ### Content Density Table (per slide type)
 
-| Slide Type | compact min-max | rich min-max |
-|------------|----------------|-------------|
-| data-comparison | 2 metrics | 2-4 metrics |
-| bar-chart | 2-4 rows | 4-8 rows |
-| comparison | 2 cols × 2-3 rows | 2-3 cols × 3-5 rows |
-| grid | 4 items (title only) | 4-6 items (title + description) |
-| player-card | score + 2-3 features | score + 4-5 features + chart |
-| list | 3 items (short) | 3-5 items (with descriptions) |
-| diagram | 3 steps | 3-5 steps + side notes |
-| card-grid | 2-3 cards | 3-4 cards + conclusion |
+| Slide Type | compact min-max | rich min-max | compact 视觉元素 | rich 视觉元素 |
+|------------|----------------|-------------|-----------------|--------------|
+| data-comparison | 2 metrics | 2-4 metrics | 1（大数字面板） | 1-2（大数字 + 图片/图示） |
+| bar-chart | 2-4 rows | 4-8 rows | 1（条形图） | 1-2（条形图 + 指标卡/图片） |
+| comparison | 2 cols × 2-3 rows | 2-3 cols × 3-5 rows | 1（对比表） | 1-2（对比表 + 图片） |
+| grid | 4 items (title only) | 4-6 items (title + description) | 1（网格） | 1-2（网格 + 图片） |
+| player-card | score + 2-3 features | score + 4-5 features + chart | 1 | 2（特性 + 图表/图片） |
+| list | 3 items (short) | 3-5 items (with descriptions) | 1（列表） | 1-2（列表 + 图片/图示） |
+| diagram | 3 steps | 3-5 steps + side notes | 1（图示） | 1-2（图示 + 图片） |
+| card-grid | 2-3 cards | 3-4 cards + conclusion | 1（卡片组） | 1-2（卡片组 + 图表/图片） |
+| **block-slide** | 2 元素 | 2-4 元素 | 2（图表/图示 + 图片） | 2-4（多图表 + 图片 + 文字块） |
+
+### 信息丰富章节的多元素要求
+
+**当一个脚本章节满足以下任一条件时，该章节对应的幻灯片必须使用多元素编排（即 `block-slide` 类型或单类型 + 配套元素描述）：**
+
+1. **包含 2 组以上独立数据**（如：既有排名数据又有趋势数据）
+2. **既有定量数据又需要定性解释**（如：数据 + 原因分析文字）
+3. **涉及产品/界面截图 + 相关数据**（如：产品截图 + 性能指标）
+4. **涵盖多个维度的对比**（如：功能对比 + 性能数据 + 成本数据）
+5. **章节篇幅超过脚本整体的 10%**（长章节 = 信息密度高 = 需要更多视觉元素）
+
+**多元素编排的最低标准：**
+- `compact` 模式：信息丰富章节至少 2 个视觉元素
+- `rich` 模式：信息丰富章节至少 2 个视觉元素，优先 3 个
 
 ---
 
 ## Visual Mandate — 每页必须有视觉元素
 
-**核心规则：除非是纯文字金句（key-point）或标题页（title），否则每一张幻灯片都必须包含至少一个视觉元素。**
+**核心规则：除非是纯文字金句（key-point）或标题页（title），否则每一张幻灯片都必须包含至少一个视觉元素。信息丰富的幻灯片应包含 2 个或更多视觉元素。**
 
 视觉元素包括：
 - **数据图表** — 横向条形图、大数字+微型进度条、堆叠双色条形图、面积对比等
 - **结构图示** — 流程图、架构图、层级图、对比矩阵
 - **图片占位符** — 截图、产品界面、示意图（当前用虚线框+详细描述代替）
+- **文字段落** — 标题+正文、要点列表、引用块
 
 ### 视觉元素分配决策
 
@@ -117,6 +133,126 @@ Target audience: self-reading deck (no speaker), or data-heavy presentation wher
 - `key-point` — 金句/过渡页，大字居中即可
 
 **其他所有 slide types 必须有 `图表`、`图示`、或 `占位图` 中的至少一个。**
+
+### 视觉密度等级
+
+不同信息密度的章节，需要不同数量的视觉元素：
+
+| 信息密度 | 视觉元素数量 | 示例 |
+|---------|------------|------|
+| 轻量（单一概念或指标） | 1 个 | 一个大数字面板 |
+| 中等（多维数据或对比） | 2 个 | 一个图表 + 一个图片占位 |
+| 丰富（复杂分析或多角度论述） | 2-3 个 | 一个图表 + 一个图示 + 一个要点文字块 |
+| 仪表盘式（综合概览） | 3-4 个 | 两个图表 + 一个指标网格 + 一个图片 |
+
+**视觉密度判断规则：**
+- 该章节是否有 **2 组以上** 不同角度的数据？ → 至少 2 个视觉元素
+- 该章节是否同时涉及 **定量数据 + 定性描述**？ → 图表 + 文字/图示
+- 该章节是否引用了 **外部截图/界面** 同时有自己的数据？ → 占位图 + 图表
+- 使用单一图表是否能完整表达该章节的全部信息？ → 如果不能，必须增加视觉元素
+
+---
+
+## Multi-Element Slide Composition — 多元素幻灯片编排
+
+**核心理念：一张幻灯片不是只能放一个东西。信息丰富的章节，应该在一页中组合标题、图表、图片、文字段落等多种元素，形成视觉上完整的信息单元。**
+
+### 何时使用多元素编排
+
+| 场景 | 传统做法（单元素） | 多元素编排 |
+|------|-----------------|-----------|
+| 介绍产品特性 + 展示界面 | 分两页：一页列表 + 一页截图 | 一页：左侧特性列表 + 右侧截图占位 |
+| 展示数据趋势 + 解读结论 | 分两页：一页折线图 + 一页结论 | 一页：上方折线图 + 下方结论文字块 |
+| 对比两组数据 | 一页双色条形图 | 一页：左侧条形图 + 右侧关键指标大数字 |
+| 架构总览 + 核心模块详解 | 分两页 | 一页：中央架构图 + 四周模块卡片 |
+| 市场数据 + 产品截图 | 分两页 | 一页：左侧饼图/条形图 + 右侧产品截图占位 |
+
+### 元素组合模式
+
+以下是常见的多元素组合，slides.md 中应明确标注使用哪种模式：
+
+**双元素组合（最常用）：**
+
+| 组合 | 布局建议 | 适用场景 |
+|------|---------|---------|
+| 图表 + 图片占位 | 左右分栏（6:4）或上下分栏（6:4） | 数据 + 产品/场景展示 |
+| 图表 + 文字块 | 左图右文（7:3）或上图下文 | 数据 + 深度解读 |
+| 图表 + 指标卡片 | 左侧图表 + 右侧 2-3 个指标卡 | 趋势 + 关键数字 |
+| 图示 + 图片占位 | 左右分栏（5:5） | 流程/架构 + 实景/截图 |
+| 两个图表 | 左右分栏（5:5）或上下分栏 | 两组相关但不同维度的数据 |
+
+**三元素组合（信息丰富时）：**
+
+| 组合 | 布局建议 | 适用场景 |
+|------|---------|---------|
+| 标题块 + 图表 + 图片 | 顶部标题 + 左下图表 + 右下图片 | 带标题的复合信息页 |
+| 图表 + 指标卡片 + 图片 | 左大图表 + 右上指标 + 右下图片 | 数据仪表盘 |
+| 两个图表 + 文字块 | 上方两图表并排 + 下方结论文字 | 多角度数据对比 + 总结 |
+| 图示 + 图表 + 图片 | 三栏均分或黄金比例 | 流程 + 数据 + 实景 |
+
+**四元素组合（仪表盘/概览页）：**
+
+| 组合 | 布局建议 | 适用场景 |
+|------|---------|---------|
+| 两个图表 + 图片 + 文字块 | 2×2 网格 | 综合概览仪表盘 |
+| 指标卡片 + 图表 + 图示 + 图片 | 顶部指标 + 中间图表/图示 + 底部图片 | 全面分析页 |
+
+### 布局模式标注（Layout Patterns）
+
+在 slides.md 中，多元素幻灯片必须包含 `布局模式` 字段，指定元素的空间排布：
+
+| 模式 | 关键词 | 描述 |
+|------|--------|------|
+| 上下分栏 | `上下` | 主元素在上（60%），辅元素在下（35%） |
+| 左右分栏 | `左右` | 主元素在左（55-60%），辅元素在右（35-40%） |
+| 黄金比例 | `黄金比例` | 大元素占 62%，侧边栏 32%（上下分两块） |
+| 三栏均分 | `三栏` | 三个元素各占 30%，间距 3% |
+| 2×2 仪表盘 | `仪表盘` | 四个元素均分为 2×2 网格 |
+| 顶栏+主体 | `顶栏+主体` | 顶部窄条（标题/指标，18%），下方主体（75%） |
+| L 形布局 | `L形` | 大元素占左上 60%，两个小元素分列右侧和底部 |
+
+### 元素最小尺寸约束
+
+每个视觉元素都有最小尺寸要求，低于此尺寸会导致内容不可读：
+
+| 元素类型 | 最小宽度 | 最小高度 | 说明 |
+|---------|---------|---------|------|
+| 图表（条形/折线/饼图） | 40% | 40% | 图表需要足够空间显示标签和数据 |
+| 指标大数字 | 25% | 20% | 数字 + 标签 + 微型进度条 |
+| 图片占位 | 25% | 25% | 小于此尺寸的图片像缩略图，失去意义 |
+| 文字段落 | 25% | 15% | 至少容纳标题 + 1-2 行正文 |
+| 图示（流程/架构） | 35% | 30% | 节点和连线需要空间 |
+| 指标卡片组 | 30% | 20% | 至少 2 张卡片 |
+
+### slides.md 中的多元素标注格式
+
+```markdown
+## Slide 8: 脚手架对模型性能的影响
+- type: block-slide
+- 标题: 5-10 分增益，从中游跃升前三
+- 元素数量: 3
+- 布局模式: 黄金比例
+- 元素:
+  - 元素1（主图表，左侧 62%）:
+    - 类型: 堆叠双色条形图
+    - 数据: [同 Phase 4 图表规格]
+    - 外观描述: [...]
+    - 动画描述: [...]
+  - 元素2（指标卡，右上 32%×45%）:
+    - 类型: 大数字 + 微型进度条
+    - 数据: 最大增益 +10.4, 最小增益 +7.0
+    - 外观描述: [...]
+  - 元素3（场景图，右下 32%×47%）:
+    - 类型: 图片占位
+    - 标题: "Terminal-Bench 排行榜中各脚手架工具的成绩分布"
+    - 预期内容: [...]
+- 动画:
+  - fragments: 3
+  - 步骤:
+    - F0: 标题（appear）
+    - F1: 条形图生长（growBar）+ 大数字计数（countUp）
+    - F2: 场景图淡入（appear）
+```
 
 ---
 
@@ -301,15 +437,14 @@ Flag any data in the script that does NOT appear in the source document — thes
 This is the most critical phase. Map each script section to one or more slides. Produce a **slide plan table**:
 
 ```
-| Slide # | Script Section | Type | Core Message | Key Data | Chart? | Animation |
-|---------|---------------|------|-------------|----------|--------|-----------|
-| 1 | S1 | title | 模型只是一半 | — | — | appear |
-| 2 | S1 | placeholder+metric | TB 2.0 benchmark | 101 agents | — | countUp |
-| 3 | S1 | data-comparison | 同模型分差 12 分 | 58.0 vs 69.9 | — | countUp |
-| 4 | S2 | key-point+list | 脚手架定义 | 4 维度 | — | revealGroup |
-| 5 | S3 | placeholder | Terminus 2 基线 | — | — | appear |
-| 6 | S3 | bar-chart | 脚手架增益 5-10pp | 4 data rows | 双色堆叠条形图 | growBar |
-| ... | ... | ... | ... | ... | ... | ... |
+| Slide # | Script Section | Type | Core Message | Key Data | 元素数量 | 布局模式 | Animation |
+|---------|---------------|------|-------------|----------|---------|---------|-----------|
+| 1 | S1 | title | 模型只是一半 | — | 1 | — | appear |
+| 2 | S1 | block-slide | TB 2.0 benchmark | 101 agents | 2 | 左右 | countUp+appear |
+| 3 | S1 | block-slide | 同模型分差 12 分 | 58.0 vs 69.9 | 3 | 黄金比例 | countUp+growBar |
+| 4 | S2 | key-point | 脚手架定义 | — | 1 | — | appear |
+| 5 | S3 | block-slide | Terminus 2 基线+增益 | 4 rows+截图 | 2 | 左右 | growBar+appear |
+| ... | ... | ... | ... | ... | ... | ... | ... |
 ```
 
 **Planning rules:**
@@ -323,30 +458,47 @@ This is the most critical phase. Map each script section to one or more slides. 
    - Only `title` and `key-point` types are exempt.
    - If a slide has no quantitative data AND no screenshot reference AND no architecture/flow to diagram, ask: "Can I add a conceptual diagram, icon grid, or relationship graph?" If yes, add it. If truly impossible, convert to `key-point`.
 
-3. **Chart/visualization decision happens HERE**, not during writing. For each slide with quantitative data, decide now:
+3. **Multi-element composition check (CRITICAL — 多元素编排):**
+   - 对每张幻灯片问："这张幻灯片只用一个元素能否完整传达信息？"
+   - 如果章节信息丰富（有多组数据、同时有截图和数据、涉及多维度），**必须使用 `block-slide` 类型**，组合 2-4 个视觉元素。
+   - `rich` 模式下，**至少 40% 的内容幻灯片** 应为多元素编排（`block-slide`）。
+   - `compact` 模式下，**至少 20% 的内容幻灯片** 应为多元素编排。
+   - 单一图表经常不足以表达完整的分析洞察 — 配合关键指标、图片或解释文字块能大幅提升表现力。
+
+4. **Layout pattern assignment (布局模式分配):**
+   - 每张多元素幻灯片必须指定布局模式（上下 / 左右 / 黄金比例 / 三栏 / 仪表盘 / 顶栏+主体 / L形）。
+   - 相邻的多元素幻灯片不应使用相同的布局模式。
+   - 一个 deck 中应至少使用 3 种不同的布局模式。
+
+5. **Chart/visualization decision happens HERE**, not during writing. For each slide with quantitative data, decide now:
    - Does this need a chart? What type?
    - Or are big numbers + labels sufficient?
+   - **是否需要第二个图表来展示另一个维度的数据？**
    - See "Chart Specification Guide" below.
 
-4. **Image placeholder decision happens HERE**. For slides referencing products, interfaces, or demos:
+6. **Image placeholder decision happens HERE**. For slides referencing products, interfaces, or demos:
    - What screenshot/image would best support the content?
    - What exact content should the placeholder describe?
+   - **即使幻灯片不直接引用产品/界面，也要考虑：一张有意义的配图是否能提升视觉丰富度？**
    - See "Image & Placeholder Specification Guide" below.
 
-5. **Animation decision happens HERE**. For each slide, assign:
+7. **Animation decision happens HERE**. For each slide, assign:
    - Which elements get fragment animations?
    - What animation types (countUp, growBar, etc.)?
+   - **多元素幻灯片的动画应分层揭示：先主元素，再辅助元素。**
    - See "Animation Specification Guide" below.
 
-6. **Narrative rhythm check:**
+8. **Narrative rhythm check:**
    - Alternate slide types. Never 3+ of the same type consecutively.
    - Insert `key-point` dividers between major topic groups.
    - Start with `title`, end with `key-point`.
+   - **多元素 block-slide 和单元素幻灯片应交替出现，避免全部使用 block-slide。**
 
-7. **Slide count check:**
+9. **Slide count check:**
    - `compact`: 15-20 slides for a 10-12 minute talk
    - `rich`: 20-28 slides for a 10-12 minute talk
    - If over budget, merge. If under, consider splitting data-heavy sections.
+   - **多元素编排可以在更少的幻灯片中承载更多信息 — 优先用多元素而非多页来传达复杂内容。**
 
 ### Phase 4: Data Population — 填充数据
 
@@ -706,19 +858,22 @@ Is it grouped items with substantial detail per item?
 
 ### Available Slide Types
 
-| Type | When to Use | Required Fields |
-|------|------------|----------------|
-| `title` | Opening slide | 标题, 副标题, 标注 |
-| `data-comparison` | 2-4 metrics with exact numbers | 标题, 数据, 图表, 动画, 结论 |
-| `key-point` | Section divider, one big takeaway | 标题, 副标题 |
-| `comparison` | Side-by-side feature comparison | 标题, 列数据, 布局, 动画 |
-| `grid` | 4-6 item overview | 标题, 网格, 布局, 动画 |
-| `bar-chart` | Score/performance ranking | 标题, 图表, 动画 |
-| `player-card` | Individual item deep-dive | 标题, 分数, 特性, 图表(optional), 动画 |
-| `diagram` | Process flow / architecture | 标题, 图示, 动画 |
-| `list` | Ordered recommendations / steps | 标题, 列表, 动画 |
-| `placeholder` | Screenshot/image placeholder | 标题, 占位图 |
-| `card-grid` | 2-4 labeled cards | 标题, 卡片, 布局, 动画, 结论 |
+| Type | When to Use | Required Fields | 元素上限 |
+|------|------------|----------------|---------|
+| `title` | Opening slide | 标题, 副标题, 标注 | 1 |
+| `data-comparison` | 2-4 metrics with exact numbers | 标题, 数据, 图表, 动画, 结论 | 1 |
+| `key-point` | Section divider, one big takeaway | 标题, 副标题 | 1 |
+| `comparison` | Side-by-side feature comparison | 标题, 列数据, 布局, 动画 | 1 |
+| `grid` | 4-6 item overview | 标题, 网格, 布局, 动画 | 1 |
+| `bar-chart` | Score/performance ranking | 标题, 图表, 动画 | 1 |
+| `player-card` | Individual item deep-dive | 标题, 分数, 特性, 图表(optional), 动画 | 1 |
+| `diagram` | Process flow / architecture | 标题, 图示, 动画 | 1 |
+| `list` | Ordered recommendations / steps | 标题, 列表, 动画 | 1 |
+| `placeholder` | Screenshot/image placeholder | 标题, 占位图 | 1 |
+| `card-grid` | 2-4 labeled cards | 标题, 卡片, 布局, 动画, 结论 | 1 |
+| **`block-slide`** | **多元素复合布局** | **标题, 元素数量, 布局模式, 元素列表, 动画** | **2-4** |
+
+> **`block-slide` 是 slides.md 中最重要的类型。** 当一张幻灯片需要包含图表+图片、图表+指标卡、图示+文字块等多元素组合时，必须使用 `block-slide`。它对应 `/web-ppt` 中的自由布局画布（`ContentBlock[]`），每个元素独立定位和渲染。
 
 ### Field Reference
 
