@@ -10,7 +10,7 @@ const TOOLS: { id: ActiveTool; label: string; icon: string }[] = [
 
 const COLORS = ['#000000', '#EF4444', '#F59E0B', '#10B981', '#3B82F6', '#8B5CF6', '#EC4899']
 
-export default function EditorToolbar() {
+export default function EditorToolbar({ onClose }: { onClose?: () => void }) {
   const { activeTool, setTool, activeColor, setActiveColor, undo, redo, canUndo, canRedo } = useEditor()
   const [showPalette, setShowPalette] = useState(false)
   const paletteRef = useRef<HTMLDivElement>(null)
@@ -28,7 +28,7 @@ export default function EditorToolbar() {
   }, [showPalette])
 
   return (
-    <div className="fixed top-5 left-1/2 -translate-x-1/2 z-50 flex items-center gap-1 px-3 py-2 rounded-xl bg-white shadow-lg border border-gray-200">
+    <div className="fixed top-5 left-1/2 -translate-x-1/2 z-50 flex items-center gap-1 px-3 py-2 rounded-xl bg-white shadow-lg border border-gray-200 group/toolbar">
       {/* Undo / Redo */}
       <button
         onClick={undo}
@@ -114,6 +114,19 @@ export default function EditorToolbar() {
           </div>
         )}
       </div>
+
+      {/* Close button — visible on hover */}
+      {onClose && (
+        <button
+          onClick={onClose}
+          className="w-6 h-6 flex items-center justify-center rounded-md text-gray-400 hover:text-red-500 hover:bg-red-50 cursor-pointer transition-all opacity-0 group-hover/toolbar:opacity-100 ml-1"
+          title="关闭"
+        >
+          <svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
+            <path d="M2 2l6 6M8 2l-6 6" />
+          </svg>
+        </button>
+      )}
     </div>
   )
 }

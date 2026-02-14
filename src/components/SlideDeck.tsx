@@ -13,6 +13,17 @@ import BlockContextMenu from './editor/BlockContextMenu'
 import PropertyPanel from './editor/PropertyPanel'
 import { exportDeck } from '../data/deck-io'
 
+function Tooltip({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <div className="relative group/tip">
+      {children}
+      <div className="absolute top-full left-1/2 -translate-x-1/2 mt-1.5 px-2 py-1 rounded-md bg-gray-800 text-white text-[11px] whitespace-nowrap opacity-0 group-hover/tip:opacity-100 pointer-events-none transition-opacity z-50">
+        {label}
+      </div>
+    </div>
+  )
+}
+
 interface SlideDeckProps {
   slides: SlideData[]
   onBack?: () => void
@@ -39,6 +50,7 @@ function SlideDeckInner({ slides, onBack }: Omit<SlideDeckProps, 'deckId' | 'dec
   } = useEditor()
 
   const [spotlight, setSpotlight] = useState(false)
+  const [showToolbar, setShowToolbar] = useState(true)
   const [activeIndex, setActiveIndex] = useState(0)
   const [sidebarWidth, setSidebarWidth] = useState(260)
   const goNextRef = useRef(() => {})
@@ -275,55 +287,76 @@ function SlideDeckInner({ slides, onBack }: Omit<SlideDeckProps, 'deckId' | 'dec
 
           {/* Action buttons — right side */}
           <div className="flex items-center gap-1 shrink-0 ml-2">
-            <button
-              onClick={handleExport}
-              className="w-8 h-8 flex items-center justify-center rounded-lg cursor-pointer transition-colors hover:bg-black/5"
-              style={{ color: colors.textSecondary }}
-              title="导出文档"
-            >
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" />
-                <polyline points="7 10 12 15 17 10" />
-                <line x1="12" y1="15" x2="12" y2="3" />
-              </svg>
-            </button>
-            <button
-              onClick={toggleEditMode}
-              className="w-8 h-8 flex items-center justify-center rounded-lg cursor-pointer transition-colors hover:bg-black/5"
-              style={{
-                color: editMode ? '#1565C0' : colors.textSecondary,
-                background: editMode ? '#E3F2FD' : undefined,
-              }}
-              title={editMode ? '退出编辑' : '编辑模式'}
-            >
-              <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M11.5 1.5l3 3L5 14H2v-3L11.5 1.5z" />
-              </svg>
-            </button>
-            <button
-              onClick={() => setSpotlight((s) => !s)}
-              className="w-8 h-8 flex items-center justify-center rounded-lg cursor-pointer transition-colors hover:bg-black/5"
-              style={{
-                color: spotlight ? '#1565C0' : colors.textSecondary,
-                background: spotlight ? '#E3F2FD' : undefined,
-              }}
-              title={spotlight ? '关闭聚光灯' : '开启聚光灯'}
-            >
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-                <circle cx="12" cy="12" r="3" />
-                <path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42" />
-              </svg>
-            </button>
-            <button
-              onClick={handleEnterFullscreen}
-              className="w-8 h-8 flex items-center justify-center rounded-lg cursor-pointer transition-colors hover:bg-black/5"
-              style={{ color: colors.textSecondary }}
-              title="全屏预览"
-            >
-              <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M2 6V2h4M14 6V2h-4M2 10v4h4M14 10v4h-4" />
-              </svg>
-            </button>
+            <Tooltip label="导出文档">
+              <button
+                onClick={handleExport}
+                className="w-8 h-8 flex items-center justify-center rounded-lg cursor-pointer transition-colors hover:bg-black/5"
+                style={{ color: colors.textSecondary }}
+              >
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" />
+                  <polyline points="7 10 12 15 17 10" />
+                  <line x1="12" y1="15" x2="12" y2="3" />
+                </svg>
+              </button>
+            </Tooltip>
+            <Tooltip label={editMode ? '退出编辑' : '编辑模式'}>
+              <button
+                onClick={toggleEditMode}
+                className="w-8 h-8 flex items-center justify-center rounded-lg cursor-pointer transition-colors hover:bg-black/5"
+                style={{
+                  color: editMode ? '#1565C0' : colors.textSecondary,
+                  background: editMode ? '#E3F2FD' : undefined,
+                }}
+              >
+                <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M11.5 1.5l3 3L5 14H2v-3L11.5 1.5z" />
+                </svg>
+              </button>
+            </Tooltip>
+            {editMode && (
+              <Tooltip label={showToolbar ? '隐藏绘图工具' : '显示绘图工具'}>
+                <button
+                  onClick={() => setShowToolbar((s) => !s)}
+                  className="w-8 h-8 flex items-center justify-center rounded-lg cursor-pointer transition-colors hover:bg-black/5"
+                  style={{
+                    color: showToolbar ? '#1565C0' : colors.textSecondary,
+                    background: showToolbar ? '#E3F2FD' : undefined,
+                  }}
+                >
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                    <rect x="3" y="3" width="10" height="10" rx="2" />
+                    <circle cx="16.5" cy="16.5" r="5" />
+                  </svg>
+                </button>
+              </Tooltip>
+            )}
+            <Tooltip label={spotlight ? '关闭聚光灯' : '聚光灯'}>
+              <button
+                onClick={() => setSpotlight((s) => !s)}
+                className="w-8 h-8 flex items-center justify-center rounded-lg cursor-pointer transition-colors hover:bg-black/5"
+                style={{
+                  color: spotlight ? '#1565C0' : colors.textSecondary,
+                  background: spotlight ? '#E3F2FD' : undefined,
+                }}
+              >
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                  <circle cx="12" cy="12" r="3" />
+                  <path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42" />
+                </svg>
+              </button>
+            </Tooltip>
+            <Tooltip label="全屏预览">
+              <button
+                onClick={handleEnterFullscreen}
+                className="w-8 h-8 flex items-center justify-center rounded-lg cursor-pointer transition-colors hover:bg-black/5"
+                style={{ color: colors.textSecondary }}
+              >
+                <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M2 6V2h4M14 6V2h-4M2 10v4h4M14 10v4h-4" />
+                </svg>
+              </button>
+            </Tooltip>
           </div>
         </div>
 
@@ -362,7 +395,7 @@ function SlideDeckInner({ slides, onBack }: Omit<SlideDeckProps, 'deckId' | 'dec
       </div>
 
       {/* Editor toolbar */}
-      {editMode && <EditorToolbar />}
+      {editMode && showToolbar && <EditorToolbar onClose={() => setShowToolbar(false)} />}
       {editMode && <BlockContextMenu />}
 
       {/* Property panel — flex child, always gets full 480px */}
