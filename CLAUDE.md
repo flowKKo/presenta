@@ -60,7 +60,7 @@ Each engine renders a specific diagram type and exports both a full-slide compon
 
 ### Editor System
 
-- **EditorProvider** (`useReducer` + Context) — central state with 20+ actions, undo/redo (50-item history), clipboard, selection, localStorage persistence per deck
+- **EditorProvider** (`useReducer` + Context) — central state with 20+ actions, undo/redo (50-item history), clipboard, selection, file-based auto-save
 - **Selection model** — three targets: `content-box`, `overlay` (text/rect/line), `block`
 - **Tools** — select, text, rect, line (toolbar at top-center)
 - **Property panel** — right sidebar (320px) with type-specific editors
@@ -75,7 +75,11 @@ Each engine renders a specific diagram type and exports both a full-slide compon
 
 ### Deck Management
 
-- Runtime deck create/delete (in-memory state in App)
+- File-based persistence via Vite dev server API (`vite-plugin-deck-api.ts`)
+- UI create/edit/delete → writes `src/data/user-decks/*.json` via PUT/DELETE endpoints
+- AI-generated decks → `src/data/user-decks/*.ts` (same directory, auto-discovered)
+- `import.meta.glob` auto-discovers all files in `src/data/decks/` and `src/data/user-decks/` — no manual registration
+- Auto-save: editor changes debounced 2s → `commitSave()` → file write
 - JSON import/export (`src/data/deck-io.ts`)
 - Editable deck title/description in sidebar header
 
@@ -122,8 +126,10 @@ Each engine renders a specific diagram type and exports both a full-slide compon
 - `src/data/deck-io.ts` — export/import JSON files
 - `src/data/type-converter.ts` — convert between slide types, create defaults
 - `src/data/block-adapter.ts` — legacy slide → block-slide conversion
-- `src/data/decks/index.ts` — deck registry
-- `src/data/decks/<deck-id>.ts` — individual deck data
+- `src/data/deck-api.ts` — client-side saveDeck/deleteDeckFile API
+- `src/data/decks/index.ts` — auto-discovery deck registry (import.meta.glob)
+- `src/data/user-decks/<deck-id>.ts` — AI-generated deck data
+- `src/data/user-decks/<deck-id>.json` — UI-created/edited deck data
 
 ### Charts & Theme
 - `src/charts/{BarChart,PieChart,LineChart,RadarChart}.tsx` — ECharts wrappers
@@ -145,4 +151,4 @@ Each engine renders a specific diagram type and exports both a full-slide compon
 - ECharts uses registered theme matching the active style
 - No images — use CSS, SVG, or placeholder boxes
 - Chinese language preferred for UI labels and slide content
-- Editor state persisted per-deck in localStorage (`editor-{deckId}`)
+- Editor auto-saves to file via Vite dev server API (2s debounce)

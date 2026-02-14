@@ -19,7 +19,7 @@ Parse `$ARGUMENTS` for these flags:
 | `--script` | Yes | — | Path to the slide script Markdown file |
 | `--slides` | No | all | Comma-separated slide numbers to regenerate (e.g., `5,8,12`) |
 | `--source` | No | — | Path to the full reference document for data extraction |
-| `--deck` | No | from script filename | Deck ID (e.g., `terminal-bench`) → `src/data/decks/<deck-id>.ts` |
+| `--deck` | No | from script filename | Deck ID (e.g., `terminal-bench`) → `src/data/user-decks/<deck-id>.ts` |
 
 Positional shorthand: `/web-ppt zh swiss slides.md` → lang=zh, style=swiss, script=slides.md
 
@@ -46,8 +46,8 @@ Script (slides.md)
 | File | Purpose |
 |------|---------|
 | `src/data/types.ts` | `SlideData` union, `BlockData`, `ContentBlock`, `DeckMeta` type definitions |
-| `src/data/decks/<deck-id>.ts` | Deck data: export `DeckMeta` with `slides: SlideData[]` |
-| `src/data/decks/index.ts` | Deck registry: `Record<string, DeckMeta>` |
+| `src/data/user-decks/<deck-id>.ts` | Deck data: export `DeckMeta` with `slides: SlideData[]` |
+| `src/data/decks/index.ts` | Auto-discovery registry via `import.meta.glob` (no manual registration) |
 | `src/theme/swiss.ts` | Theme: colors, echarts theme, motion config, card style |
 | `src/components/engines/*.tsx` | 7 diagram engines (GridItem, Sequence, Compare, Funnel, Concentric, HubSpoke, Venn) |
 | `src/components/slides/ChartSlide.tsx` | ECharts renderer (bar, pie, line, radar) |
@@ -433,10 +433,10 @@ Slide 7: "用户转化路径"
 
 ### Phase 3: Implement — Generate Typed Data
 
-Generate `src/data/decks/<deck-id>.ts`:
+Generate `src/data/user-decks/<deck-id>.ts`:
 
 ```ts
-import type { DeckMeta } from '../types'
+import type { DeckMeta } from '../data/types'
 
 export const myDeck: DeckMeta = {
   id: 'my-deck',
@@ -449,7 +449,7 @@ export const myDeck: DeckMeta = {
 }
 ```
 
-Update `src/data/decks/index.ts` to register the deck.
+No manual registration needed — `import.meta.glob` auto-discovers files in `src/data/user-decks/`.
 
 ---
 
@@ -519,10 +519,9 @@ The style file defines: color tokens, typography scale, card style, slide style,
 2. **Read script file** — understand each slide's intent
 3. **Phase 1: Analyze** — list available layouts/charts, match to content
 4. **Phase 2: Design** — write slide-by-slide plan with type + variant + rationale
-5. **Phase 3: Implement** — generate `src/data/decks/<deck-id>.ts` with typed `SlideData[]`
-6. **Register** — update `src/data/decks/index.ts`
-7. **Verify** — `npx tsc --noEmit` passes, dev server running
-8. **Report** — slide count, deck ID, URL `localhost:5173/#<deck-id>`
+5. **Phase 3: Implement** — generate `src/data/user-decks/<deck-id>.ts` with typed `SlideData[]`
+6. **Verify** — `npx tsc --noEmit` passes, dev server running (Vite auto-discovers via glob)
+7. **Report** — slide count, deck ID, URL `localhost:5173/#<deck-id>`
 
 ### Partial Regeneration (`--slides` flag)
 
