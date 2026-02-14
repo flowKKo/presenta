@@ -69,6 +69,7 @@ export interface GridItemSlideData {
   items: GridItemEntry[]
   variant: GridItemVariant
   columns?: number
+  gap?: number               // px, default 16
 }
 
 // ─── 5. Sequence Engine ───
@@ -88,6 +89,7 @@ export interface SequenceSlideData {
   steps: SequenceStep[]
   variant: SequenceVariant
   direction?: 'horizontal' | 'vertical'
+  gap?: number               // px, default 8
 }
 
 // ─── 6. Compare Engine ───
@@ -196,8 +198,8 @@ export type SlideData =
 
 export type BlockData =
   | { type: 'title-body'; title: string; body?: string }
-  | { type: 'grid-item'; items: GridItemEntry[]; variant: GridItemVariant; columns?: number }
-  | { type: 'sequence'; steps: SequenceStep[]; variant: SequenceVariant; direction?: 'horizontal' | 'vertical' }
+  | { type: 'grid-item'; items: GridItemEntry[]; variant: GridItemVariant; columns?: number; gap?: number }
+  | { type: 'sequence'; steps: SequenceStep[]; variant: SequenceVariant; direction?: 'horizontal' | 'vertical'; gap?: number }
   | { type: 'compare'; mode: 'versus' | 'quadrant' | 'iceberg'; sides?: CompareSide[]; quadrantItems?: QuadrantItem[]; xAxis?: string; yAxis?: string; visible?: IcebergItem[]; hidden?: IcebergItem[] }
   | { type: 'funnel'; layers: FunnelLayer[]; variant: FunnelVariant }
   | { type: 'concentric'; rings: ConcentricRing[]; variant: ConcentricVariant }

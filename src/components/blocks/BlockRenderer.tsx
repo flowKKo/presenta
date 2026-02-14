@@ -40,9 +40,9 @@ export default function BlockRenderer({ data }: BlockRendererProps) {
     case 'title-body':
       return <TitleBodyBlock data={data} />
     case 'grid-item':
-      return <DiagramWrapper><GridItemDiagram items={data.items} variant={data.variant} columns={data.columns} /></DiagramWrapper>
+      return <DiagramWrapper><GridItemDiagram items={data.items} variant={data.variant} columns={data.columns} gap={data.gap} /></DiagramWrapper>
     case 'sequence':
-      return <DiagramWrapper><SequenceDiagram steps={data.steps} variant={data.variant} direction={data.direction} /></DiagramWrapper>
+      return <div className="flex items-center justify-center h-full"><SequenceDiagram steps={data.steps} variant={data.variant} direction={data.direction} gap={data.gap} /></div>
     case 'compare':
       return <DiagramWrapper><CompareDiagram mode={data.mode} sides={data.sides} quadrantItems={data.quadrantItems} xAxis={data.xAxis} yAxis={data.yAxis} visible={data.visible} hidden={data.hidden} /></DiagramWrapper>
     case 'funnel':

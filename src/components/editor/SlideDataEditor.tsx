@@ -276,6 +276,7 @@ function GridItemEditor({ data, onChange, commonFields }: { data: GridItemSlideD
       {commonFields}
       <Section title="网格配置">
         <NumberInput label="列数" value={data.columns ?? 0} onChange={(v) => onChange({ ...data, columns: v || undefined })} min={0} max={6} />
+        <NumberInput label="间距 (px)" value={data.gap ?? 16} onChange={(v) => onChange({ ...data, gap: v })} min={0} max={64} step={2} />
       </Section>
       <Section title="项目">
         <ArrayEditor
@@ -301,6 +302,7 @@ function SequenceEditor({ data, onChange, commonFields }: { data: SequenceSlideD
       {commonFields}
       <Section title="序列配置">
         <SelectInput label="方向" value={data.direction ?? 'horizontal'} options={['horizontal', 'vertical']} onChange={(v) => onChange({ ...data, direction: v })} />
+        <NumberInput label="间距 (px)" value={data.gap ?? 8} onChange={(v) => onChange({ ...data, gap: v })} min={0} max={64} step={2} />
       </Section>
       <Section title="步骤">
         <ArrayEditor

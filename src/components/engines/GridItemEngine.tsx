@@ -111,15 +111,16 @@ function TopCircleCard({ item, index, color }: { item: GridItemEntry; index: num
   )
 }
 
-export function GridItemDiagram({ items, variant, columns }: { items: GridItemEntry[]; variant: GridItemSlideData['variant']; columns?: number }) {
+export function GridItemDiagram({ items, variant, columns, gap = 16 }: { items: GridItemEntry[]; variant: GridItemSlideData['variant']; columns?: number; gap?: number }) {
   const cols = getColumns(items.length, columns)
   const rows = Math.ceil(items.length / cols)
   const palette = generateGradientColors(items.length)
 
   return (
     <div
-      className="grid gap-4 flex-1 min-h-0"
+      className="grid flex-1 min-h-0"
       style={{
+        gap: `${gap}px`,
         gridTemplateColumns: `repeat(${cols}, minmax(0, 1fr))`,
         gridTemplateRows: `repeat(${rows}, minmax(0, 1fr))`,
       }}
@@ -142,7 +143,7 @@ export function GridItemDiagram({ items, variant, columns }: { items: GridItemEn
   )
 }
 
-export default function GridItemEngine({ title, body, items, variant, columns }: GridItemSlideData) {
+export default function GridItemEngine({ title, body, items, variant, columns, gap }: GridItemSlideData) {
   return (
     <motion.div
       className="flex flex-col gap-6 h-full"
@@ -152,7 +153,7 @@ export default function GridItemEngine({ title, body, items, variant, columns }:
       viewport={{ once: true }}
     >
       <EngineTitle title={title} body={body} />
-      <GridItemDiagram items={items} variant={variant} columns={columns} />
+      <GridItemDiagram items={items} variant={variant} columns={columns} gap={gap} />
     </motion.div>
   )
 }
