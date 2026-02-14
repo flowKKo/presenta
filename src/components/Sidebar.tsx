@@ -67,6 +67,21 @@ export default function Sidebar({
   const thumbRefs = useRef<(HTMLButtonElement | null)[]>([])
   const [contextMenu, setContextMenu] = useState<ContextMenuState | null>(null)
   const menuRef = useRef<HTMLDivElement | null>(null)
+
+  // Callback ref: adjust context menu position to stay within viewport
+  const menuCallbackRef = useCallback((el: HTMLDivElement | null) => {
+    menuRef.current = el
+    if (!el) return
+    const rect = el.getBoundingClientRect()
+    const vh = window.innerHeight
+    const vw = window.innerWidth
+    if (rect.bottom > vh) {
+      el.style.top = `${Math.max(8, vh - rect.height - 8)}px`
+    }
+    if (rect.right > vw) {
+      el.style.left = `${Math.max(8, vw - rect.width - 8)}px`
+    }
+  }, [])
   // pl-2(8) + pr-5(20) + w-4(16) + gap-3(12) = 56px padding/chrome
   const thumbW = width - 56
   const scale = thumbW / SLIDE_W
@@ -324,9 +339,9 @@ export default function Sidebar({
           )
         })}
 
-        {/* Gap zone after last slide */}
+        {/* Gap zone after last slide — same h-4 as inter-slide gaps */}
         <div
-          className="h-2.5 flex items-center pl-7 group/gap cursor-pointer"
+          className="h-4 flex items-center pl-7 group/gap cursor-pointer"
           onClick={() => handleGapClick(slides.length)}
           onContextMenu={(e) => handleGapContextMenu(e, slides.length)}
         >
@@ -344,7 +359,7 @@ export default function Sidebar({
       {/* Context menu */}
       {contextMenu && (
         <div
-          ref={menuRef}
+          ref={menuCallbackRef}
           className="fixed z-[100] py-1 rounded-lg border shadow-lg min-w-[140px]"
           style={{
             left: contextMenu.x,
