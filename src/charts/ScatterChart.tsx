@@ -1,13 +1,7 @@
 import ReactECharts from 'echarts-for-react'
-import * as echarts from 'echarts/core'
-import { ScatterChart as EScatterChart } from 'echarts/charts'
-import { GridComponent, TooltipComponent, LegendComponent } from 'echarts/components'
-import { CanvasRenderer } from 'echarts/renderers'
-import { echartsTheme, colors, getChartPalette } from '../theme/swiss'
+import './setup'
+import { colors, getChartPalette } from '../theme/swiss'
 import type { ScatterSeries } from '../data/types'
-
-echarts.use([EScatterChart, GridComponent, TooltipComponent, LegendComponent, CanvasRenderer])
-echarts.registerTheme('swiss', echartsTheme)
 
 interface ScatterChartProps {
   series: ScatterSeries[]

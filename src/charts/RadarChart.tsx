@@ -1,12 +1,6 @@
 import ReactECharts from 'echarts-for-react'
-import * as echarts from 'echarts/core'
-import { RadarChart as ERadarChart } from 'echarts/charts'
-import { TooltipComponent, LegendComponent } from 'echarts/components'
-import { CanvasRenderer } from 'echarts/renderers'
-import { echartsTheme, colors, chartPalette, getChartPalette } from '../theme/swiss'
-
-echarts.use([ERadarChart, TooltipComponent, LegendComponent, CanvasRenderer])
-echarts.registerTheme('swiss', echartsTheme)
+import { echarts } from './setup'
+import { colors, getChartPalette } from '../theme/swiss'
 
 interface RadarChartProps {
   indicators: { name: string; max: number }[]

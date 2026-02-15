@@ -1,13 +1,7 @@
 import ReactECharts from 'echarts-for-react'
-import * as echarts from 'echarts/core'
-import { CustomChart } from 'echarts/charts'
-import { GridComponent, TooltipComponent } from 'echarts/components'
-import { CanvasRenderer } from 'echarts/renderers'
-import { echartsTheme, getChartPalette } from '../theme/swiss'
+import { echarts } from './setup'
+import { getChartPalette } from '../theme/swiss'
 import type { GanttTask } from '../data/types'
-
-echarts.use([CustomChart, GridComponent, TooltipComponent, CanvasRenderer])
-echarts.registerTheme('swiss', echartsTheme)
 
 interface GanttChartProps {
   tasks: GanttTask[]

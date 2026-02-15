@@ -1,12 +1,6 @@
 import ReactECharts from 'echarts-for-react'
-import * as echarts from 'echarts/core'
-import { PieChart as EPieChart } from 'echarts/charts'
-import { TooltipComponent, LegendComponent } from 'echarts/components'
-import { CanvasRenderer } from 'echarts/renderers'
-import { echartsTheme, colors, getChartPalette } from '../theme/swiss'
-
-echarts.use([EPieChart, TooltipComponent, LegendComponent, CanvasRenderer])
-echarts.registerTheme('swiss', echartsTheme)
+import './setup'
+import { colors, getChartPalette } from '../theme/swiss'
 
 interface PieChartProps {
   data: { name: string; value: number }[]

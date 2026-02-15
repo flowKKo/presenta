@@ -1,13 +1,7 @@
 import ReactECharts from 'echarts-for-react'
-import * as echarts from 'echarts/core'
-import { SankeyChart as SankeyChartType } from 'echarts/charts'
-import { TooltipComponent } from 'echarts/components'
-import { CanvasRenderer } from 'echarts/renderers'
-import { echartsTheme, getChartPalette } from '../theme/swiss'
+import './setup'
+import { getChartPalette } from '../theme/swiss'
 import type { SankeyNode, SankeyLink } from '../data/types'
-
-echarts.use([SankeyChartType, TooltipComponent, CanvasRenderer])
-echarts.registerTheme('swiss', echartsTheme)
 
 interface SankeyChartProps {
   nodes: SankeyNode[]

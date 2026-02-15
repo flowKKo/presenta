@@ -1,12 +1,7 @@
 import ReactECharts from 'echarts-for-react'
-import * as echarts from 'echarts/core'
-import { GaugeChart as EGaugeChart } from 'echarts/charts'
-import { CanvasRenderer } from 'echarts/renderers'
-import { echartsTheme, colors, getChartPalette } from '../theme/swiss'
+import { echarts } from './setup'
+import { colors, getChartPalette } from '../theme/swiss'
 import type { GaugeData } from '../data/types'
-
-echarts.use([EGaugeChart, CanvasRenderer])
-echarts.registerTheme('swiss', echartsTheme)
 
 interface GaugeChartProps {
   data: GaugeData
@@ -19,9 +14,9 @@ export default function GaugeChart({ data, height, colorPalette }: GaugeChartPro
   const max = data.max ?? 100
   const ratio = data.value / max
 
-  // Color based on ratio: red < 0.4, yellow 0.4-0.7, green > 0.7
+  // Use auto-color (red/yellow/green by ratio) unless a custom palette is explicitly set
   const autoColor = ratio < 0.4 ? '#E57373' : ratio < 0.7 ? '#FFB74D' : '#4CAF50'
-  const mainColor = pal[0] || autoColor
+  const mainColor = colorPalette ? pal[0] : autoColor
 
   const option = {
     series: [

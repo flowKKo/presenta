@@ -1,13 +1,7 @@
 import ReactECharts from 'echarts-for-react'
-import * as echarts from 'echarts/core'
-import { BarChart, LineChart } from 'echarts/charts'
-import { GridComponent, TooltipComponent, LegendComponent } from 'echarts/components'
-import { CanvasRenderer } from 'echarts/renderers'
-import { echartsTheme, colors, getChartPalette } from '../theme/swiss'
+import { echarts } from './setup'
+import { colors, getChartPalette } from '../theme/swiss'
 import type { ComboSeries } from '../data/types'
-
-echarts.use([BarChart, LineChart, GridComponent, TooltipComponent, LegendComponent, CanvasRenderer])
-echarts.registerTheme('swiss', echartsTheme)
 
 interface ComboChartProps {
   categories: string[]

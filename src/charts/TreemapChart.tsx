@@ -1,13 +1,7 @@
 import ReactECharts from 'echarts-for-react'
-import * as echarts from 'echarts/core'
-import { TreemapChart as TreemapChartType } from 'echarts/charts'
-import { TooltipComponent } from 'echarts/components'
-import { CanvasRenderer } from 'echarts/renderers'
-import { echartsTheme, getChartPalette } from '../theme/swiss'
+import './setup'
+import { getChartPalette } from '../theme/swiss'
 import type { TreemapNode } from '../data/types'
-
-echarts.use([TreemapChartType, TooltipComponent, CanvasRenderer])
-echarts.registerTheme('swiss', echartsTheme)
 
 interface TreemapChartProps {
   data: TreemapNode[]

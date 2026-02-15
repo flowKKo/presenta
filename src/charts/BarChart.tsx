@@ -1,12 +1,6 @@
 import ReactECharts from 'echarts-for-react'
-import * as echarts from 'echarts/core'
-import { BarChart as EBarChart } from 'echarts/charts'
-import { GridComponent, TooltipComponent, LegendComponent } from 'echarts/components'
-import { CanvasRenderer } from 'echarts/renderers'
-import { echartsTheme, colors, chartPalette, getChartPalette } from '../theme/swiss'
-
-echarts.use([EBarChart, GridComponent, TooltipComponent, LegendComponent, CanvasRenderer])
-echarts.registerTheme('swiss', echartsTheme)
+import { echarts } from './setup'
+import { colors, getChartPalette } from '../theme/swiss'
 
 const semanticColorMap: Record<string, string> = {
   positive: colors.accentPositive,

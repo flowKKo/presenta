@@ -1,13 +1,7 @@
 import ReactECharts from 'echarts-for-react'
-import * as echarts from 'echarts/core'
-import { BoxplotChart as BoxplotChartType } from 'echarts/charts'
-import { GridComponent, TooltipComponent } from 'echarts/components'
-import { CanvasRenderer } from 'echarts/renderers'
-import { echartsTheme, getChartPalette } from '../theme/swiss'
+import './setup'
+import { getChartPalette } from '../theme/swiss'
 import type { BoxplotItem } from '../data/types'
-
-echarts.use([BoxplotChartType, GridComponent, TooltipComponent, CanvasRenderer])
-echarts.registerTheme('swiss', echartsTheme)
 
 interface BoxplotChartProps {
   items: BoxplotItem[]

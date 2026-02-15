@@ -1,12 +1,6 @@
 import ReactECharts from 'echarts-for-react'
-import * as echarts from 'echarts/core'
-import { HeatmapChart as HeatmapChartType } from 'echarts/charts'
-import { GridComponent, TooltipComponent, VisualMapComponent } from 'echarts/components'
-import { CanvasRenderer } from 'echarts/renderers'
-import { echartsTheme, getChartPalette } from '../theme/swiss'
-
-echarts.use([HeatmapChartType, GridComponent, TooltipComponent, VisualMapComponent, CanvasRenderer])
-echarts.registerTheme('swiss', echartsTheme)
+import './setup'
+import { getChartPalette } from '../theme/swiss'
 
 interface HeatmapChartProps {
   xCategories: string[]
