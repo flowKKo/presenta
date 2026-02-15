@@ -96,6 +96,12 @@ const VARIANT_OPTIONS: Partial<Record<SlideType, { field: string; options: { val
       { value: 'combo', label: '组合' },
       { value: 'scatter', label: '散点' },
       { value: 'gauge', label: '仪表盘' },
+      { value: 'treemap', label: '矩形树图' },
+      { value: 'sankey', label: '桑基图' },
+      { value: 'heatmap', label: '热力图' },
+      { value: 'sunburst', label: '旭日图' },
+      { value: 'boxplot', label: '箱线图' },
+      { value: 'gantt', label: '甘特图' },
     ],
   },
 }

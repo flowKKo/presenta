@@ -26,7 +26,7 @@ export interface KeyPointSlideData {
 }
 
 // ─── 3. Chart (expanded) ───
-export type ChartType = 'bar' | 'horizontal-bar' | 'stacked-bar' | 'pie' | 'donut' | 'rose' | 'line' | 'area' | 'radar' | 'proportion' | 'waterfall' | 'combo' | 'scatter' | 'gauge'
+export type ChartType = 'bar' | 'horizontal-bar' | 'stacked-bar' | 'pie' | 'donut' | 'rose' | 'line' | 'area' | 'radar' | 'proportion' | 'waterfall' | 'combo' | 'scatter' | 'gauge' | 'treemap' | 'sankey' | 'heatmap' | 'sunburst' | 'boxplot' | 'gantt'
 
 export interface ChartBar {
   category: string
@@ -41,6 +41,12 @@ export interface WaterfallItem { name: string; value: number; type?: 'increase' 
 export interface ComboSeries { name: string; data: number[]; seriesType: 'bar' | 'line'; yAxisIndex?: 0 | 1 }
 export interface ScatterSeries { name: string; data: [number, number, number?][] }
 export interface GaugeData { value: number; max?: number; name?: string }
+export interface TreemapNode { name: string; value: number; children?: TreemapNode[] }
+export interface SankeyNode { name: string }
+export interface SankeyLink { source: string; target: string; value: number }
+export interface SunburstNode { name: string; value?: number; children?: SunburstNode[] }
+export interface BoxplotItem { name: string; values: [number, number, number, number, number] }
+export interface GanttTask { name: string; start: number; end: number; category?: string }
 
 export interface ChartSlideData {
   type: 'chart'
@@ -77,6 +83,20 @@ export interface ChartSlideData {
   scatterYAxis?: string
   // gauge
   gaugeData?: GaugeData
+  // treemap
+  treemapData?: TreemapNode[]
+  // sankey
+  sankeyNodes?: SankeyNode[]
+  sankeyLinks?: SankeyLink[]
+  // heatmap
+  heatmapYCategories?: string[]
+  heatmapData?: [number, number, number][]
+  // sunburst
+  sunburstData?: SunburstNode[]
+  // boxplot
+  boxplotItems?: BoxplotItem[]
+  // gantt
+  ganttTasks?: GanttTask[]
 }
 
 // ─── 4. GridItem Engine ───
@@ -270,7 +290,7 @@ export type BlockData =
   | { type: 'concentric'; rings: ConcentricRing[]; variant: ConcentricVariant; textColor?: string; colorPalette?: string }
   | { type: 'hub-spoke'; center: { label: string; description?: string }; spokes: { label: string; description?: string }[]; variant: HubSpokeVariant; textColor?: string; colorPalette?: string }
   | { type: 'venn'; sets: { label: string; description?: string }[]; intersectionLabel?: string; variant: VennVariant; textColor?: string; colorPalette?: string }
-  | { type: 'chart'; chartType: ChartType; bars?: ChartBar[]; slices?: ChartSlice[]; innerRadius?: number; categories?: string[]; lineSeries?: LineSeries[]; indicators?: RadarIndicator[]; radarSeries?: RadarSeries[]; proportionItems?: ProportionItem[]; waterfallItems?: WaterfallItem[]; comboSeries?: ComboSeries[]; scatterSeries?: ScatterSeries[]; scatterXAxis?: string; scatterYAxis?: string; gaugeData?: GaugeData; highlight?: string; colorPalette?: string }
+  | { type: 'chart'; chartType: ChartType; bars?: ChartBar[]; slices?: ChartSlice[]; innerRadius?: number; categories?: string[]; lineSeries?: LineSeries[]; indicators?: RadarIndicator[]; radarSeries?: RadarSeries[]; proportionItems?: ProportionItem[]; waterfallItems?: WaterfallItem[]; comboSeries?: ComboSeries[]; scatterSeries?: ScatterSeries[]; scatterXAxis?: string; scatterYAxis?: string; gaugeData?: GaugeData; treemapData?: TreemapNode[]; sankeyNodes?: SankeyNode[]; sankeyLinks?: SankeyLink[]; heatmapYCategories?: string[]; heatmapData?: [number, number, number][]; sunburstData?: SunburstNode[]; boxplotItems?: BoxplotItem[]; ganttTasks?: GanttTask[]; highlight?: string; colorPalette?: string }
   | { type: 'image'; src?: string; alt?: string; fit?: 'cover' | 'contain' | 'fill'; placeholder?: string }
 
 export interface ContentBlock {

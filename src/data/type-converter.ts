@@ -136,6 +136,18 @@ function extractChartItems(data: ChartSlideData): CommonItem[] {
       )
     case 'gauge':
       return data.gaugeData ? [{ name: data.gaugeData.name || '值', value: data.gaugeData.value }] : []
+    case 'treemap':
+      return (data.treemapData ?? []).map((n) => ({ name: n.name, value: n.value }))
+    case 'sankey':
+      return (data.sankeyNodes ?? []).map((n) => ({ name: n.name }))
+    case 'heatmap':
+      return (data.categories ?? []).map((cat, i) => ({ name: cat, value: i }))
+    case 'sunburst':
+      return (data.sunburstData ?? []).map((n) => ({ name: n.name, value: n.value }))
+    case 'boxplot':
+      return (data.boxplotItems ?? []).map((b) => ({ name: b.name, value: b.values[2] }))
+    case 'gantt':
+      return (data.ganttTasks ?? []).map((t) => ({ name: t.name, value: t.end - t.start }))
   }
 }
 
@@ -351,6 +363,49 @@ function buildChart(title: string, body: string | undefined, items: CommonItem[]
       return {
         type: 'chart', chartType: 'gauge', title, body,
         gaugeData: { value: withValues[0]?.value ?? 50, max: 100, name: items[0]?.name ?? '完成率' },
+      }
+    case 'treemap':
+      return {
+        type: 'chart', chartType: 'treemap', title, body,
+        treemapData: withValues.map((i) => ({ name: i.name, value: i.value })),
+      }
+    case 'sankey': {
+      const nodes = withValues.map((i) => ({ name: i.name }))
+      const links = withValues.length >= 2
+        ? withValues.slice(0, -1).map((i, idx) => ({ source: i.name, target: withValues[idx + 1].name, value: i.value }))
+        : []
+      return { type: 'chart', chartType: 'sankey', title, body, sankeyNodes: nodes, sankeyLinks: links }
+    }
+    case 'heatmap': {
+      const xCats = withValues.slice(0, Math.min(5, withValues.length)).map(i => i.name)
+      const yCats = ['行1', '行2', '行3']
+      const hData: [number, number, number][] = []
+      xCats.forEach((_, xi) => yCats.forEach((_, yi) => hData.push([xi, yi, Math.floor(Math.random() * 10)])))
+      return { type: 'chart', chartType: 'heatmap', title, body, categories: xCats, heatmapYCategories: yCats, heatmapData: hData }
+    }
+    case 'sunburst':
+      return {
+        type: 'chart', chartType: 'sunburst', title, body,
+        sunburstData: withValues.map((i) => ({ name: i.name, value: i.value })),
+      }
+    case 'boxplot':
+      return {
+        type: 'chart', chartType: 'boxplot', title, body,
+        boxplotItems: withValues.map((i) => ({
+          name: i.name,
+          values: [
+            Math.round(i.value * 0.3),
+            Math.round(i.value * 0.5),
+            Math.round(i.value * 0.7),
+            Math.round(i.value * 0.85),
+            i.value,
+          ] as [number, number, number, number, number],
+        })),
+      }
+    case 'gantt':
+      return {
+        type: 'chart', chartType: 'gantt', title, body,
+        ganttTasks: withValues.map((i, idx) => ({ name: i.name, start: idx * 3, end: idx * 3 + 4 })),
       }
   }
 }

@@ -11,6 +11,12 @@ import WaterfallChart from '../../charts/WaterfallChart'
 import ComboChart from '../../charts/ComboChart'
 import ScatterChart from '../../charts/ScatterChart'
 import GaugeChart from '../../charts/GaugeChart'
+import TreemapChart from '../../charts/TreemapChart'
+import SankeyChart from '../../charts/SankeyChart'
+import HeatmapChart from '../../charts/HeatmapChart'
+import SunburstChart from '../../charts/SunburstChart'
+import BoxplotChart from '../../charts/BoxplotChart'
+import GanttChart from '../../charts/GanttChart'
 
 const colorMap: Record<string, string> = {
   positive: colors.accentPositive,
@@ -34,6 +40,14 @@ export interface ChartDiagramProps {
   scatterXAxis?: string
   scatterYAxis?: string
   gaugeData?: ChartSlideData['gaugeData']
+  treemapData?: ChartSlideData['treemapData']
+  sankeyNodes?: ChartSlideData['sankeyNodes']
+  sankeyLinks?: ChartSlideData['sankeyLinks']
+  heatmapYCategories?: ChartSlideData['heatmapYCategories']
+  heatmapData?: ChartSlideData['heatmapData']
+  sunburstData?: ChartSlideData['sunburstData']
+  boxplotItems?: ChartSlideData['boxplotItems']
+  ganttTasks?: ChartSlideData['ganttTasks']
   chartHeight?: number
   colorPalette?: string
 }
@@ -65,6 +79,18 @@ export function ChartDiagram(props: ChartDiagramProps) {
       return <ScatterChart series={props.scatterSeries ?? []} xAxisName={props.scatterXAxis} yAxisName={props.scatterYAxis} height={h} colorPalette={cp} />
     case 'gauge':
       return <GaugeChart data={props.gaugeData ?? { value: 0 }} height={h} colorPalette={cp} />
+    case 'treemap':
+      return <TreemapChart data={props.treemapData ?? []} height={h} colorPalette={cp} />
+    case 'sankey':
+      return <SankeyChart nodes={props.sankeyNodes ?? []} links={props.sankeyLinks ?? []} height={h} colorPalette={cp} />
+    case 'heatmap':
+      return <HeatmapChart xCategories={props.categories ?? []} yCategories={props.heatmapYCategories ?? []} data={props.heatmapData ?? []} height={h} colorPalette={cp} />
+    case 'sunburst':
+      return <SunburstChart data={props.sunburstData ?? []} height={h} colorPalette={cp} />
+    case 'boxplot':
+      return <BoxplotChart items={props.boxplotItems ?? []} height={h} colorPalette={cp} />
+    case 'gantt':
+      return <GanttChart tasks={props.ganttTasks ?? []} height={h} colorPalette={cp} />
     case 'stacked-bar': {
       const bars = props.bars ?? []
       const categories = bars.map(b => b.category)

@@ -581,6 +581,132 @@ function ChartEditor({ data, onChange, isBlock, fontSizeFields, colorFields }: {
           <TextInput label="名称" value={data.gaugeData?.name ?? ''} onChange={(v) => onChange({ ...data, gaugeData: { ...data.gaugeData!, name: v } })} />
         </Section>
       )}
+
+      {data.chartType === 'treemap' && (
+        <Section title="矩形树图数据">
+          <ArrayEditor
+            items={data.treemapData ?? []}
+            onChange={(treemapData) => onChange({ ...data, treemapData })}
+            createDefault={() => ({ name: '新节点', value: 50 })}
+            renderRow={(item, _, update) => (
+              <div className="space-y-1">
+                <TextInput label="名称" value={item.name} onChange={(v) => update({ ...item, name: v })} />
+                <NumberInput label="值" value={item.value} onChange={(v) => update({ ...item, value: v })} />
+              </div>
+            )}
+          />
+        </Section>
+      )}
+
+      {data.chartType === 'sankey' && (
+        <>
+          <Section title="桑基图节点">
+            <ArrayEditor
+              items={data.sankeyNodes ?? []}
+              onChange={(sankeyNodes) => onChange({ ...data, sankeyNodes })}
+              createDefault={() => ({ name: '新节点' })}
+              renderRow={(item, _, update) => (
+                <TextInput label="名称" value={item.name} onChange={(v) => update({ ...item, name: v })} />
+              )}
+            />
+          </Section>
+          <Section title="桑基图连接">
+            <ArrayEditor
+              items={data.sankeyLinks ?? []}
+              onChange={(sankeyLinks) => onChange({ ...data, sankeyLinks })}
+              createDefault={() => ({ source: '', target: '', value: 10 })}
+              renderRow={(item, _, update) => (
+                <div className="space-y-1">
+                  <TextInput label="来源" value={item.source} onChange={(v) => update({ ...item, source: v })} />
+                  <TextInput label="目标" value={item.target} onChange={(v) => update({ ...item, target: v })} />
+                  <NumberInput label="流量" value={item.value} onChange={(v) => update({ ...item, value: v })} />
+                </div>
+              )}
+            />
+          </Section>
+        </>
+      )}
+
+      {data.chartType === 'heatmap' && (
+        <>
+          <Section title="热力图轴">
+            <TextInput label="X轴 (逗号分隔)" value={(data.categories ?? []).join(',')} onChange={(v) => onChange({ ...data, categories: v.split(',').map(s => s.trim()).filter(Boolean) })} />
+            <TextInput label="Y轴 (逗号分隔)" value={(data.heatmapYCategories ?? []).join(',')} onChange={(v) => onChange({ ...data, heatmapYCategories: v.split(',').map(s => s.trim()).filter(Boolean) })} />
+          </Section>
+          <Section title="热力图数据">
+            <ArrayEditor
+              items={data.heatmapData ?? []}
+              onChange={(heatmapData) => onChange({ ...data, heatmapData })}
+              createDefault={() => [0, 0, 5] as [number, number, number]}
+              renderRow={(item, _, update) => (
+                <div className="flex gap-1">
+                  <NumberInput label="X" value={item[0]} onChange={(v) => update([v, item[1], item[2]])} />
+                  <NumberInput label="Y" value={item[1]} onChange={(v) => update([item[0], v, item[2]])} />
+                  <NumberInput label="值" value={item[2]} onChange={(v) => update([item[0], item[1], v])} />
+                </div>
+              )}
+            />
+          </Section>
+        </>
+      )}
+
+      {data.chartType === 'sunburst' && (
+        <Section title="旭日图数据">
+          <ArrayEditor
+            items={data.sunburstData ?? []}
+            onChange={(sunburstData) => onChange({ ...data, sunburstData })}
+            createDefault={() => ({ name: '新节点', value: 50 })}
+            renderRow={(item, _, update) => (
+              <div className="space-y-1">
+                <TextInput label="名称" value={item.name} onChange={(v) => update({ ...item, name: v })} />
+                <NumberInput label="值" value={item.value ?? 0} onChange={(v) => update({ ...item, value: v })} />
+              </div>
+            )}
+          />
+        </Section>
+      )}
+
+      {data.chartType === 'boxplot' && (
+        <Section title="箱线图数据">
+          <ArrayEditor
+            items={data.boxplotItems ?? []}
+            onChange={(boxplotItems) => onChange({ ...data, boxplotItems })}
+            createDefault={() => ({ name: '新组', values: [10, 25, 50, 75, 90] as [number, number, number, number, number] })}
+            renderRow={(item, _, update) => (
+              <div className="space-y-1">
+                <TextInput label="名称" value={item.name} onChange={(v) => update({ ...item, name: v })} />
+                <div className="flex gap-1">
+                  <NumberInput label="最小" value={item.values[0]} onChange={(v) => { const vals = [...item.values] as [number, number, number, number, number]; vals[0] = v; update({ ...item, values: vals }) }} />
+                  <NumberInput label="Q1" value={item.values[1]} onChange={(v) => { const vals = [...item.values] as [number, number, number, number, number]; vals[1] = v; update({ ...item, values: vals }) }} />
+                  <NumberInput label="中位" value={item.values[2]} onChange={(v) => { const vals = [...item.values] as [number, number, number, number, number]; vals[2] = v; update({ ...item, values: vals }) }} />
+                  <NumberInput label="Q3" value={item.values[3]} onChange={(v) => { const vals = [...item.values] as [number, number, number, number, number]; vals[3] = v; update({ ...item, values: vals }) }} />
+                  <NumberInput label="最大" value={item.values[4]} onChange={(v) => { const vals = [...item.values] as [number, number, number, number, number]; vals[4] = v; update({ ...item, values: vals }) }} />
+                </div>
+              </div>
+            )}
+          />
+        </Section>
+      )}
+
+      {data.chartType === 'gantt' && (
+        <Section title="甘特图任务">
+          <ArrayEditor
+            items={data.ganttTasks ?? []}
+            onChange={(ganttTasks) => onChange({ ...data, ganttTasks })}
+            createDefault={() => ({ name: '新任务', start: 0, end: 5, category: '默认' })}
+            renderRow={(item, _, update) => (
+              <div className="space-y-1">
+                <TextInput label="任务名" value={item.name} onChange={(v) => update({ ...item, name: v })} />
+                <div className="flex gap-1">
+                  <NumberInput label="开始" value={item.start} onChange={(v) => update({ ...item, start: v })} />
+                  <NumberInput label="结束" value={item.end} onChange={(v) => update({ ...item, end: v })} />
+                </div>
+                <TextInput label="分类" value={item.category ?? ''} onChange={(v) => update({ ...item, category: v })} />
+              </div>
+            )}
+          />
+        </Section>
+      )}
     </div>
   )
 }

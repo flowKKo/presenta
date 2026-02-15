@@ -50,7 +50,7 @@ Script (slides.md)
 | `src/data/decks/index.ts` | Auto-discovery registry via `import.meta.glob` (no manual registration) |
 | `src/theme/swiss.ts` | Theme: colors, echarts theme, motion config, card style |
 | `src/components/engines/*.tsx` | 7 diagram engines (GridItem, Sequence, Compare, Funnel, Concentric, HubSpoke, Venn) |
-| `src/components/slides/ChartSlide.tsx` | ECharts renderer (bar, horizontal-bar, stacked-bar, pie, donut, rose, line, area, radar, proportion, waterfall, combo, scatter, gauge) |
+| `src/components/slides/ChartSlide.tsx` | ECharts renderer (20 chart sub-types) |
 | `src/components/blocks/` | Block model: BlockRenderer, BlockSlideRenderer, BlockWrapper |
 
 ---
@@ -95,25 +95,25 @@ Large centered statement with optional body text. Use for core takeaways, quotes
 
 #### 3. `chart` — Data Visualization (ECharts)
 
-Full-width chart with title. **14 chart sub-types:**
+Full-width chart with title. **20 chart sub-types:**
 
 ```ts
 {
   type: 'chart',
-  chartType: 'bar' | 'horizontal-bar' | 'stacked-bar' | 'pie' | 'donut' | 'rose' | 'line' | 'area' | 'radar' | 'proportion' | 'waterfall' | 'combo' | 'scatter' | 'gauge',
+  chartType: ChartType,  // 20 sub-types (see ChartType below)
   title: string,
   body?: string,
   highlight?: string,    // big number callout (e.g., "¥12.8M")
   chartHeight?: number,  // px, default auto
-  // bar / horizontal-bar:
+  // bar / horizontal-bar / stacked-bar:
   bars?: ChartBar[],     // { category, values: { name, value, color? }[] }
-  // pie / donut:
+  // pie / donut / rose:
   slices?: ChartSlice[], // { name, value }
   innerRadius?: number,  // 0-100 for donut effect (donut defaults to 45)
-  // line-specific:
+  // line / area / combo / heatmap (x-axis):
   categories?: string[],
   lineSeries?: LineSeries[], // { name, data: number[], area?: boolean }
-  // radar-specific:
+  // radar:
   indicators?: RadarIndicator[], // { name, max }
   radarSeries?: RadarSeries[],   // { name, values: number[] }
   // proportion:
@@ -128,6 +128,20 @@ Full-width chart with title. **14 chart sub-types:**
   scatterYAxis?: string,
   // gauge:
   gaugeData?: GaugeData,              // { value, max?, name? }
+  // treemap:
+  treemapData?: TreemapNode[],        // { name, value, children? }
+  // sankey:
+  sankeyNodes?: SankeyNode[],         // { name }
+  sankeyLinks?: SankeyLink[],         // { source, target, value }
+  // heatmap:
+  heatmapYCategories?: string[],      // y-axis categories
+  heatmapData?: [number, number, number][],  // [xIndex, yIndex, value]
+  // sunburst:
+  sunburstData?: SunburstNode[],      // { name, value?, children? }
+  // boxplot:
+  boxplotItems?: BoxplotItem[],       // { name, values: [min, Q1, median, Q3, max] }
+  // gantt:
+  ganttTasks?: GanttTask[],           // { name, start, end, category? }
 }
 ```
 
@@ -149,6 +163,12 @@ Full-width chart with title. **14 chart sub-types:**
 | `combo` | Dual-axis: absolute values (bar) + rates/trends (line) | 3-8 categories, 2-3 series (mixed bar+line) |
 | `scatter` | Correlation, market positioning, BCG matrix | 1-3 series, 5-20 data points each |
 | `gauge` | Single KPI completion, health score, NPS | 1 value with max |
+| `treemap` | Hierarchical proportions, budget/market breakdown | Nested categories with values |
+| `sankey` | Flow analysis, budget allocation, user journey | Nodes + weighted links |
+| `heatmap` | Correlation matrix, activity patterns, density | X×Y grid with intensity values |
+| `sunburst` | Hierarchical drill-down, org structure | Nested categories (ring layers) |
+| `boxplot` | Statistical distribution, variance comparison | 5-number summary per group |
+| `gantt` | Project timeline, task scheduling | Tasks with start/end positions |
 
 ---
 
@@ -373,7 +393,7 @@ The `block-slide` type enables **multiple diagrams on a single slide** via posit
 | `concentric` | `{ rings, variant }` |
 | `hub-spoke` | `{ center, spokes, variant }` |
 | `venn` | `{ sets, intersectionLabel?, variant }` |
-| `chart` | `{ chartType, bars?, slices?, innerRadius?, categories?, lineSeries?, indicators?, radarSeries?, proportionItems?, waterfallItems?, comboSeries?, scatterSeries?, scatterXAxis?, scatterYAxis?, gaugeData?, highlight? }` |
+| `chart` | `{ chartType, bars?, slices?, innerRadius?, categories?, lineSeries?, indicators?, radarSeries?, proportionItems?, waterfallItems?, comboSeries?, scatterSeries?, scatterXAxis?, scatterYAxis?, gaugeData?, treemapData?, sankeyNodes?, sankeyLinks?, heatmapYCategories?, heatmapData?, sunburstData?, boxplotItems?, ganttTasks?, highlight? }` |
 | `image` | `{ src?, alt?, fit?, placeholder? }` — placeholder for images; always generate with `src` omitted |
 
 **Content-aware block height guide:**
@@ -584,6 +604,12 @@ Slide 7: "用户转化路径"
 | Dual-axis comparison | `chart` (combo) | Bars for absolute values + line for rates |
 | Correlation / positioning | `chart` (scatter) | Two/three-variable relationship mapping |
 | Single KPI health | `chart` (gauge) | One value against a max target |
+| Hierarchical proportions | `chart` (treemap) | Nested categories with area-encoded values |
+| Flow / allocation | `chart` (sankey) | Source→target weighted connections |
+| Intensity / correlation | `chart` (heatmap) | X×Y grid color-coded by value |
+| Hierarchical drill-down | `chart` (sunburst) | Concentric ring breakdown |
+| Statistical variance | `chart` (boxplot) | Distribution comparison across groups |
+| Project timeline | `chart` (gantt) | Task scheduling with start/end |
 | Mixed content | `block-slide` | Text + diagram on same slide |
 | Sparse content + visual fill | `block-slide` + `image` block | Diagram occupies <60% → add image to balance |
 | Product / UI showcase | `block-slide` + `image` block | Screenshot placeholder + caption or metrics |
@@ -975,12 +1001,12 @@ interface ChartSlideData {
   bars?: ChartBar[]; slices?: ChartSlice[]; innerRadius?: number
   categories?: string[]; lineSeries?: LineSeries[]
   indicators?: RadarIndicator[]; radarSeries?: RadarSeries[]
-  proportionItems?: ProportionItem[]  // { name, value, max? }
-  waterfallItems?: WaterfallItem[]    // { name, value, type? }
-  comboSeries?: ComboSeries[]        // { name, data, seriesType, yAxisIndex? }
-  scatterSeries?: ScatterSeries[]    // { name, data: [x,y,size?][] }
-  scatterXAxis?: string; scatterYAxis?: string
-  gaugeData?: GaugeData              // { value, max?, name? }
+  proportionItems?: ProportionItem[]; waterfallItems?: WaterfallItem[]
+  comboSeries?: ComboSeries[]; scatterSeries?: ScatterSeries[]
+  scatterXAxis?: string; scatterYAxis?: string; gaugeData?: GaugeData
+  treemapData?: TreemapNode[]; sankeyNodes?: SankeyNode[]; sankeyLinks?: SankeyLink[]
+  heatmapYCategories?: string[]; heatmapData?: [number, number, number][]
+  sunburstData?: SunburstNode[]; boxplotItems?: BoxplotItem[]; ganttTasks?: GanttTask[]
 }
 
 interface GridItemSlideData {
@@ -1055,6 +1081,12 @@ interface WaterfallItem { name: string; value: number; type?: 'increase' | 'decr
 interface ComboSeries { name: string; data: number[]; seriesType: 'bar' | 'line'; yAxisIndex?: 0 | 1 }
 interface ScatterSeries { name: string; data: [number, number, number?][] }
 interface GaugeData { value: number; max?: number; name?: string }
+interface TreemapNode { name: string; value: number; children?: TreemapNode[] }
+interface SankeyNode { name: string }
+interface SankeyLink { source: string; target: string; value: number }
+interface SunburstNode { name: string; value?: number; children?: SunburstNode[] }
+interface BoxplotItem { name: string; values: [number, number, number, number, number] }
+interface GanttTask { name: string; start: number; end: number; category?: string }
 interface ContentBlock { id: string; x: number; y: number; width: number; height: number; data: BlockData }
 // BlockData includes: title-body, grid-item, sequence, compare, funnel, concentric, hub-spoke, venn, chart, image
 // Image block: { type: 'image'; src?: string; alt?: string; fit?: 'cover' | 'contain' | 'fill'; placeholder?: string }
@@ -1066,7 +1098,7 @@ type FunnelVariant = 'funnel' | 'pyramid' | 'slope'
 type ConcentricVariant = 'circles' | 'diamond' | 'target'
 type HubSpokeVariant = 'orbit' | 'solar' | 'pinwheel'
 type VennVariant = 'classic' | 'linear' | 'linear-filled'
-type ChartType = 'bar' | 'horizontal-bar' | 'stacked-bar' | 'pie' | 'donut' | 'rose' | 'line' | 'area' | 'radar' | 'proportion' | 'waterfall' | 'combo' | 'scatter' | 'gauge'
+type ChartType = 'bar' | 'horizontal-bar' | 'stacked-bar' | 'pie' | 'donut' | 'rose' | 'line' | 'area' | 'radar' | 'proportion' | 'waterfall' | 'combo' | 'scatter' | 'gauge' | 'treemap' | 'sankey' | 'heatmap' | 'sunburst' | 'boxplot' | 'gantt'
 ```
 
 ---
