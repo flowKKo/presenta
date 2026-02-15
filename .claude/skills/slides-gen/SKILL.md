@@ -17,7 +17,7 @@ Parse `$ARGUMENTS` for these flags:
 | `--script` | Yes | — | Path to the voiceover/script markdown file (narrative source) |
 | `--source` | Yes | — | Path to the full reference document with detailed data |
 | `--output` | No | `slides.md` | Output path for the generated slide outline |
-| `--density` | No | `rich` | Content density: `compact` (简洁) or `rich` (充实). See Content Density section |
+| `--density` | No | `rich` | Content density: `compact` (minimal) or `rich` (comprehensive). See Content Density section |
 | `--lang` | No | `zh` | Language for slide content |
 
 Positional shorthand: `/slides-gen voiceover.md full.md` → script=voiceover.md, source=full.md
@@ -28,7 +28,7 @@ Positional shorthand: `/slides-gen voiceover.md full.md` → script=voiceover.md
 
 The `--density` flag controls how much information goes into each slide, and how many slides are generated per script section.
 
-### `compact` — 简洁模式
+### `compact` — Minimal Mode
 
 Target audience: live presentation with speaker narration. Slides are visual aids, not documents.
 
@@ -41,14 +41,14 @@ Target audience: live presentation with speaker narration. Slides are visual aid
 | Cards/items | 2-3 per slide |
 | Chart bars | 2-4 |
 | Comparison columns | 2 |
-| 正文 field | Often omitted — title + data speaks for itself |
-| 结论 field | Short phrase (≤10 characters), or omitted |
+| `body` field | Often omitted — title + data speaks for itself |
+| `conclusion` field | Short phrase (≤10 characters), or omitted |
 | Player card features | 3 max |
 | List items | 3 max |
 
-**compact 原则：** 每张幻灯片只保留"不看幻灯片就无法理解"的信息。口播能说清楚的文字不要出现在幻灯片上。留白 > 堆信息。
+**Compact principle:** Each slide retains only information that cannot be understood without looking at the slide. Text that the speaker can explain verbally should NOT appear on the slide. White space > information overload.
 
-### `rich` — 充实模式
+### `rich` — Comprehensive Mode
 
 Target audience: self-reading deck (no speaker), or data-heavy presentation where audience needs to study details.
 
@@ -61,293 +61,294 @@ Target audience: self-reading deck (no speaker), or data-heavy presentation wher
 | Cards/items | 3-6 per slide |
 | Chart bars | 4-8 |
 | Comparison columns | 2-3 |
-| 正文 field | Required on every non-title slide |
-| 结论 field | Full sentence with data reference |
+| `body` field | Required on every non-title slide |
+| `conclusion` field | Full sentence with data reference |
 | Player card features | 4-5 + comparison chart |
 | List items | 4-5 with descriptions |
 
-**rich 原则：** 每张幻灯片是一个自包含的信息单元。即使没有口播，读者也能完全理解内容。数据越详细越好，但一张幻灯片仍然只传达一个核心信息。
+**Rich principle:** Each slide is a self-contained information unit. Even without narration, the reader can fully understand the content. More detail is better, but each slide still conveys only ONE core message.
 
 ### Content Density Table (per slide type)
 
-| Slide Type | compact min-max | rich min-max | compact 视觉元素 | rich 视觉元素 |
-|------------|----------------|-------------|-----------------|--------------|
-| data-comparison | 2 metrics | 2-4 metrics | 1（大数字面板） | 1-2（大数字 + 图片/图示） |
-| bar-chart | 2-4 rows | 4-8 rows | 1（条形图） | 1-2（条形图 + 指标卡/图片） |
-| comparison | 2 cols × 2-3 rows | 2-3 cols × 3-5 rows | 1（对比表） | 1-2（对比表 + 图片） |
-| grid | 4 items (title only) | 4-6 items (title + description) | 1（网格） | 1-2（网格 + 图片） |
-| player-card | score + 2-3 features | score + 4-5 features + chart | 1 | 2（特性 + 图表/图片） |
-| list | 3 items (short) | 3-5 items (with descriptions) | 1（列表） | 1-2（列表 + 图片/图示） |
-| diagram | 3 steps | 3-5 steps + side notes | 1（图示） | 1-2（图示 + 图片） |
-| card-grid | 2-3 cards | 3-4 cards + conclusion | 1（卡片组） | 1-2（卡片组 + 图表/图片） |
-| **block-slide** | 2 元素 | 2-4 元素 | 2（图表/图示 + 图片） | 2-4（多图表 + 图片 + 文字块） |
+| Slide Type | compact min-max | rich min-max | compact visual elements | rich visual elements |
+|------------|----------------|-------------|------------------------|---------------------|
+| data-comparison | 2 metrics | 2-4 metrics | 1 (big number panel) | 1-2 (big numbers + image/diagram) |
+| bar-chart | 2-4 rows | 4-8 rows | 1 (bar chart) | 1-2 (bar chart + metric cards/image) |
+| comparison | 2 cols × 2-3 rows | 2-3 cols × 3-5 rows | 1 (comparison table) | 1-2 (comparison + image) |
+| grid | 4 items (title only) | 4-6 items (title + description) | 1 (grid) | 1-2 (grid + image) |
+| player-card | score + 2-3 features | score + 4-5 features + chart | 1 | 2 (features + chart/image) |
+| list | 3 items (short) | 3-5 items (with descriptions) | 1 (list) | 1-2 (list + image/diagram) |
+| diagram | 3 steps | 3-5 steps + side notes | 1 (diagram) | 1-2 (diagram + image) |
+| card-grid | 2-3 cards | 3-4 cards + conclusion | 1 (card group) | 1-2 (cards + chart/image) |
+| **block-slide** | 2 elements | 2-4 elements | 2 (chart/diagram + image) | 2-4 (multiple charts + images + text blocks) |
 
-### 信息丰富章节的多元素要求
+### Multi-Element Requirements for Information-Rich Sections
 
-**当一个脚本章节满足以下任一条件时，该章节对应的幻灯片必须使用多元素编排（即 `block-slide` 类型或单类型 + 配套元素描述）：**
+**When a script section meets ANY of the following conditions, the corresponding slide MUST use multi-element composition (i.e., `block-slide` type or single type with companion element descriptions):**
 
-1. **包含 2 组以上独立数据**（如：既有排名数据又有趋势数据）
-2. **既有定量数据又需要定性解释**（如：数据 + 原因分析文字）
-3. **涉及产品/界面截图 + 相关数据**（如：产品截图 + 性能指标）
-4. **涵盖多个维度的对比**（如：功能对比 + 性能数据 + 成本数据）
-5. **章节篇幅超过脚本整体的 10%**（长章节 = 信息密度高 = 需要更多视觉元素）
+1. **Contains 2+ independent data sets** (e.g., both ranking data AND trend data)
+2. **Has both quantitative data AND qualitative explanation** (e.g., data + root cause analysis text)
+3. **Involves product/UI screenshots + related data** (e.g., product screenshot + performance metrics)
+4. **Covers multi-dimensional comparison** (e.g., feature comparison + performance data + cost data)
+5. **Section length exceeds 10% of the overall script** (long section = high information density = needs more visual elements)
 
-**多元素编排的最低标准：**
-- `compact` 模式：信息丰富章节至少 2 个视觉元素
-- `rich` 模式：信息丰富章节至少 2 个视觉元素，优先 3 个
-
----
-
-## Visual Mandate — 每页必须有视觉元素
-
-**核心规则：除非是纯文字金句（key-point）或标题页（title），否则每一张幻灯片都必须包含至少一个视觉元素。信息丰富的幻灯片应包含 2 个或更多视觉元素。**
-
-视觉元素包括：
-- **数据图表** — 横向条形图、大数字+微型进度条、堆叠双色条形图、面积对比等
-- **结构图示** — 流程图、架构图、层级图、对比矩阵
-- **图片占位符** — 截图、产品界面、示意图（当前用虚线框+详细描述代替）
-- **文字段落** — 标题+正文、要点列表、引用块
-
-### 视觉元素分配决策
-
-```
-这张幻灯片有量化数据吗？
-  有 → 必须有数据图表（图表字段）
-  没有 ↓
-
-这张幻灯片描述架构/流程/对比关系吗？
-  是 → 必须有结构图示（图示字段）
-  否 ↓
-
-这张幻灯片提到了可截图的界面/产品吗？
-  是 → 必须有图片占位符（占位图字段）
-  否 ↓
-
-这张幻灯片是纯概念/金句/标题吗？
-  是 → 可以没有视觉元素（仅限 title 和 key-point 类型）
-  否 → 必须为内容设计一个辅助视觉元素（概念图、图标网格、关系图等）
-```
-
-**例外情况（允许无视觉元素的 slide types）：**
-- `title` — 标题页，纯文字即可
-- `key-point` — 金句/过渡页，大字居中即可
-
-**其他所有 slide types 必须有 `图表`、`图示`、或 `占位图` 中的至少一个。**
-
-### 视觉密度等级
-
-不同信息密度的章节，需要不同数量的视觉元素：
-
-| 信息密度 | 视觉元素数量 | 示例 |
-|---------|------------|------|
-| 轻量（单一概念或指标） | 1 个 | 一个大数字面板 |
-| 中等（多维数据或对比） | 2 个 | 一个图表 + 一个图片占位 |
-| 丰富（复杂分析或多角度论述） | 2-3 个 | 一个图表 + 一个图示 + 一个要点文字块 |
-| 仪表盘式（综合概览） | 3-4 个 | 两个图表 + 一个指标网格 + 一个图片 |
-
-**视觉密度判断规则：**
-- 该章节是否有 **2 组以上** 不同角度的数据？ → 至少 2 个视觉元素
-- 该章节是否同时涉及 **定量数据 + 定性描述**？ → 图表 + 文字/图示
-- 该章节是否引用了 **外部截图/界面** 同时有自己的数据？ → 占位图 + 图表
-- 使用单一图表是否能完整表达该章节的全部信息？ → 如果不能，必须增加视觉元素
+**Minimum standards for multi-element composition:**
+- `compact` mode: information-rich sections need at least 2 visual elements
+- `rich` mode: information-rich sections need at least 2 visual elements, preferably 3
 
 ---
 
-## Multi-Element Slide Composition — 多元素幻灯片编排
+## Visual Mandate — Every Slide Must Have Visual Elements
 
-**核心理念：一张幻灯片不是只能放一个东西。信息丰富的章节，应该在一页中组合标题、图表、图片、文字段落等多种元素，形成视觉上完整的信息单元。**
+**Core rule: Unless it is a pure text quote (key-point) or title page (title), every slide MUST contain at least one visual element. Information-rich slides SHOULD contain 2 or more visual elements.**
 
-### 何时使用多元素编排
+Visual elements include:
+- **Data charts** — horizontal bar charts, big numbers + micro progress bars, stacked dual-color bars, area comparisons, etc.
+- **Structural diagrams** — flowcharts, architecture diagrams, hierarchy diagrams, comparison matrices
+- **Image placeholders** — screenshots, product interfaces, illustrations (currently rendered as dashed boxes with detailed descriptions)
+- **Text blocks** — title + body, bullet lists, quote blocks
 
-| 场景 | 传统做法（单元素） | 多元素编排 |
-|------|-----------------|-----------|
-| 介绍产品特性 + 展示界面 | 分两页：一页列表 + 一页截图 | 一页：左侧特性列表 + 右侧截图占位 |
-| 展示数据趋势 + 解读结论 | 分两页：一页折线图 + 一页结论 | 一页：上方折线图 + 下方结论文字块 |
-| 对比两组数据 | 一页双色条形图 | 一页：左侧条形图 + 右侧关键指标大数字 |
-| 架构总览 + 核心模块详解 | 分两页 | 一页：中央架构图 + 四周模块卡片 |
-| 市场数据 + 产品截图 | 分两页 | 一页：左侧饼图/条形图 + 右侧产品截图占位 |
+### Visual Element Assignment Decision Tree
 
-### 元素组合模式
+```
+Does this slide have quantitative data?
+  Yes → MUST have a data chart (chart field)
+  No ↓
 
-以下是常见的多元素组合，slides.md 中应明确标注使用哪种模式：
+Does this slide describe architecture/process/comparison relationships?
+  Yes → MUST have a structural diagram (diagram field)
+  No ↓
 
-**双元素组合（最常用）：**
+Does this slide reference a screenshotable interface/product?
+  Yes → MUST have an image placeholder (placeholder-image field)
+  No ↓
 
-| 组合 | 布局建议 | 适用场景 |
-|------|---------|---------|
-| 图表 + 图片占位 | 左右分栏（6:4）或上下分栏（6:4） | 数据 + 产品/场景展示 |
-| 图表 + 文字块 | 左图右文（7:3）或上图下文 | 数据 + 深度解读 |
-| 图表 + 指标卡片 | 左侧图表 + 右侧 2-3 个指标卡 | 趋势 + 关键数字 |
-| 图示 + 图片占位 | 左右分栏（5:5） | 流程/架构 + 实景/截图 |
-| 两个图表 | 左右分栏（5:5）或上下分栏 | 两组相关但不同维度的数据 |
+Is this slide a pure concept/quote/title?
+  Yes → May have no visual element (only title and key-point types)
+  No → MUST design a supporting visual element (concept diagram, icon grid, relationship graph, etc.)
+```
 
-**三元素组合（信息丰富时）：**
+**Exceptions (slide types allowed without visual elements):**
+- `title` — title page, pure text is sufficient
+- `key-point` — quote/transition page, large centered text is sufficient
 
-| 组合 | 布局建议 | 适用场景 |
-|------|---------|---------|
-| 标题块 + 图表 + 图片 | 顶部标题 + 左下图表 + 右下图片 | 带标题的复合信息页 |
-| 图表 + 指标卡片 + 图片 | 左大图表 + 右上指标 + 右下图片 | 数据仪表盘 |
-| 两个图表 + 文字块 | 上方两图表并排 + 下方结论文字 | 多角度数据对比 + 总结 |
-| 图示 + 图表 + 图片 | 三栏均分或黄金比例 | 流程 + 数据 + 实景 |
+**All other slide types MUST have at least one of: `chart`, `diagram`, or `placeholder-image`.**
 
-**四元素组合（仪表盘/概览页）：**
+### Visual Density Tiers
 
-| 组合 | 布局建议 | 适用场景 |
-|------|---------|---------|
-| 两个图表 + 图片 + 文字块 | 2×2 网格 | 综合概览仪表盘 |
-| 指标卡片 + 图表 + 图示 + 图片 | 顶部指标 + 中间图表/图示 + 底部图片 | 全面分析页 |
+Different information densities require different numbers of visual elements:
 
-### 布局模式标注（Layout Patterns）
+| Information Density | Visual Element Count | Example |
+|--------------------|---------------------|---------|
+| Light (single concept or metric) | 1 | One big number panel |
+| Medium (multi-dimensional data or comparison) | 2 | One chart + one image placeholder |
+| Rich (complex analysis or multi-angle argument) | 2-3 | One chart + one diagram + one text block |
+| Dashboard-style (comprehensive overview) | 3-4 | Two charts + one metric grid + one image |
 
-在 slides.md 中，多元素幻灯片必须包含 `布局模式` 字段，指定元素的空间排布：
+**Visual density decision rules:**
+- Does this section have **2+ sets** of data from different angles? → At least 2 visual elements
+- Does this section involve both **quantitative data + qualitative description**? → Chart + text/diagram
+- Does this section reference **external screenshots/interfaces** AND have its own data? → Placeholder-image + chart
+- Can a single chart fully express ALL information in this section? → If not, MUST add more visual elements
 
-| 模式 | 关键词 | 描述 |
-|------|--------|------|
-| 上下分栏 | `上下` | 主元素在上（60%），辅元素在下（35%） |
-| 左右分栏 | `左右` | 主元素在左（55-60%），辅元素在右（35-40%） |
-| 黄金比例 | `黄金比例` | 大元素占 62%，侧边栏 32%（上下分两块） |
-| 三栏均分 | `三栏` | 三个元素各占 30%，间距 3% |
-| 2×2 仪表盘 | `仪表盘` | 四个元素均分为 2×2 网格 |
-| 顶栏+主体 | `顶栏+主体` | 顶部窄条（标题/指标，18%），下方主体（75%） |
-| L 形布局 | `L形` | 大元素占左上 60%，两个小元素分列右侧和底部 |
+---
 
-### 元素最小尺寸约束
+## Multi-Element Slide Composition
 
-每个视觉元素都有最小尺寸要求，低于此尺寸会导致内容不可读：
+**Core concept: A slide is not limited to a single element. Information-rich sections should combine titles, charts, images, text blocks, and other elements on one page to form a visually complete information unit.**
 
-| 元素类型 | 最小宽度 | 最小高度 | 说明 |
-|---------|---------|---------|------|
-| 图表（条形/折线/饼图） | 40% | 40% | 图表需要足够空间显示标签和数据 |
-| 指标大数字 | 25% | 20% | 数字 + 标签 + 微型进度条 |
-| 图片占位 | 25% | 25% | 小于此尺寸的图片像缩略图，失去意义 |
-| 文字段落 | 25% | 15% | 至少容纳标题 + 1-2 行正文 |
-| 图示（流程/架构） | 35% | 30% | 节点和连线需要空间 |
-| 指标卡片组 | 30% | 20% | 至少 2 张卡片 |
+### When to Use Multi-Element Composition
 
-### slides.md 中的多元素标注格式
+| Scenario | Traditional approach (single element) | Multi-element composition |
+|----------|--------------------------------------|--------------------------|
+| Introduce product features + show interface | Two slides: one list + one screenshot | One slide: feature list on left + screenshot placeholder on right |
+| Show data trend + interpret conclusion | Two slides: one line chart + one conclusion | One slide: line chart on top + conclusion text block below |
+| Compare two data sets | One dual-color bar chart | One slide: bar chart on left + key metric big numbers on right |
+| Architecture overview + core module details | Two slides | One slide: central architecture diagram + surrounding module cards |
+| Market data + product screenshot | Two slides | One slide: pie/bar chart on left + product screenshot placeholder on right |
+
+### Element Combination Patterns
+
+The following are common multi-element combinations. slides.md MUST clearly specify which pattern to use:
+
+**Two-element combinations (most common):**
+
+| Combination | Layout Suggestion | Use Case |
+|-------------|------------------|----------|
+| Chart + image placeholder | Side by side (6:4) or top-bottom (6:4) | Data + product/scene display |
+| Chart + text block | Chart left, text right (7:3) or chart top, text bottom | Data + deep analysis |
+| Chart + metric cards | Chart on left + 2-3 metric cards on right | Trend + key numbers |
+| Diagram + image placeholder | Side by side (5:5) | Process/architecture + real photo/screenshot |
+| Two charts | Side by side (5:5) or top-bottom | Two related but different-dimension data sets |
+
+**Three-element combinations (for rich content):**
+
+| Combination | Layout Suggestion | Use Case |
+|-------------|------------------|----------|
+| Title block + chart + image | Title at top + chart bottom-left + image bottom-right | Compound info page with heading |
+| Chart + metric cards + image | Large chart on left + metrics top-right + image bottom-right | Data dashboard |
+| Two charts + text block | Two charts side by side on top + conclusion text below | Multi-angle data comparison + summary |
+| Diagram + chart + image | Three columns equal or golden ratio | Process + data + real scene |
+
+**Four-element combinations (dashboard/overview pages):**
+
+| Combination | Layout Suggestion | Use Case |
+|-------------|------------------|----------|
+| Two charts + image + text block | 2×2 grid | Comprehensive overview dashboard |
+| Metric cards + chart + diagram + image | Metrics at top + chart/diagram in middle + image at bottom | Full analysis page |
+
+### Layout Pattern Labels
+
+In slides.md, multi-element slides MUST include a `layout-pattern` field specifying spatial arrangement:
+
+| Pattern | Keyword | Description |
+|---------|---------|-------------|
+| Top-bottom split | `top-bottom` | Primary element on top (60%), secondary below (35%) |
+| Side by side | `side-by-side` | Primary element on left (55-60%), secondary on right (35-40%) |
+| Golden ratio | `golden-ratio` | Large element occupies 62%, sidebar 32% (split into two sections) |
+| Three columns | `three-columns` | Three elements each at 30%, with 3% gaps |
+| 2×2 dashboard | `dashboard` | Four elements in equal 2×2 grid |
+| Header + body | `header-body` | Narrow strip at top (title/metrics, 18%), main body below (75%) |
+| L-shape layout | `L-shape` | Large element at top-left 60%, two small elements on right and bottom |
+
+### Minimum Element Size Constraints
+
+Every visual element has minimum size requirements — below these sizes content becomes unreadable:
+
+| Element Type | Min Width | Min Height | Notes |
+|-------------|-----------|------------|-------|
+| Chart (bar/line/pie) | 40% | 40% | Charts need enough space for labels and data |
+| Big number metric | 25% | 20% | Number + label + micro progress bar |
+| Image placeholder | 25% | 25% | Images smaller than this look like broken thumbnails |
+| Text block | 25% | 15% | Must fit at least title + 1-2 lines of body |
+| Diagram (flow/architecture) | 35% | 30% | Nodes and connections need space |
+| Metric card group | 30% | 20% | At least 2 cards |
+
+### Multi-Element Notation Format in slides.md
 
 ```markdown
-## Slide 8: 脚手架对模型性能的影响
+## Slide 8: Scaffold Impact on Model Performance
 - type: block-slide
-- 标题: 5-10 分增益，从中游跃升前三
-- 元素数量: 3
-- 布局模式: 黄金比例
-- 元素:
-  - 元素1（主图表，左侧 62%）:
-    - 类型: 堆叠双色条形图
-    - 数据: [同 Phase 4 图表规格]
-    - 外观描述: [...]
-    - 动画描述: [...]
-  - 元素2（指标卡，右上 32%×45%）:
-    - 类型: 大数字 + 微型进度条
-    - 数据: 最大增益 +10.4, 最小增益 +7.0
-    - 外观描述: [...]
-  - 元素3（场景图，右下 32%×47%）:
-    - 类型: 图片占位
-    - 标题: "Terminal-Bench 排行榜中各脚手架工具的成绩分布"
-    - 预期内容: [...]
-- 动画:
+- title: 5-10 Point Gains, From Mid-Pack to Top Three
+- element-count: 3
+- layout-pattern: golden-ratio
+- elements:
+  - Element 1 (primary chart, left 62%):
+    - type: stacked dual-color bar chart
+    - data: [per Phase 4 chart spec]
+    - appearance: [...]
+    - animation-spec: [...]
+  - Element 2 (metric cards, top-right 32%×45%):
+    - type: big numbers + micro progress bar
+    - data: max gain +10.4, min gain +7.0
+    - appearance: [...]
+  - Element 3 (scene image, bottom-right 32%×47%):
+    - type: placeholder-image
+    - title: "Score distribution of scaffold tools in Terminal-Bench leaderboard"
+    - expected-content: [...]
+- animation:
   - fragments: 3
-  - 步骤:
-    - F0: 标题（appear）
-    - F1: 条形图生长（growBar）+ 大数字计数（countUp）
-    - F2: 场景图淡入（appear）
+  - steps:
+    - F0: title (appear)
+    - F1: bar chart growth (growBar) + big number count (countUp)
+    - F2: scene image fade in (appear)
 ```
 
 ---
 
-## Visual Description Standard — 视觉描述规范
+## Visual Description Standard
 
-**每一个视觉元素（图表、图示、占位图）都必须包含两个详细描述：**
+**Every visual element (chart, diagram, placeholder-image) MUST include two detailed descriptions:**
 
-### (a) 外观描述 — 它长什么样
+### (a) Appearance — What It Looks Like
 
-必须具体到能让前端开发者不看原始数据就能画出来的程度：
+Must be specific enough that a frontend developer can render it without seeing the raw data:
 
-| 视觉类型 | 外观描述必须包含 |
-|----------|----------------|
-| 横向条形图 | 条形数量、每条的标签、数值、颜色、长度比例关系、是否有基准线、标签和数值的位置 |
-| 大数字 | 数字的具体值、字号层级、颜色（正/负/中性）、下方微型进度条的宽度比例和颜色 |
-| 堆叠双色条形图 | 基线段的颜色和宽度、增益段的颜色和宽度、总宽度、标注位置 |
-| 面积对比 | 圆形/方形的相对大小比例、颜色、标签位置、数值标注 |
-| 流程图/架构图 | 节点数量、每个节点的文字、节点之间的连接方式（箭头/线条）、布局方向（横向/纵向）、分层关系 |
-| 对比矩阵/表格 | 行数、列数、表头内容、单元格内容、高亮规则、分隔线样式 |
-| 图片占位符 | 占位框的尺寸比例（如 16:9、4:3、1:1）、框内文字说明、虚线样式、背景色、预期放入的真实内容描述 |
+| Visual Type | Appearance Description Must Include |
+|-------------|-------------------------------------|
+| Horizontal bar chart | Number of bars, each bar's label, value, color, length ratio, whether there's a baseline, label and value positions |
+| Big number | Exact numeric value, font size tier, color (positive/negative/neutral), micro progress bar width ratio and color below |
+| Stacked dual-color bar | Baseline segment color and width, gain segment color and width, total width, annotation position |
+| Area comparison | Relative size ratio of circles/squares, colors, label positions, value annotations |
+| Flowchart/architecture | Node count, text per node, connection method (arrows/lines), layout direction (horizontal/vertical), layer relationships |
+| Comparison matrix/table | Row count, column count, header content, cell content, highlight rules, separator styles |
+| Image placeholder | Placeholder box aspect ratio (e.g., 16:9, 4:3, 1:1), text description inside box, dashed border style, background color, description of expected real content |
 
-### (b) 动画描述 — 它怎么动
+### (b) Animation Spec — How It Moves
 
-必须具体到前端开发者能直接写出动画代码：
+Must be specific enough that a frontend developer can write the animation code directly:
 
-| 动画类型 | 动画描述必须包含 |
-|----------|----------------|
-| countUp | 起始值（通常0）、目标值、持续时间、缓动函数、是否有千分位逗号 |
-| growBar | 起始宽度（0%）、目标宽度（百分比）、持续时间、缓动函数、是否有弹性效果 |
-| appear | 起始状态（opacity:0, y:16px）、终态、持续时间、是否有 stagger delay |
-| highlight | 其他元素的目标 opacity（0.3）、高亮元素的 opacity（1.0）、过渡时间 |
-| revealGroup | 组内元素数量、stagger 间隔时间、每个元素的入场方式 |
-| 占位图入场 | 虚线框如何出现（淡入/从边缘滑入）、内部标签文字的出现时机 |
+| Animation Type | Animation Spec Must Include |
+|---------------|---------------------------|
+| countUp | Start value (usually 0), target value, duration, easing function, whether to use thousand separators |
+| growBar | Start width (0%), target width (percentage), duration, easing function, whether there's a spring effect |
+| appear | Initial state (opacity:0, y:16px), final state, duration, whether there's stagger delay |
+| highlight | Target opacity for other elements (0.3), highlight element opacity (1.0), transition time |
+| revealGroup | Number of elements in group, stagger interval, entrance method per element |
+| Placeholder entrance | How dashed box appears (fade in/slide from edge), timing of internal label text appearance |
 
-### 描述格式示例
+### Description Format Examples
 
 ```markdown
-- 图表:
-  - 类型: 横向条形图
-  - 外观描述: >
-      4 条水平条形，从上到下排列。每条左侧是标签文字（w-32，右对齐，
-      text-base，textSecondary 色），中间是彩色条形（h-8，圆角右端 rounded-r-lg），
-      右侧是数值（text-lg，font-semibold）。
-      第 1 条: "Simple Codex" → 绿色条（宽度占满 100%）→ "75.1"
-      第 2 条: "Droid" → 蓝灰色条（宽度 93%）→ "69.9"
-      第 3 条: "Junie CLI" → 蓝灰色条（宽度 86%）→ "64.3"
-      第 4 条: "Claude Code" → 红色条（宽度 77%）→ "58.0"
-      在 62.9 的位置有一条竖向虚线（border-dashed），标注 "Terminus 2 基线"。
-      条形之间间距 gap-3。整体垂直居中在内容区域。
-  - 数据: [同上表格]
-  - 动画描述: >
-      F1 触发时：4 条条形从宽度 0% 同时开始生长到目标宽度，
-      持续 0.8s，缓动 [0.16, 1, 0.3, 1]（先快后慢，略带弹性）。
-      条形生长过程中，右侧数值同步 countUp 从 0 到目标值。
-      基准虚线在条形生长到 62.9 位置时淡入（opacity 0→1，0.3s）。
-      4 条条形之间有 0.05s 的 stagger 延迟，从上到下依次启动。
+- chart:
+  - type: horizontal bar chart
+  - appearance: >
+      4 horizontal bars arranged top to bottom. Each bar has a label on the left (w-32, right-aligned,
+      text-base, textSecondary color), a colored bar in the middle (h-8, rounded-r-lg on right end),
+      and a value on the right (text-lg, font-semibold).
+      Bar 1: "Simple Codex" → green bar (width 100%) → "75.1"
+      Bar 2: "Droid" → blue-grey bar (width 93%) → "69.9"
+      Bar 3: "Junie CLI" → blue-grey bar (width 86%) → "64.3"
+      Bar 4: "Claude Code" → red bar (width 77%) → "58.0"
+      A vertical dashed line (border-dashed) at the 62.9 position, labeled "Terminus 2 baseline".
+      Gap between bars: gap-3. Entire group vertically centered in content area.
+  - data: [same as table above]
+  - animation-spec: >
+      On F1 trigger: all 4 bars grow from width 0% to target width simultaneously,
+      duration 0.8s, easing [0.16, 1, 0.3, 1] (fast start, slow end, slight spring).
+      During bar growth, right-side values countUp from 0 to target values in sync.
+      Baseline dashed line fades in (opacity 0→1, 0.3s) when bars grow past the 62.9 position.
+      0.05s stagger delay between bars, triggering top to bottom.
 ```
 
 ```markdown
-- 占位图:
-  - 外观描述: >
-      宽高比 16:9 的虚线矩形框，占据幻灯片内容区域的 60% 宽度。
-      边框: 2px dashed，颜色 rgba(0,0,0,0.15)，圆角 12px。
-      背景: rgba(0,0,0,0.02)，略带灰度以区别于幻灯片背景。
-      框内正中居中显示文字 "Terminal-Bench 2.0 排行榜截图"，
-      字号 text-lg，颜色 rgba(0,0,0,0.25)，font-style italic。
-      框的右上角有一个小图标提示（16x16 的图片 icon，rgba(0,0,0,0.2)）。
-  - 预期内容: Terminal-Bench 2.0 官网排行榜页面截图，需要展示完整的前 10 名排名列表，
-    高亮 Claude Opus 4.6 出现的多个条目（58.0 和 69.9）
-  - 动画描述: >
-      F0 时立即显示：虚线框从 opacity 0 → 1 淡入，同时从 y:12px 上移到 y:0，
-      持续 0.5s，缓动 ease-out。框内文字在框出现后 0.2s 延迟淡入。
+- placeholder-image:
+  - appearance: >
+      Dashed rectangle with 16:9 aspect ratio, occupying 60% width of the slide content area.
+      Border: 2px dashed, color rgba(0,0,0,0.15), border-radius 12px.
+      Background: rgba(0,0,0,0.02), slightly grey to differentiate from slide background.
+      Centered text inside: "Terminal-Bench 2.0 Leaderboard Screenshot",
+      font-size text-lg, color rgba(0,0,0,0.25), font-style italic.
+      Small icon hint in top-right corner (16x16 image icon, rgba(0,0,0,0.2)).
+  - expected-content: Terminal-Bench 2.0 official website leaderboard page screenshot,
+    showing the complete top 10 agent ranking table,
+    with highlight boxes on the Claude Opus 4.6 entries (58.0 and 69.9)
+  - animation-spec: >
+      F0 immediate display: dashed box fades in from opacity 0 → 1, while sliding up from y:12px to y:0,
+      duration 0.5s, easing ease-out. Text inside fades in with 0.2s delay after box appears.
 ```
 
 ```markdown
-- 图示:
-  - 类型: 三层堆叠架构图
-  - 外观描述: >
-      纵向排列的 3 个矩形层，从上到下分别是：
-      第 1 层（顶部）: 浅蓝灰色背景（accentNeutral/10），标题 "工具描述"，
-        副文字 "定义能力规格"，高度约 60px，全宽，圆角 8px。
-      第 2 层（中部）: 稍深蓝灰色背景（accentNeutral/15），标题 "系统提示"，
-        副文字 "设定高层目标"，同样高度和样式。
-      第 3 层（底部）: 最深蓝灰色背景（accentNeutral/25）+ 左侧 3px 绿色边框高亮，
-        标题 "系统通知"，副文字 "末端注入关键指令"，加粗处理表示重要性。
-      层与层之间有 gap-2 间距。
-      右侧有一个竖向箭头（SVG，从顶部指向底部），旁边标注 "递近偏差 →"，
-      字号 text-sm，斜体，textCaption 色。
-      整体宽度约 max-w-[70%]，左对齐。
-  - 动画描述: >
-      F1 触发时：3 层从上到下依次出现（appear），每层间隔 0.15s。
-      每层入场动画: opacity 0→1 + y:12→0，持续 0.4s。
-      第 3 层入场后，左侧绿色边框从高度 0 向下展开到全高（growBar 式，0.3s）。
-      右侧箭头在所有层出现后 0.2s 延迟淡入（opacity 0→1，0.3s），
-      箭头淡入时伴随从 scaleY:0.5 → scaleY:1 的伸展效果。
+- diagram:
+  - type: 3-layer stacked architecture
+  - appearance: >
+      3 rectangles stacked vertically, from top to bottom:
+      Layer 1 (top): light blue-grey background (accentNeutral/10), title "Tool Description",
+        subtitle "Define capability specs", height ~60px, full width, border-radius 8px.
+      Layer 2 (middle): slightly darker blue-grey background (accentNeutral/15), title "System Prompt",
+        subtitle "Set high-level goals", same height and style.
+      Layer 3 (bottom): darkest blue-grey background (accentNeutral/25) + 3px green border on left for highlight,
+        title "System Notice", subtitle "Inject critical directives at end", bold treatment for emphasis.
+      gap-2 spacing between layers.
+      Vertical arrow on the right (SVG, pointing top to bottom), labeled "Recency Bias →",
+      font-size text-sm, italic, textCaption color.
+      Overall width ~max-w-[70%], left-aligned.
+  - animation-spec: >
+      On F1 trigger: 3 layers appear top-to-bottom sequentially (appear), 0.15s interval between each.
+      Each layer entrance: opacity 0→1 + y:12→0, duration 0.4s.
+      After layer 3 appears, left green border grows from height 0 downward to full height (growBar style, 0.3s).
+      Right arrow fades in 0.2s after all layers appear (opacity 0→1, 0.3s),
+      arrow fade-in accompanied by scaleY:0.5 → scaleY:1 stretch effect.
 ```
 
 ---
@@ -380,7 +381,7 @@ The source provides **THE DATA** that populates slide fields. Without it, slides
 
 ## Generation Workflow (6 Phases)
 
-### Phase 1: Script Analysis — 拆解口播稿
+### Phase 1: Script Analysis — Parse the Script
 
 Read the `--script` file completely. Produce a **section inventory**:
 
@@ -416,7 +417,7 @@ S3: Terminus 2 baseline + gain data
   Transition: pivot (from concept to data proof)
 ```
 
-### Phase 2: Source Document Indexing — 索引源文档数据
+### Phase 2: Source Document Indexing — Index Source Data
 
 Read the `--source` file completely. Build a **data catalog**:
 
@@ -427,23 +428,23 @@ Read the `--source` file completely. Build a **data catalog**:
 | Feature comparisons | Tool × feature matrix | Claude Code: 24 tools, Droid: minimal tools |
 | Token / cost data | Token counts, cost ratios | Codex CLI 72K, Claude Code 235K, 3.3x ratio |
 | Architecture details | Layers, components, flows | Droid: 3-layer prompt (tool desc / sys prompt / sys notice) |
-| Quotes / claims | Notable statements | "花在工具优化上的时间多于prompt优化" |
+| Quotes / claims | Notable statements | "More time spent on tool optimization than prompt optimization" |
 | Caveats / controversies | Limitations, counterpoints | Droid benchmark strong but code quality disputed |
 
 Flag any data in the script that does NOT appear in the source document — these may need to be omitted or noted.
 
-### Phase 3: Slide Planning — 规划幻灯片结构
+### Phase 3: Slide Planning — Plan Slide Structure
 
 This is the most critical phase. Map each script section to one or more slides. Produce a **slide plan table**:
 
 ```
-| Slide # | Script Section | Type | Core Message | Key Data | 元素数量 | 布局模式 | Animation |
-|---------|---------------|------|-------------|----------|---------|---------|-----------|
-| 1 | S1 | title | 模型只是一半 | — | 1 | — | appear |
-| 2 | S1 | block-slide | TB 2.0 benchmark | 101 agents | 2 | 左右 | countUp+appear |
-| 3 | S1 | block-slide | 同模型分差 12 分 | 58.0 vs 69.9 | 3 | 黄金比例 | countUp+growBar |
-| 4 | S2 | key-point | 脚手架定义 | — | 1 | — | appear |
-| 5 | S3 | block-slide | Terminus 2 基线+增益 | 4 rows+截图 | 2 | 左右 | growBar+appear |
+| Slide # | Script Section | Type | Core Message | Key Data | Element Count | Layout Pattern | Animation |
+|---------|---------------|------|-------------|----------|---------------|---------------|-----------|
+| 1 | S1 | title | The model is only half | — | 1 | — | appear |
+| 2 | S1 | block-slide | TB 2.0 benchmark | 101 agents | 2 | side-by-side | countUp+appear |
+| 3 | S1 | block-slide | Same model, 12-point gap | 58.0 vs 69.9 | 3 | golden-ratio | countUp+growBar |
+| 4 | S2 | key-point | Scaffold definition | — | 1 | — | appear |
+| 5 | S3 | block-slide | Terminus 2 baseline+gains | 4 rows+screenshot | 2 | side-by-side | growBar+appear |
 | ... | ... | ... | ... | ... | ... | ... | ... |
 ```
 
@@ -458,73 +459,73 @@ This is the most critical phase. Map each script section to one or more slides. 
    - Only `title` and `key-point` types are exempt.
    - If a slide has no quantitative data AND no screenshot reference AND no architecture/flow to diagram, ask: "Can I add a conceptual diagram, icon grid, or relationship graph?" If yes, add it. If truly impossible, convert to `key-point`.
 
-3. **Multi-element composition check (CRITICAL — 多元素编排):**
-   - 对每张幻灯片问："这张幻灯片只用一个元素能否完整传达信息？"
-   - 如果章节信息丰富（有多组数据、同时有截图和数据、涉及多维度），**必须使用 `block-slide` 类型**，组合 2-4 个视觉元素。
-   - `rich` 模式下，**至少 40% 的内容幻灯片** 应为多元素编排（`block-slide`）。
-   - `compact` 模式下，**至少 20% 的内容幻灯片** 应为多元素编排。
-   - 单一图表经常不足以表达完整的分析洞察 — 配合关键指标、图片或解释文字块能大幅提升表现力。
+3. **Multi-element composition check (CRITICAL):**
+   - For each slide, ask: "Can this slide fully convey its information with just one element?"
+   - If the section is information-rich (multiple data sets, screenshots combined with data, multi-dimensional comparison), **MUST use `block-slide` type**, combining 2-4 visual elements.
+   - In `rich` mode, **at least 40% of content slides** should use multi-element composition (`block-slide`).
+   - In `compact` mode, **at least 20% of content slides** should use multi-element composition.
+   - A single chart often cannot fully express analytical insight — pairing it with key metrics, images, or explanatory text blocks dramatically improves expressiveness.
 
-4. **Layout pattern assignment (布局模式分配):**
-   - 每张多元素幻灯片必须指定布局模式（上下 / 左右 / 黄金比例 / 三栏 / 仪表盘 / 顶栏+主体 / L形）。
-   - 相邻的多元素幻灯片不应使用相同的布局模式。
-   - 一个 deck 中应至少使用 3 种不同的布局模式。
+4. **Layout pattern assignment:**
+   - Every multi-element slide MUST specify a layout pattern (top-bottom / side-by-side / golden-ratio / three-columns / dashboard / header-body / L-shape).
+   - Adjacent multi-element slides should NOT use the same layout pattern.
+   - A deck should use at least 3 different layout patterns.
 
 5. **Chart/visualization decision happens HERE**, not during writing. For each slide with quantitative data, decide now:
    - Does this need a chart? What type?
    - Or are big numbers + labels sufficient?
-   - **是否需要第二个图表来展示另一个维度的数据？**
+   - **Does it need a second chart to show another dimension of data?**
    - See "Chart Specification Guide" below.
 
 6. **Image placeholder decision happens HERE**. For slides referencing products, interfaces, or demos:
    - What screenshot/image would best support the content?
    - What exact content should the placeholder describe?
-   - **即使幻灯片不直接引用产品/界面，也要考虑：一张有意义的配图是否能提升视觉丰富度？**
+   - **Even if the slide doesn't directly reference a product/interface, consider: would a meaningful companion image enhance visual richness?**
    - See "Image & Placeholder Specification Guide" below.
 
 7. **Animation decision happens HERE**. For each slide, assign:
    - Which elements get fragment animations?
    - What animation types (countUp, growBar, etc.)?
-   - **多元素幻灯片的动画应分层揭示：先主元素，再辅助元素。**
+   - **Multi-element slides should use layered reveal: primary elements first, then supporting elements.**
    - See "Animation Specification Guide" below.
 
 8. **Narrative rhythm check:**
    - Alternate slide types. Never 3+ of the same type consecutively.
    - Insert `key-point` dividers between major topic groups.
    - Start with `title`, end with `key-point`.
-   - **多元素 block-slide 和单元素幻灯片应交替出现，避免全部使用 block-slide。**
+   - **Multi-element block-slides and single-element slides should alternate — avoid using block-slide for every slide.**
 
 9. **Slide count check:**
    - `compact`: 15-20 slides for a 10-12 minute talk
    - `rich`: 20-28 slides for a 10-12 minute talk
    - If over budget, merge. If under, consider splitting data-heavy sections.
-   - **多元素编排可以在更少的幻灯片中承载更多信息 — 优先用多元素而非多页来传达复杂内容。**
+   - **Multi-element composition can pack more information into fewer slides — prefer multi-element layouts over spreading content across many pages.**
 
-### Phase 4: Data Population — 填充数据
+### Phase 4: Data Population — Populate Data
 
 For each slide in the plan, populate ALL fields:
 
-1. **标题** — States the TAKEAWAY, not the topic.
-   - BAD: "脚手架数据" / "Token 对比" / "关键发现"
-   - GOOD: "脚手架增益 5-10 分" / "Codex CLI Token 效率领先 3.3 倍" / "同模型分差 12 分"
+1. **title** — States the TAKEAWAY, not the topic.
+   - BAD: "Scaffold Data" / "Token Comparison" / "Key Findings"
+   - GOOD: "Scaffold Gain: 5-10 Points" / "Codex CLI Token Efficiency Leads 3.3x" / "Same Model, 12-Point Gap"
 
-2. **正文** — 1-2 sentences with specific insight (required in `rich`, optional in `compact`).
-   - BAD: "以下是相关对比数据" / "这里展示了排名"
-   - GOOD: "5-10 个百分点的增益，足以把排名从中游拉到前三"
+2. **body** — 1-2 sentences with specific insight (required in `rich`, optional in `compact`).
+   - BAD: "Below is the comparison data" / "This shows the ranking"
+   - GOOD: "A 5-10 percentage point gain is enough to move from mid-pack to top 3"
 
 3. **Data fields** — Extract EXACT numbers from source. Never round. Never invent.
 
-4. **图表 / 图示 / 占位图** — MUST include for every non-title/key-point slide. Include:
-   - `外观描述`: Detailed enough for a developer to implement without seeing the original data (see Visual Description Standard).
-   - `动画描述`: Exact animation behavior — timing, easing, stagger, trigger conditions (see Visual Description Standard).
+4. **chart / diagram / placeholder-image** — MUST include for every non-title/key-point slide. Include:
+   - `appearance`: Detailed enough for a developer to implement without seeing the original data (see Visual Description Standard).
+   - `animation-spec`: Exact animation behavior — timing, easing, stagger, trigger conditions (see Visual Description Standard).
 
-5. **动画** — Fragment animation directives for the full slide (see Animation Specification Guide).
+5. **animation** — Fragment animation directives for the full slide (see Animation Specification Guide).
 
-6. **布局** — Layout treatment hint (see Layout Treatment Guide).
+6. **layout** — Layout treatment hint (see Layout Treatment Guide).
 
-7. **结论** — Data-driven takeaway (required in `rich`, optional in `compact`).
+7. **conclusion** — Data-driven takeaway (required in `rich`, optional in `compact`).
 
-### Phase 5: Consistency Review — 一致性检查
+### Phase 5: Consistency Review — Consistency Check
 
 Before writing the file, run these checks:
 
@@ -532,13 +533,15 @@ Before writing the file, run these checks:
 2. **No fabrication:** Every number traces to the source document.
 3. **Rhythm:** Slide types alternate. No 3+ consecutive same-type.
 4. **Density:** Each slide meets the min data points for its type and density mode.
-5. **Visual mandate:** Every non-title/key-point slide has at least one visual element (图表 / 图示 / 占位图).
-6. **Visual descriptions:** Every visual element has both `外观描述` and `动画描述`, detailed enough for implementation.
-7. **Charts:** Every slide with ≥3 quantitative data points has a chart spec.
-8. **Animations:** Every data slide has animation directives. Every big number has `countUp`. Every bar has `growBar`.
-9. **Titles:** No generic titles. Every title states a takeaway.
+5. **Visual mandate:** Every non-title/key-point slide has at least one visual element (chart / diagram / placeholder-image).
+6. **Multi-element composition:** In `rich` mode, ≥40% of content slides are multi-element. In `compact`, ≥20%.
+7. **Visual descriptions:** Every visual element has both `appearance` and `animation-spec`, detailed enough for implementation.
+8. **Charts:** Every slide with ≥3 quantitative data points has a chart spec.
+9. **Animations:** Every data slide has animation directives. Every big number has `countUp`. Every bar has `growBar`.
+10. **Titles:** No generic titles. Every title states a takeaway.
+11. **Layout patterns:** Multi-element slides have layout-pattern specified. At least 3 different patterns used across the deck.
 
-### Phase 6: Write Output — 写入文件
+### Phase 6: Write Output — Write File
 
 Write the complete `slides.md` to `--output` path. Include:
 - A header comment with metadata (density mode, slide count, source files)
@@ -549,163 +552,163 @@ Write the complete `slides.md` to `--output` path. Include:
 
 ## Chart Specification Guide
 
-Every slide with quantitative data MUST include a `图表` field that specifies exactly what visualization to render. The `/web-ppt` skill needs this to choose between CSS bars, ECharts, big numbers, etc.
+Every slide with quantitative data MUST include a `chart` field that specifies exactly what visualization to render. The `/web-ppt` skill needs this to choose between CSS bars, ECharts, big numbers, etc.
 
 ### Chart Types
 
 | Chart Type | Keyword | When to Use | slides.md Notation |
 |------------|---------|------------|-------------------|
-| Big number + micro bar | `大数字` | 2-4 standalone metrics (DataComparison) | `图表: 大数字 + 微型进度条` |
-| Horizontal bar chart | `横向条形图` | Ranking 3-8 items by score | `图表: 横向条形图` |
-| Stacked dual-color bar | `堆叠双色条形图` | Before/after or baseline+gain | `图表: 堆叠双色条形图（灰色=基线, 绿色=增益）` |
-| Area/size comparison | `面积对比` | Disproportionate values (e.g., 72K vs 2M) | `图表: 面积对比（圆形）` |
-| Ranked list with bars | `排名列表` | Head-to-head with score + bar per item | `图表: 排名列表 + 横向条` |
-| Side-by-side bar groups | `分组条形图` | Multi-dimension comparison (ECharts) | `图表: 分组条形图（ECharts）` |
-| None (text only) | `无` | Conceptual slides, definitions | (omit 图表 field) |
+| Big number + micro bar | `big-number` | 2-4 standalone metrics (DataComparison) | `chart: big-number + micro-progress-bar` |
+| Horizontal bar chart | `horizontal-bar` | Ranking 3-8 items by score | `chart: horizontal-bar` |
+| Stacked dual-color bar | `stacked-dual-bar` | Before/after or baseline+gain | `chart: stacked-dual-bar (grey=baseline, green=gain)` |
+| Area/size comparison | `area-comparison` | Disproportionate values (e.g., 72K vs 2M) | `chart: area-comparison (circles)` |
+| Ranked list with bars | `ranked-list` | Head-to-head with score + bar per item | `chart: ranked-list + horizontal-bar` |
+| Side-by-side bar groups | `grouped-bar` | Multi-dimension comparison (ECharts) | `chart: grouped-bar (ECharts)` |
+| None (text only) | `none` | Conceptual slides, definitions | (omit chart field) |
 
 ### Chart Decision Tree
 
 ```
 Does the slide have quantitative data?
-  No → omit 图表 field
+  No → omit chart field
   Yes ↓
 
 How many data points?
-  2-4 standalone metrics → 大数字 + 微型进度条
-  2-4 items with before/after → 堆叠双色条形图
-  3-8 items ranked by one dimension → 横向条形图
-  3-8 items ranked with identity (name+score) → 排名列表 + 横向条
-  8+ data points or multi-series → 分组条形图（ECharts）
-  2 values with huge ratio (>5x) → 面积对比
+  2-4 standalone metrics → big-number + micro-progress-bar
+  2-4 items with before/after → stacked-dual-bar
+  3-8 items ranked by one dimension → horizontal-bar
+  3-8 items ranked with identity (name+score) → ranked-list + horizontal-bar
+  8+ data points or multi-series → grouped-bar (ECharts)
+  2 values with huge ratio (>5x) → area-comparison
 ```
 
 ### Chart Specification Format
 
-The `图表` field uses a structured notation. **Every chart MUST include `外观描述` and `动画描述`。**
+The `chart` field uses a structured notation. **Every chart MUST include `appearance` and `animation-spec`.**
 
 ```markdown
-- 图表:
-  - 类型: 横向条形图
-  - 数据:
-    | 标签 | 值 | 颜色提示 |
-    |------|-----|---------|
-    | Simple Codex | 75.1 | 正向色（最高分） |
-    | Droid (Opus 4.6) | 69.9 | 中性色 |
-    | Junie CLI (Flash) | 64.3 | 中性色 |
-    | Claude Code | 58.0 | 负向色（低于基线） |
-  - 基准线: 62.9（Terminus 2 基线，虚线标注）
-  - 排序: 降序
-  - 外观描述: >
-      4 条水平条形从上到下排列，间距 gap-3。
-      每条结构: 左侧标签（w-32, text-right, text-base）| 彩色条形（h-8, rounded-r-lg）| 右侧数值（text-lg, font-semibold）。
-      条形宽度按比例: Simple Codex=100%, Droid=93%, Junie=86%, Claude Code=77%。
-      颜色: 第1条 accentPositive（绿），第2-3条 accentNeutral（蓝灰），第4条 accentNegative（红）。
-      62.9 位置处有竖向虚线（1px dashed, rgba(0,0,0,0.2)），旁注 "Terminus 2 基线"（text-xs, textCaption）。
-  - 动画描述: >
-      F1 触发: 4 条条形从 width:0 同时生长到目标宽度，duration 0.8s，ease [0.16,1,0.3,1]。
-      条形间 stagger 0.05s（从上到下）。右侧数值同步 countUp（0→目标值，0.8s）。
-      基准虚线在条形生长经过 62.9 位置时淡入（opacity 0→1, 0.3s）。
+- chart:
+  - type: horizontal-bar
+  - data:
+    | Label | Value | Color Hint |
+    |-------|-------|------------|
+    | Simple Codex | 75.1 | positive (highest score) |
+    | Droid (Opus 4.6) | 69.9 | neutral |
+    | Junie CLI (Flash) | 64.3 | neutral |
+    | Claude Code | 58.0 | negative (below baseline) |
+  - baseline: 62.9 (Terminus 2 baseline, dashed line annotation)
+  - sort-order: descending
+  - appearance: >
+      4 horizontal bars arranged top to bottom, gap-3 spacing.
+      Each bar structure: left label (w-32, text-right, text-base) | colored bar (h-8, rounded-r-lg) | right value (text-lg, font-semibold).
+      Bar widths proportional: Simple Codex=100%, Droid=93%, Junie=86%, Claude Code=77%.
+      Colors: bar 1 accentPositive (green), bars 2-3 accentNeutral (blue-grey), bar 4 accentNegative (red).
+      Vertical dashed line at 62.9 position (1px dashed, rgba(0,0,0,0.2)), annotated "Terminus 2 baseline" (text-xs, textCaption).
+  - animation-spec: >
+      F1 trigger: all 4 bars grow from width:0 to target width simultaneously, duration 0.8s, ease [0.16,1,0.3,1].
+      0.05s stagger between bars (top to bottom). Right-side values countUp in sync (0→target, 0.8s).
+      Baseline dashed line fades in (opacity 0→1, 0.3s) when bars grow past 62.9 position.
 ```
 
 For stacked bars:
 ```markdown
-- 图表:
-  - 类型: 堆叠双色条形图
-  - 数据:
-    | 模型 | 基线 | 增益 | 总分 |
-    |------|------|------|------|
+- chart:
+  - type: stacked-dual-bar
+  - data:
+    | Model | Baseline | Gain | Total |
+    |-------|----------|------|-------|
     | GPT-5.3 | 64.7 | +10.4 | 75.1 |
     | Opus 4.6 | 62.9 | +7.0 | 69.9 |
-  - 外观描述: >
-      2 条水平堆叠条形，间距 gap-4。每条由两段拼接:
-      左段（基线）: 灰色（barTrack 色），宽度按比例（64.7/75.1=86%, 62.9/75.1=84%）。
-      右段（增益）: 绿色（accentPositive），宽度按增益比例（10.4/75.1=14%, 7.0/75.1=9%）。
-      左侧标签: 模型名（w-28, text-right）。右侧标注: 总分 + "(+增益)" 文字。
-      两段之间无间隙，视觉上连续。条形高度 h-10，圆角仅在最右端（rounded-r-lg）。
-  - 动画描述: >
-      F1: 灰色基线段从 width:0 生长到目标宽度（0.6s, ease-out）。
-      F2: 绿色增益段紧接着从 width:0 继续生长（0.5s, ease-out），
-      同时右侧增益数字 countUp（0→+10.4, 0.5s）。两条之间 stagger 0.1s。
+  - appearance: >
+      2 horizontal stacked bars, gap-4 spacing. Each bar has two segments joined:
+      Left segment (baseline): grey (barTrack color), width proportional (64.7/75.1=86%, 62.9/75.1=84%).
+      Right segment (gain): green (accentPositive), width proportional to gain (10.4/75.1=14%, 7.0/75.1=9%).
+      Left label: model name (w-28, text-right). Right annotation: total score + "(+gain)" text.
+      No gap between segments, visually continuous. Bar height h-10, rounded only at far right end (rounded-r-lg).
+  - animation-spec: >
+      F1: grey baseline segments grow from width:0 to target width (0.6s, ease-out).
+      F2: green gain segments continue growing from baseline end (0.5s, ease-out),
+      with right-side gain numbers countUp simultaneously (0→+10.4, 0.5s). 0.1s stagger between bars.
 ```
 
 For big numbers:
 ```markdown
-- 图表:
-  - 类型: 大数字 + 微型进度条
-  - 数据:
-    - 最低分: 58.0（负向色，进度条 58/100）
-    - 最高分: 69.9（正向色，进度条 70/100）
-  - 进度条最大值: 100
-  - 外观描述: >
-      水平排列的 2 个指标块，间距 gap-8，居中。每个指标块:
-      上方: 大数字 text-7xl font-extrabold（58.0 用 accentNegative 红色，69.9 用 accentPositive 绿色）。
-      下方: 微型进度条 h-2 rounded-full（w-48 为满宽），颜色与数字一致。
-      进度条下方: 标签文字 text-base textCaption（"最低分" / "最高分"）。
-  - 动画描述: >
-      F1: 左侧数字 countUp 0→58.0（0.8s, ease-out），同时进度条 growBar 0%→58%（0.8s）。
-      F2: 右侧数字 countUp 0→69.9（0.8s），同时进度条 growBar 0%→70%（0.8s）。
+- chart:
+  - type: big-number + micro-progress-bar
+  - data:
+    - lowest-score: 58.0 (negative color, progress bar 58/100)
+    - highest-score: 69.9 (positive color, progress bar 70/100)
+  - progress-bar-max: 100
+  - appearance: >
+      2 metric blocks arranged horizontally, gap-8, centered. Each metric block:
+      Top: big number text-7xl font-extrabold (58.0 in accentNegative red, 69.9 in accentPositive green).
+      Below: micro progress bar h-2 rounded-full (w-48 full width), color matches number.
+      Below progress bar: label text text-base textCaption ("Lowest Score" / "Highest Score").
+  - animation-spec: >
+      F1: left number countUp 0→58.0 (0.8s, ease-out), progress bar growBar 0%→58% simultaneously (0.8s).
+      F2: right number countUp 0→69.9 (0.8s), progress bar growBar 0%→70% simultaneously (0.8s).
 ```
 
 ---
 
 ## Image & Placeholder Specification Guide
 
-When a slide references a product interface, website, demo, or any visual that cannot be rendered as a CSS chart, use a **placeholder image** (`占位图`). Placeholders are temporary — they define what the real image should be, so it can be replaced later.
+When a slide references a product interface, website, demo, or any visual that cannot be rendered as a CSS chart, use a **placeholder image** (`placeholder-image`). Placeholders are temporary — they define what the real image should be, so it can be replaced later.
 
 ### Placeholder Specification Format
 
-**Every placeholder MUST include `外观描述`, `预期内容`, and `动画描述`。**
+**Every placeholder MUST include `appearance`, `expected-content`, and `animation-spec`.**
 
 ```markdown
-- 占位图:
-  - 标题: "Terminal-Bench 2.0 排行榜截图"
-  - 外观描述: >
-      虚线矩形框，宽高比 16:9，占幻灯片内容区域 60% 宽度，水平居中。
-      边框: 2px dashed rgba(0,0,0,0.15)，圆角 rounded-xl (12px)。
-      背景: rgba(0,0,0,0.02)。
-      框内垂直水平居中显示标题文字 "Terminal-Bench 2.0 排行榜截图"，
-      字号 text-lg，颜色 rgba(0,0,0,0.25)，斜体。
-      左下角小字标注 "[截图占位]"，text-sm，rgba(0,0,0,0.15)。
-  - 预期内容: >
-      Terminal-Bench 2.0 官网 (tbench.ai) 排行榜页面截图。
-      需要展示前 10 名 agent 的完整排名表格，
-      包含 agent 名称、模型、分数列。
-      需要用高亮框标注 Claude Opus 4.6 出现的多个条目:
-      第 3 名 Droid (69.9) 和第 22 名 Claude Code (58.0)。
-  - 动画描述: >
-      F0 立即显示: 虚线框 opacity 0→1 + y:12→0 淡入上移，
-      duration 0.5s，ease-out。
-      框内标题文字在框出现后延迟 0.2s 淡入。
+- placeholder-image:
+  - title: "Terminal-Bench 2.0 Leaderboard Screenshot"
+  - appearance: >
+      Dashed rectangle, 16:9 aspect ratio, 60% width of slide content area, horizontally centered.
+      Border: 2px dashed rgba(0,0,0,0.15), border-radius rounded-xl (12px).
+      Background: rgba(0,0,0,0.02).
+      Title text centered vertically and horizontally: "Terminal-Bench 2.0 Leaderboard Screenshot",
+      font-size text-lg, color rgba(0,0,0,0.25), italic.
+      Small text annotation in bottom-left: "[Screenshot Placeholder]", text-sm, rgba(0,0,0,0.15).
+  - expected-content: >
+      Terminal-Bench 2.0 official website (tbench.ai) leaderboard page screenshot.
+      Must show the complete top 10 agent ranking table,
+      including agent name, model, and score columns.
+      Highlight boxes needed on Claude Opus 4.6 entries:
+      #3 Droid (69.9) and #22 Claude Code (58.0).
+  - animation-spec: >
+      F0 immediate display: dashed box opacity 0→1 + y:12→0 fade-in slide-up,
+      duration 0.5s, ease-out.
+      Title text inside fades in with 0.2s delay after box appears.
 ```
 
 ### Placeholder Types
 
-| 场景 | 占位图宽高比 | 位置 |
-|------|------------|------|
-| 网站/排行榜截图 | 16:9 | 居中，占 60% 宽度 |
-| 产品界面截图 | 16:10 或 4:3 | 居中，占 50-60% 宽度 |
-| 代码编辑器截图 | 16:9 | 居中或偏左（右侧放指标卡） |
-| 移动端截图 | 9:16 | 居中，max-height 70% |
-| Logo / 图标 | 1:1 | 小尺寸，配合文字使用 |
-| 论文/文档引用 | 4:3 | 居中或偏右 |
+| Scenario | Placeholder Aspect Ratio | Position |
+|----------|------------------------|----------|
+| Website/leaderboard screenshot | 16:9 | Centered, 60% width |
+| Product interface screenshot | 16:10 or 4:3 | Centered, 50-60% width |
+| Code editor screenshot | 16:9 | Centered or left-aligned (metric cards on right) |
+| Mobile screenshot | 9:16 | Centered, max-height 70% |
+| Logo / icon | 1:1 | Small size, paired with text |
+| Paper/document reference | 4:3 | Centered or right-aligned |
 
 ### When to Use Placeholders vs Charts
 
 ```
-这个数据能用 CSS/SVG 直接画出来吗？
-  能（条形图、数字、进度条、流程图）→ 用图表/图示，不用占位图
-  不能（真实截图、产品界面、照片）→ 用占位图
+Can this data be rendered directly with CSS/SVG?
+  Yes (bar chart, numbers, progress bar, flowchart) → Use chart/diagram, not placeholder
+  No (real screenshot, product interface, photo) → Use placeholder-image
 
-这是一个已知的外部界面/网站吗？
-  是 → 占位图，`预期内容` 详细描述截图内容和标注要求
-  否 → 尝试用 CSS 图示替代
+Is this a known external interface/website?
+  Yes → placeholder-image, with detailed expected-content describing screenshot content and annotation requirements
+  No → Try to use CSS diagram instead
 ```
 
 ---
 
 ## Animation Specification Guide
 
-Every slide MUST include a `动画` field that tells `/web-ppt` how to reveal content progressively. This maps directly to the fragment animation system (BP-16 in web-ppt).
+Every slide MUST include an `animation` field that tells `/web-ppt` how to reveal content progressively. This maps directly to the fragment animation system (BP-16 in web-ppt).
 
 ### Animation Types
 
@@ -732,37 +735,48 @@ Every slide MUST include a `动画` field that tells `/web-ppt` how to reveal co
 | list | Title | Each item: `appear`, one fragment per item |
 | placeholder | Title + placeholder box | Side metrics: `countUp` |
 | card-grid | Title | All cards: `revealGroup` |
+| **block-slide** | Title + primary element | Secondary elements revealed in sequence: each element = 1 fragment |
 
 ### Animation Specification Format
 
-The `动画` field in slides.md:
+The `animation` field in slides.md:
 
 ```markdown
-- 动画:
+- animation:
   - fragments: 3
-  - 步骤:
-    - F0: 标题 + 正文（appear）
-    - F1: 最低分 58.0（countUp）+ 微型进度条（growBar）
-    - F2: 最高分 69.9（countUp）+ 微型进度条（growBar）+ 结论文字（appear）
+  - steps:
+    - F0: title + body (appear)
+    - F1: lowest score 58.0 (countUp) + micro progress bar (growBar)
+    - F2: highest score 69.9 (countUp) + micro progress bar (growBar) + conclusion text (appear)
 ```
 
 For bar charts:
 ```markdown
-- 动画:
+- animation:
   - fragments: 2
-  - 步骤:
-    - F0: 标题 + 正文（appear）
-    - F1: 所有条形同时生长（growBar）+ 基准线出现 + 值标签（appear）
+  - steps:
+    - F0: title + body (appear)
+    - F1: all bars grow simultaneously (growBar) + baseline appears + value labels (appear)
 ```
 
 For comparison slides:
 ```markdown
-- 动画:
+- animation:
   - fragments: 3
-  - 步骤:
-    - F0: 标题 + 正文（appear）
-    - F1: 左列「运行时搜索」（revealGroup）
-    - F2: 右列「语义索引」（revealGroup）
+  - steps:
+    - F0: title + body (appear)
+    - F1: left column "Runtime Search" (revealGroup)
+    - F2: right column "Semantic Index" (revealGroup)
+```
+
+For multi-element block-slides:
+```markdown
+- animation:
+  - fragments: 3
+  - steps:
+    - F0: title (appear) + primary chart baseline (growBar)
+    - F1: chart gain segments grow (growBar) + metric cards countUp
+    - F2: image placeholder fades in (appear) + conclusion text (appear)
 ```
 
 ### Key Animation Rules
@@ -772,45 +786,46 @@ For comparison slides:
 - **Title + body are ALWAYS in F0** — never show an empty slide.
 - **Max 6 fragments per slide** — too many clicks breaks flow.
 - **`compact` mode prefers fewer fragments** (1-2 per slide). `rich` mode can use 2-4.
+- **Multi-element slides reveal elements in priority order** — primary data element first, supporting elements (images, text blocks) last.
 
 ---
 
 ## Layout Treatment Guide
 
-Every non-title, non-key-point slide SHOULD include a `布局` field that hints at the visual treatment. This guides `/web-ppt` in choosing between cards, tables, accent borders, etc. (ref BP-12).
+Every non-title, non-key-point slide SHOULD include a `layout` field that hints at the visual treatment. This guides `/web-ppt` in choosing between cards, tables, accent borders, etc. (ref BP-12).
 
 ### Available Treatments
 
 | Treatment | Keyword | When to Use |
 |-----------|---------|------------|
-| White cards | `卡片` | Grouped items with title + detail (max 50% of slides) |
-| Table rows | `表格` | Side-by-side comparison with multiple dimensions |
-| Accent border | `边框高亮` | Feature list without card weight |
-| Borderless grid | `无边框网格` | Category overview, light visual weight |
-| Timeline | `时间线` | Ordered steps, process flow |
-| Inline highlights | `行内高亮` | 2-3 short key-value pairs, no container needed |
-| Big number panel | `大数字面板` | 2-4 hero metrics dominating the slide |
+| White cards | `cards` | Grouped items with title + detail (max 50% of slides) |
+| Table rows | `table` | Side-by-side comparison with multiple dimensions |
+| Accent border | `accent-border` | Feature list without card weight |
+| Borderless grid | `borderless-grid` | Category overview, light visual weight |
+| Timeline | `timeline` | Ordered steps, process flow |
+| Inline highlights | `inline-highlights` | 2-3 short key-value pairs, no container needed |
+| Big number panel | `big-number-panel` | 2-4 hero metrics dominating the slide |
 
 ### Treatment Decision
 
 ```
 Is it a ranked list or score comparison?
-  → 表格 or 横向条形图 (let chart dominate, minimal layout)
+  → table or horizontal-bar (let chart dominate, minimal layout)
 
 Is it a multi-dimension feature comparison?
-  → 表格 (rows = dimensions, columns = subjects)
+  → table (rows = dimensions, columns = subjects)
 
 Is it a category overview (4-6 items)?
-  → 无边框网格 (lightweight, no cards)
+  → borderless-grid (lightweight, no cards)
 
 Is it a process or ordered steps?
-  → 时间线
+  → timeline
 
 Is it 2-3 key-value metrics?
-  → 行内高亮 or 大数字面板
+  → inline-highlights or big-number-panel
 
 Is it grouped items with substantial detail per item?
-  → 卡片 (but track: max 50% of content slides should use cards)
+  → cards (but track: max 50% of content slides should use cards)
 ```
 
 ---
@@ -822,35 +837,63 @@ Is it grouped items with substantial detail per item?
 ```markdown
 <!-- Density: rich | Slides: 23 | Script: voiceover.md | Source: full.md -->
 <!-- Slide Plan:
-| # | Section | Type | Core Message | Chart | Animation |
-|---|---------|------|-------------|-------|-----------|
-| 1 | S1 | title | 模型只是一半 | — | appear |
-| 2 | S1 | placeholder+metric | TB 2.0 benchmark | 大数字 | countUp |
-| ... | ... | ... | ... | ... | ... |
+| # | Section | Type | Core Message | Element Count | Layout Pattern | Animation |
+|---|---------|------|-------------|---------------|---------------|-----------|
+| 1 | S1 | title | The model is only half | 1 | — | appear |
+| 2 | S1 | block-slide | TB 2.0 benchmark | 2 | side-by-side | countUp+appear |
+| ... | ... | ... | ... | ... | ... | ... |
 -->
 
 # [Presentation Title]
 
 ---
 
-## Slide 1: 标题页
+## Slide 1: Title Page
 - type: title
-- 标题: ...
-- 副标题: ...
-- 标注: ...
-- 动画: appear（整体淡入）
+- title: ...
+- subtitle: ...
+- badge: ...
+- animation: appear (full fade-in)
 
 ---
 
 ## Slide 2: ...
 - type: data-comparison
-- 标题: ...
-- 正文: ...
-- 数据: ...
-- 图表: ...
-- 动画: ...
-- 布局: ...
-- 结论: ...
+- title: ...
+- body: ...
+- data: ...
+- chart: ...
+- animation: ...
+- layout: ...
+- conclusion: ...
+
+---
+
+## Slide 5: [Topic Name]
+- type: block-slide
+- title: ...
+- element-count: 3
+- layout-pattern: golden-ratio
+- elements:
+  - Element 1 (primary, left 62%):
+    - type: horizontal-bar
+    - data: ...
+    - appearance: ...
+    - animation-spec: ...
+  - Element 2 (secondary, top-right 32%×45%):
+    - type: big-number + micro-progress-bar
+    - data: ...
+    - appearance: ...
+  - Element 3 (tertiary, bottom-right 32%×47%):
+    - type: placeholder-image
+    - title: "..."
+    - expected-content: ...
+- animation:
+  - fragments: 3
+  - steps:
+    - F0: title (appear)
+    - F1: bar chart (growBar) + big numbers (countUp)
+    - F2: image (appear)
 
 ---
 ...
@@ -858,104 +901,112 @@ Is it grouped items with substantial detail per item?
 
 ### Available Slide Types
 
-| Type | When to Use | Required Fields | 元素上限 |
-|------|------------|----------------|---------|
-| `title` | Opening slide | 标题, 副标题, 标注 | 1 |
-| `data-comparison` | 2-4 metrics with exact numbers | 标题, 数据, 图表, 动画, 结论 | 1 |
-| `key-point` | Section divider, one big takeaway | 标题, 副标题 | 1 |
-| `comparison` | Side-by-side feature comparison | 标题, 列数据, 布局, 动画 | 1 |
-| `grid` | 4-6 item overview | 标题, 网格, 布局, 动画 | 1 |
-| `bar-chart` | Score/performance ranking | 标题, 图表, 动画 | 1 |
-| `player-card` | Individual item deep-dive | 标题, 分数, 特性, 图表(optional), 动画 | 1 |
-| `diagram` | Process flow / architecture | 标题, 图示, 动画 | 1 |
-| `list` | Ordered recommendations / steps | 标题, 列表, 动画 | 1 |
-| `placeholder` | Screenshot/image placeholder | 标题, 占位图 | 1 |
-| `card-grid` | 2-4 labeled cards | 标题, 卡片, 布局, 动画, 结论 | 1 |
-| **`block-slide`** | **多元素复合布局** | **标题, 元素数量, 布局模式, 元素列表, 动画** | **2-4** |
+| Type | When to Use | Required Fields | Max Elements |
+|------|------------|----------------|-------------|
+| `title` | Opening slide | title, subtitle, badge | 1 |
+| `data-comparison` | 2-4 metrics with exact numbers | title, data, chart, animation, conclusion | 1 |
+| `key-point` | Section divider, one big takeaway | title, subtitle | 1 |
+| `comparison` | Side-by-side feature comparison | title, column-data, layout, animation | 1 |
+| `grid` | 4-6 item overview | title, grid, layout, animation | 1 |
+| `bar-chart` | Score/performance ranking | title, chart, animation | 1 |
+| `player-card` | Individual item deep-dive | title, score, features, chart(optional), animation | 1 |
+| `diagram` | Process flow / architecture | title, diagram, animation | 1 |
+| `list` | Ordered recommendations / steps | title, list, animation | 1 |
+| `placeholder` | Screenshot/image placeholder | title, placeholder-image | 1 |
+| `card-grid` | 2-4 labeled cards | title, cards, layout, animation, conclusion | 1 |
+| **`block-slide`** | **Multi-element composite layout** | **title, element-count, layout-pattern, elements, animation** | **2-4** |
 
-> **`block-slide` 是 slides.md 中最重要的类型。** 当一张幻灯片需要包含图表+图片、图表+指标卡、图示+文字块等多元素组合时，必须使用 `block-slide`。它对应 `/web-ppt` 中的自由布局画布（`ContentBlock[]`），每个元素独立定位和渲染。
+> **`block-slide` is the most important type in slides.md.** When a slide needs to combine chart + image, chart + metric cards, diagram + text block, or any multi-element composition, you MUST use `block-slide`. It maps to the `/web-ppt` free-layout canvas (`ContentBlock[]`), where each element is independently positioned and rendered.
 
 ### Field Reference
 
 ```markdown
 ## Slide N: [Section · Topic]
 - type: [slide-type]
-- 标题: [Takeaway, not topic]
-- 副标题: [Secondary heading]
-- 正文: [1-2 sentence insight, NOT generic filler]
-- 标注: [Date, source, footnote]
+- title: [Takeaway, not topic]
+- subtitle: [Secondary heading]
+- body: [1-2 sentence insight, NOT generic filler]
+- badge: [Date, source, footnote]
 
 ## Data fields
-- 数据:
-  - [label]: [exact value]（[正向色/负向色/中性色]）
-- 结论: [Data-driven takeaway sentence]
-- 关键数字: [One standout metric]
-- 图表数据:
+- data:
+  - [label]: [exact value] ([positive/negative/neutral])
+- conclusion: [Data-driven takeaway sentence]
+- key-number: [One standout metric]
+- chart-data:
   | Column1 | Column2 | ... |
   |---------|---------|-----|
   | data    | data    | ... |
 
-## Chart specification (MUST include 外观描述 + 动画描述)
-- 图表:
-  - 类型: [横向条形图/大数字+微型进度条/堆叠双色条形图/面积对比/排名列表/分组条形图]
-  - 数据: [table or list]
-  - 排序: [升序/降序]
-  - 基准线: [value + description, optional]
-  - 外观描述: [详细描述每个视觉元素的位置、大小、颜色、比例关系]
-  - 动画描述: [详细描述触发时机、持续时间、缓动函数、stagger、起止状态]
+## Chart specification (MUST include appearance + animation-spec)
+- chart:
+  - type: [horizontal-bar/big-number+micro-bar/stacked-dual-bar/area-comparison/ranked-list/grouped-bar]
+  - data: [table or list]
+  - sort-order: [ascending/descending]
+  - baseline: [value + description, optional]
+  - appearance: [detailed description of every visual element's position, size, color, proportion]
+  - animation-spec: [detailed description of trigger timing, duration, easing, stagger, start→end states]
 
-## Image placeholder (MUST include 外观描述 + 预期内容 + 动画描述)
-- 占位图:
-  - 标题: [占位框内显示的标题文字]
-  - 外观描述: [虚线框的尺寸比例、边框样式、背景、标签文字、位置]
-  - 预期内容: [详细描述将来替换占位符的真实图片内容、标注要求]
-  - 动画描述: [占位框的入场动画]
+## Image placeholder (MUST include appearance + expected-content + animation-spec)
+- placeholder-image:
+  - title: [title text displayed inside placeholder box]
+  - appearance: [dashed box dimensions, border style, background, label text, position]
+  - expected-content: [detailed description of real image that will replace the placeholder, annotation requirements]
+  - animation-spec: [placeholder box entrance animation]
 
-## Diagram (MUST include 外观描述 + 动画描述)
-- 图示:
-  - 类型: [流程图/架构图/层级图/对比矩阵]
-  - 外观描述: [节点数量、文字、连接方式、布局方向、颜色]
-  - 动画描述: [逐步reveal顺序、stagger间隔、每元素入场方式]
+## Diagram (MUST include appearance + animation-spec)
+- diagram:
+  - type: [flowchart/architecture/hierarchy/comparison-matrix]
+  - appearance: [node count, text, connection method, layout direction, colors]
+  - animation-spec: [step-by-step reveal order, stagger interval, per-element entrance method]
 
 ## Animation specification
-- 动画:
+- animation:
   - fragments: [number]
-  - 步骤:
-    - F0: [what's immediately visible]（[appear/countUp/growBar]）
-    - F1: [first click reveal]（[animation type]）
+  - steps:
+    - F0: [what's immediately visible] ([appear/countUp/growBar])
+    - F1: [first click reveal] ([animation type])
     - F2: ...
 
 ## Layout treatment
-- 布局: [卡片/表格/边框高亮/无边框网格/时间线/行内高亮/大数字面板]
+- layout: [cards/table/accent-border/borderless-grid/timeline/inline-highlights/big-number-panel]
+
+## Multi-element composition (block-slide only)
+- element-count: [2-4]
+- layout-pattern: [top-bottom/side-by-side/golden-ratio/three-columns/dashboard/header-body/L-shape]
+- elements:
+  - Element 1 ([role], [position description]):
+    - type: [chart type / diagram type / placeholder-image / text-block]
+    - [element-specific fields...]
 
 ## Structure fields (type-specific)
-- 卡片:
+- cards:
   - [Item 1]
   - [Item 2]
-- 左列/右列/中列:
-  - 名称: [Column name]
-  - 代表: [Representative example]
-  - 要点: [Key differentiator]
-  - 细节: [Supporting detail]
-  - 结果: [Outcome/evidence]
-- 网格 (NxM):
+- left-col/right-col/center-col:
+  - name: [Column name]
+  - representative: [Representative example]
+  - key-point: [Key differentiator]
+  - detail: [Supporting detail]
+  - result: [Outcome/evidence]
+- grid (NxM):
   1. [Label] — [Description]
-- 图示 ([description]):
+- diagram ([description]):
   1. [Step] — [Explanation]
-- 列表:
+- list:
   1. [Item with description]
-- 特性:
+- features:
   - [Feature]: [Detail]
-- 对比图表:
+- comparison-chart:
   | Col1 | Col2 |
   |------|------|
   | data | data |
-- 侧注: [Marginal note]
-- 解释: [Why this matters]
-- 争议: [Counterpoint]
-- 差值: [Delta + color]
-- 增益: [Gain metric]
-- 警告: [Caveat callout]
+- side-note: [Marginal note]
+- explanation: [Why this matters]
+- controversy: [Counterpoint]
+- delta: [Delta + color]
+- gain: [Gain metric]
+- caveat: [Caveat callout]
 ```
 
 ---
@@ -967,31 +1018,34 @@ Is this an opening or section divider?
   → title (opening) or key-point (divider)
 
 Does the section present 2-4 standalone metrics?
-  → data-comparison（图表: 大数字 + 微型进度条）
+  → data-comparison (chart: big-number + micro-progress-bar)
 
 Does the section compare 2-3 alternatives side by side?
-  → comparison（布局: 表格 or 卡片）
+  → comparison (layout: table or cards)
 
 Does the section rank or score multiple items?
-  → bar-chart（图表: 横向条形图 or 堆叠双色条形图）
+  → bar-chart (chart: horizontal-bar or stacked-dual-bar)
 
 Does the section deep-dive one specific item?
-  → player-card（图表: 排名列表 + 横向条, optional）
+  → player-card (chart: ranked-list + horizontal-bar, optional)
 
 Does the section list 4-6 categories or dimensions?
-  → grid（布局: 无边框网格）
+  → grid (layout: borderless-grid)
 
 Does the section describe a process or architecture?
-  → diagram（动画: 逐步 appear）
+  → diagram (animation: step-by-step appear)
 
 Does the section give ordered recommendations?
-  → list（动画: 逐条 appear）
+  → list (animation: item-by-item appear)
 
 Does the section reference a screenshot or demo?
   → placeholder
 
 Does the section list 2-4 grouped items with a conclusion?
-  → card-grid（布局: 卡片）
+  → card-grid (layout: cards)
+
+Does the section have MULTIPLE data angles, charts+images, or high information density?
+  → block-slide (element-count: 2-4, layout-pattern: [pick from 7 patterns])
 ```
 
 ---
@@ -1002,18 +1056,23 @@ Does the section list 2-4 grouped items with a conclusion?
 
 Each slide delivers exactly ONE takeaway. If a script section makes two distinct points, split into two slides.
 
+### Multi-Element ≠ Multi-Message
+
+A multi-element `block-slide` still conveys ONE core message. The multiple elements support the SAME takeaway from different angles (e.g., a chart shows the data, a metric card highlights the key number, an image provides context — all reinforcing the same message).
+
 ### Narrative Rhythm
 
 Alternate slide types to maintain visual variety:
 
 ```
-Title → Data → Data → KeyPoint → Comparison → Chart → KeyPoint → PlayerCard → ...
+Title → BlockSlide → Data → KeyPoint → BlockSlide → Chart → KeyPoint → BlockSlide → ...
 ```
 
 Rules:
 - Never have 3+ consecutive slides of the same type
 - Insert `key-point` slides between major sections as dividers
 - Start with `title`, end with `key-point` (closing message)
+- Alternate between multi-element (`block-slide`) and single-element slides for visual rhythm
 
 ### Data Extraction Priority
 
@@ -1024,86 +1083,125 @@ When populating slide data from the source document:
 3. **Specific names** — product names, model names, paper names
 4. **Supporting evidence** — benchmark methodology, conditions
 
+### Information-to-Element Mapping
+
+When designing a slide, map information types to element types:
+
+| Information Type | Best Element | Notes |
+|-----------------|-------------|-------|
+| Numeric rankings/scores | Chart (bar/ranked-list) | Always pair with key metric card for the standout number |
+| Before/after comparisons | Chart (stacked-dual-bar) | Consider pairing with image showing the "after" state |
+| Product/interface references | Placeholder-image | Must be paired with at least one data element |
+| Process/workflow descriptions | Diagram | Consider pairing with image of the system described |
+| Multi-dimensional assessments | Chart (radar/grouped-bar) | Pair with text block for interpretation |
+| Market/proportion data | Chart (pie/bar) | Pair with key takeaway text block or metric card |
+| Conceptual explanations | Text block + diagram | Use diagram to visualize the concept |
+
 ---
 
 ## Complete Example: compact vs rich
 
 Given this script section:
 
-> 看一下数据。GPT-5.3 配合 Terminus 2 得到 64.7 分，加上 Simple Codex 脚手架变成 75.1 分，多了 10.4 分。Opus 4.6 配合 Terminus 2 得到 62.9 分，加上 Droid 脚手架变成 69.9 分，多了 7 分。
-> 5 到 10 个百分点的脚手架增益，足以把排名从中游拉到前三。
+> Let's look at the data. GPT-5.3 with Terminus 2 scores 64.7, add Simple Codex scaffold and it becomes 75.1, a gain of 10.4 points. Opus 4.6 with Terminus 2 scores 62.9, add Droid scaffold and it becomes 69.9, a gain of 7 points.
+> A 5-10 percentage point scaffold gain is enough to move ranking from mid-pack to top 3.
 
 ### compact output:
 
 ```markdown
-## Slide 6: 脚手架增益 5-10 分
-- type: bar-chart
-- 标题: 脚手架增益 5-10 分
-- 图表:
-  - 类型: 堆叠双色条形图
-  - 数据:
-    | 模型 | 基线 (Terminus 2) | 增益 | 总分 |
-    |------|------------------|------|------|
-    | GPT-5.3 | 64.7 | +10.4 | 75.1 (Simple Codex) |
-    | Opus 4.6 | 62.9 | +7.0 | 69.9 (Droid) |
-  - 外观描述: >
-      2 条水平堆叠条形，垂直排列，间距 gap-4。
-      每条左侧: 模型名（w-24, text-right, text-base）。
-      每条由两段拼接: 灰色基线段 + 绿色增益段，总高度 h-10，右端 rounded-r-lg。
-      GPT-5.3 条: 灰段占 86%（64.7/75.1），绿段占 14%（10.4/75.1），总宽 100%。
-      Opus 4.6 条: 灰段占 90%（62.9/69.9），绿段占 10%（7.0/69.9），总宽 93%（69.9/75.1）。
-      右侧标注: 总分 + 绿色小字 "(+增益)"。
-  - 动画描述: >
-      F1: 灰色段 + 绿色段依次生长（先灰 0.5s，再绿 0.4s），
-      ease [0.16,1,0.3,1]。右侧增益数字同步 countUp。两条间 stagger 0.1s。
-- 动画:
+## Slide 6: Scaffold Gain 5-10 Points
+- type: block-slide
+- title: Scaffold Gain 5-10 Points
+- element-count: 2
+- layout-pattern: side-by-side
+- elements:
+  - Element 1 (chart, left 60%):
+    - type: stacked-dual-bar
+    - data:
+      | Model | Baseline (Terminus 2) | Gain | Total |
+      |-------|----------------------|------|-------|
+      | GPT-5.3 | 64.7 | +10.4 | 75.1 (Simple Codex) |
+      | Opus 4.6 | 62.9 | +7.0 | 69.9 (Droid) |
+    - appearance: >
+        2 horizontal stacked bars, vertical layout, gap-4.
+        Left side of each: model name (w-24, text-right, text-base).
+        Each bar has two joined segments: grey baseline + green gain, total height h-10, rounded-r-lg on right end.
+        GPT-5.3 bar: grey segment 86% (64.7/75.1), green segment 14% (10.4/75.1), total width 100%.
+        Opus 4.6 bar: grey segment 90% (62.9/69.9), green segment 10% (7.0/69.9), total width 93% (69.9/75.1).
+        Right annotation: total score + green small text "(+gain)".
+    - animation-spec: >
+        F1: grey + green segments grow sequentially (grey 0.5s, then green 0.4s),
+        ease [0.16,1,0.3,1]. Right-side gain numbers countUp in sync. 0.1s stagger between bars.
+  - Element 2 (image, right 36%):
+    - type: placeholder-image
+    - title: "Scaffold tools comparison dashboard"
+    - expected-content: Visual comparison of scaffold tool architectures and their performance impact
+- animation:
   - fragments: 2
-  - 步骤:
-    - F0: 标题（appear）
-    - F1: 双色条形图生长（growBar）+ 增益数字（countUp）
+  - steps:
+    - F0: title (appear) + image placeholder (appear)
+    - F1: dual-color bar chart growth (growBar) + gain numbers (countUp)
 ```
 
 ### rich output:
 
 ```markdown
-## Slide 6: 脚手架增益数据
-- type: bar-chart
-- 标题: 5-10 分增益，从中游到前三
-- 正文: 同一个模型搭配不同脚手架，分数差距可达 10 个百分点以上
-- 图表:
-  - 类型: 堆叠双色条形图
-  - 数据:
-    | 模型 | 基线 (Terminus 2) | 增益 | 总分 | 最佳脚手架 |
-    |------|------------------|------|------|-----------|
-    | GPT-5.3 | 64.7 | +10.4 | 75.1 | Simple Codex |
-    | Opus 4.6 | 62.9 | +7.0 | 69.9 | Droid |
-  - 基准线: 62.9（Terminus 2 + Opus 4.6 基线，虚线）
-  - 排序: 按总分降序
-  - 外观描述: >
-      2 条水平堆叠条形，垂直排列，间距 gap-5，整体居中偏左（max-w-[85%]）。
-      每条结构: 左侧标签区（w-28）显示 "模型名 + 脚手架名"，text-right，text-base。
-      条形区由两段无间隙拼接:
-      - 灰色段（barTrack 色 #F0F0EA）: 代表基线分数，宽度按基线/最高分比例。
-      - 绿色段（accentPositive #4CAF50）: 代表增益分数，紧接灰段，宽度按增益/最高分比例。
-      条形总高度 h-10，仅最右端有圆角 rounded-r-lg。
-      右侧标注区: 总分数字（text-xl, font-bold）+ 绿色小字 "(+10.4)"（text-sm, accentPositive）。
-      GPT-5.3 行: 灰段 86%宽 + 绿段 14%宽 = 100%（最长条）。
-      Opus 4.6 行: 灰段 84%宽 + 绿段 9%宽 = 93%。
-      在图表左侧 62.9 分对应的 x 位置，有一条竖向虚线（1px dashed, rgba(0,0,0,0.15)），
-      虚线顶端标注 "基线 62.9"（text-xs, textCaption, 斜体）。
-  - 动画描述: >
-      F1: 2 条灰色基线段从 width:0 生长到目标宽度，duration 0.6s，ease [0.16,1,0.3,1]。
-      两条之间 stagger 0.1s。基准虚线在灰段经过 62.9 位置时淡入（opacity 0→1, 0.3s）。
-      F2: 绿色增益段从灰段末端继续生长，duration 0.5s，ease [0.16,1,0.3,1]。
-      同时右侧增益数字 countUp（0→+10.4 / 0→+7.0，0.5s, ease-out）。
-      结论文字在底部 appear（opacity 0→1 + y:8→0，0.4s）。
-- 动画:
+## Slide 6: Scaffold Gain Data
+- type: block-slide
+- title: 5-10 Point Gain, From Mid-Pack to Top Three
+- body: Same model with different scaffolds can show 10+ percentage point score differences
+- element-count: 3
+- layout-pattern: golden-ratio
+- elements:
+  - Element 1 (primary chart, left 62%):
+    - type: stacked-dual-bar
+    - data:
+      | Model | Baseline (Terminus 2) | Gain | Total | Best Scaffold |
+      |-------|----------------------|------|-------|---------------|
+      | GPT-5.3 | 64.7 | +10.4 | 75.1 | Simple Codex |
+      | Opus 4.6 | 62.9 | +7.0 | 69.9 | Droid |
+    - baseline: 62.9 (Terminus 2 + Opus 4.6 baseline, dashed line)
+    - sort-order: descending by total
+    - appearance: >
+        2 horizontal stacked bars, vertical layout, gap-5, centered-left (max-w-[85%]).
+        Each bar structure: left label area (w-28) showing "model name + scaffold name", text-right, text-base.
+        Bar area has two gapless joined segments:
+        - Grey segment (barTrack color #F0F0EA): represents baseline score, width proportional to baseline/max.
+        - Green segment (accentPositive #4CAF50): represents gain score, follows grey segment, width proportional to gain/max.
+        Bar total height h-10, rounded only at far right end (rounded-r-lg).
+        Right annotation area: total score (text-xl, font-bold) + green small text "(+10.4)" (text-sm, accentPositive).
+        GPT-5.3 row: grey 86% + green 14% = 100% (longest bar).
+        Opus 4.6 row: grey 84% + green 9% = 93%.
+        Vertical dashed line at x-position corresponding to 62.9 (1px dashed, rgba(0,0,0,0.15)),
+        top of dashed line annotated "Baseline 62.9" (text-xs, textCaption, italic).
+    - animation-spec: >
+        F1: 2 grey baseline segments grow from width:0 to target width, duration 0.6s, ease [0.16,1,0.3,1].
+        0.1s stagger between bars. Baseline dashed line fades in when grey passes 62.9 position (opacity 0→1, 0.3s).
+        F2: green gain segments continue growing from grey end, duration 0.5s, ease [0.16,1,0.3,1].
+        Right-side gain numbers countUp simultaneously (0→+10.4 / 0→+7.0, 0.5s, ease-out).
+        Conclusion text appears at bottom (opacity 0→1 + y:8→0, 0.4s).
+  - Element 2 (metric cards, top-right 32%×45%):
+    - type: big-number + micro-progress-bar
+    - data:
+      - max-gain: +10.4 (positive color)
+      - min-gain: +7.0 (neutral color)
+    - appearance: >
+        2 metric blocks stacked vertically, gap-4. Each block:
+        Large number text-5xl font-bold, micro progress bar h-2 below,
+        label text-sm textCaption below bar.
+  - Element 3 (context image, bottom-right 32%×47%):
+    - type: placeholder-image
+    - title: "Terminal-Bench leaderboard showing scaffold-enhanced rankings"
+    - expected-content: >
+        Leaderboard screenshot highlighting how scaffolded entries (Droid, Simple Codex)
+        rank significantly higher than their base model entries.
+- animation:
   - fragments: 3
-  - 步骤:
-    - F0: 标题 + 正文（appear）
-    - F1: 基线部分条形生长（growBar）+ 基准线出现
-    - F2: 增益部分条形生长（growBar）+ 增益数字（countUp）+ 结论（appear）
-- 结论: 脚手架工程可以带来 5-10 分的增益，足以改变排名位置
+  - steps:
+    - F0: title + body (appear)
+    - F1: baseline bar segments grow (growBar) + baseline line appears + metric card numbers (countUp)
+    - F2: gain bar segments grow (growBar) + gain numbers (countUp) + image (appear) + conclusion (appear)
+- conclusion: Scaffold engineering can deliver 5-10 point gains, enough to change ranking positions
 ```
 
 ---
@@ -1112,23 +1210,30 @@ Given this script section:
 
 ### Content
 - **Never generate a slide with only a title.** Every slide must have substantive data.
-- **Never use generic titles** like "数据对比" or "关键发现". Titles state the specific takeaway.
-- **Never use placeholder values** like "XX%", "N/A", "待填".
+- **Never use generic titles** like "Data Comparison" or "Key Findings". Titles state the specific takeaway.
+- **Never use placeholder values** like "XX%", "N/A", "TBD".
 - **Never invent numbers.** Every metric must trace back to the source document.
 - **Never skip a topic from the script.** If the script mentions it, there must be a slide.
 - **Never add topics not in the script.** The script is the authoritative content selector.
 - **Never put detailed spoken narration into the slide body.** Slides capture DATA; narration is in the script.
 
 ### Visual Mandate
-- **Never produce a non-title/key-point slide without a visual element.** Every content slide needs 图表, 图示, or 占位图.
-- **Never write a `图表` field without `外观描述`.** "横向条形图" alone is useless — describe every bar, label, color, size.
-- **Never write a `图表` or `占位图` field without `动画描述`.** Every visual element must specify how it animates.
-- **Never write a vague `外观描述`** like "一个条形图展示分数对比". Must include: element count, specific values, colors, sizes, positions.
-- **Never write a vague `动画描述`** like "条形图动画展示". Must include: trigger fragment, duration, easing, stagger timing, specific start→end states.
-- **Never write a `占位图` without `预期内容`** describing exactly what real image should replace it.
+- **Never produce a non-title/key-point slide without a visual element.** Every content slide needs chart, diagram, or placeholder-image.
+- **Never write a `chart` field without `appearance`.** "horizontal-bar" alone is useless — describe every bar, label, color, size.
+- **Never write a `chart` or `placeholder-image` field without `animation-spec`.** Every visual element must specify how it animates.
+- **Never write a vague `appearance`** like "a bar chart showing score comparison". Must include: element count, specific values, colors, sizes, positions.
+- **Never write a vague `animation-spec`** like "bar chart animation display". Must include: trigger fragment, duration, easing, stagger timing, specific start→end states.
+- **Never write a `placeholder-image` without `expected-content`** describing exactly what real image should replace it.
+
+### Multi-Element Composition
+- **Never use `block-slide` with only 1 element.** Use a standalone slide type instead.
+- **Never have every content slide be a block-slide.** Alternate with single-element types for visual rhythm.
+- **Never use the same layout-pattern for 3+ consecutive block-slides.** Vary the patterns.
+- **Never create an information-rich slide (multi-data, multi-angle) as a single-element type.** Use `block-slide` to give it proper visual density.
+- **Never leave a block-slide with >35% empty space.** Add an image placeholder or text block to fill gaps.
 
 ### Animation
-- **Never omit the `动画` field on any non-title, non-key-point slide.**
+- **Never omit the `animation` field on any non-title, non-key-point slide.**
 - **Never use `countUp` on text or `appear` on a big number.** Match animation type to content type.
 - **Never assign identical animation (all `appear`) to every slide.** Use the animation type table.
 
@@ -1151,23 +1256,33 @@ Before writing the output file, verify:
 ### Content
 - [ ] Every slide has a specific, non-generic takeaway title
 - [ ] Every data field contains exact values from the source document
-- [ ] Color hints (正向色/负向色/中性色) used for all data with sentiment
+- [ ] Color hints (positive/negative/neutral) used for all data with sentiment
 - [ ] All text in specified `--lang`
 
 ### Visual Mandate
-- [ ] **Every non-title/key-point slide has at least one visual element** (图表 / 图示 / 占位图)
-- [ ] **Every `图表` has `外观描述`**: element count, specific values, colors, sizes, positions, proportions
-- [ ] **Every `图表` has `动画描述`**: trigger fragment, duration, easing, stagger, start→end states
-- [ ] **Every `占位图` has `外观描述`**: dimensions, border style, background, label text, positioning
-- [ ] **Every `占位图` has `预期内容`**: detailed description of the real image that should replace it
-- [ ] **Every `占位图` has `动画描述`**: entrance animation timing and style
-- [ ] **Every `图示` has `外观描述`**: node count, labels, connections, layout direction, colors
-- [ ] **Every `图示` has `动画描述`**: reveal sequence, stagger timing, per-element effects
+- [ ] **Every non-title/key-point slide has at least one visual element** (chart / diagram / placeholder-image)
+- [ ] **Every `chart` has `appearance`**: element count, specific values, colors, sizes, positions, proportions
+- [ ] **Every `chart` has `animation-spec`**: trigger fragment, duration, easing, stagger, start→end states
+- [ ] **Every `placeholder-image` has `appearance`**: dimensions, border style, background, label text, positioning
+- [ ] **Every `placeholder-image` has `expected-content`**: detailed description of the real image that should replace it
+- [ ] **Every `placeholder-image` has `animation-spec`**: entrance animation timing and style
+- [ ] **Every `diagram` has `appearance`**: node count, labels, connections, layout direction, colors
+- [ ] **Every `diagram` has `animation-spec`**: reveal sequence, stagger timing, per-element effects
+
+### Multi-Element Composition
+- [ ] **In `rich` mode, ≥40% of content slides are multi-element (`block-slide`)**
+- [ ] **In `compact` mode, ≥20% of content slides are multi-element (`block-slide`)**
+- [ ] **Every `block-slide` has `element-count` (2-4) and `layout-pattern` specified**
+- [ ] **At least 3 different layout patterns used across the deck**
+- [ ] **No 3+ consecutive block-slides with the same layout pattern**
+- [ ] **Information-rich sections use multi-element composition (not split across multiple single-element slides)**
+- [ ] **Every block-slide has ≤35% empty space** — add image blocks to fill gaps
+- [ ] **Multi-element animation uses layered reveal** — primary element first, supporting elements in subsequent fragments
 
 ### Charts & Animation
-- [ ] Every slide with quantitative data has a `图表` field with type + data
-- [ ] Every non-title/key-point slide has a `动画` field with fragments + steps
+- [ ] Every slide with quantitative data has a `chart` field with type + data
+- [ ] Every non-title/key-point slide has an `animation` field with fragments + steps
 - [ ] Every big number specifies `countUp` animation
 - [ ] Every bar/progress element specifies `growBar` animation
-- [ ] `布局` field present on comparison, grid, and card-grid slides
-- [ ] Max 50% of content slides use `卡片` layout (track card count)
+- [ ] `layout` field present on comparison, grid, and card-grid slides
+- [ ] Max 50% of content slides use `cards` layout (track card count)
