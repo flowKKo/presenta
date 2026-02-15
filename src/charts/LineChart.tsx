@@ -13,9 +13,10 @@ interface LineChartProps {
   series: { name: string; data: number[]; area?: boolean }[]
   height?: number
   colorPalette?: string
+  forceArea?: boolean
 }
 
-export default function LineChart({ categories, series, height, colorPalette }: LineChartProps) {
+export default function LineChart({ categories, series, height, colorPalette, forceArea = false }: LineChartProps) {
   const pal = getChartPalette(colorPalette)
   const hasLegend = series.length > 1
 
@@ -59,7 +60,7 @@ export default function LineChart({ categories, series, height, colorPalette }: 
           borderColor: '#fff',
           borderWidth: 2,
         },
-        areaStyle: s.area
+        areaStyle: (s.area || forceArea)
           ? {
               color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
                 { offset: 0, color: `${color}30` },

@@ -83,9 +83,15 @@ const VARIANT_OPTIONS: Partial<Record<SlideType, { field: string; options: { val
     field: 'chartType',
     options: [
       { value: 'bar', label: '柱状' },
+      { value: 'horizontal-bar', label: '横向柱状' },
+      { value: 'stacked-bar', label: '堆叠柱状' },
       { value: 'pie', label: '饼图' },
+      { value: 'donut', label: '圆环' },
+      { value: 'rose', label: '玫瑰' },
       { value: 'line', label: '折线' },
+      { value: 'area', label: '面积' },
       { value: 'radar', label: '雷达' },
+      { value: 'proportion', label: '比例' },
     ],
   },
 }

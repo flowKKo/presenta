@@ -344,7 +344,7 @@ function ChartEditor({ data, onChange, isBlock, fontSizeFields, colorFields }: {
       {!isBlock && fontSizeFields}
       {colorFields}
 
-      {data.chartType === 'bar' && data.bars && (
+      {(data.chartType === 'bar' || data.chartType === 'horizontal-bar' || data.chartType === 'stacked-bar') && data.bars && (
         <Section title="柱状图数据">
           <ArrayEditor
             items={data.bars}
@@ -375,7 +375,7 @@ function ChartEditor({ data, onChange, isBlock, fontSizeFields, colorFields }: {
         </Section>
       )}
 
-      {data.chartType === 'pie' && data.slices && (
+      {(data.chartType === 'pie' || data.chartType === 'donut' || data.chartType === 'rose') && data.slices && (
         <Section title="饼图数据">
           <ArrayEditor
             items={data.slices}
@@ -396,7 +396,7 @@ function ChartEditor({ data, onChange, isBlock, fontSizeFields, colorFields }: {
         </Section>
       )}
 
-      {data.chartType === 'line' && data.lineSeries && (
+      {(data.chartType === 'line' || data.chartType === 'area') && data.lineSeries && (
         <Section title="折线图数据">
           <TextInput
             label="X轴类别 (逗号分隔)"
@@ -453,6 +453,29 @@ function ChartEditor({ data, onChange, isBlock, fontSizeFields, colorFields }: {
                   value={series.values.join(', ')}
                   onChange={(v) => update({ ...series, values: v.split(',').map((s) => Number(s.trim()) || 0) })}
                 />
+              </div>
+            )}
+          />
+        </Section>
+      )}
+
+      {data.chartType === 'proportion' && (
+        <Section title="比例图数据">
+          <ArrayEditor
+            items={data.proportionItems ?? []}
+            onChange={(proportionItems) => onChange({ ...data, proportionItems })}
+            createDefault={() => ({ name: '新项', value: 50, max: 100 })}
+            renderRow={(item, _, update) => (
+              <div className="flex gap-1">
+                <div className="flex-1">
+                  <TextInput label="名称" value={item.name} onChange={(v) => update({ ...item, name: v })} />
+                </div>
+                <div className="w-16">
+                  <NumberInput label="值" value={item.value} onChange={(v) => update({ ...item, value: v })} />
+                </div>
+                <div className="w-16">
+                  <NumberInput label="满值" value={item.max ?? 100} onChange={(v) => update({ ...item, max: v })} />
+                </div>
               </div>
             )}
           />

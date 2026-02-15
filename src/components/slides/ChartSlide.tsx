@@ -6,6 +6,7 @@ import BarChart from '../../charts/BarChart'
 import PieChart from '../../charts/PieChart'
 import LineChart from '../../charts/LineChart'
 import RadarChart from '../../charts/RadarChart'
+import ProportionChart from '../../charts/ProportionChart'
 
 const colorMap: Record<string, string> = {
   positive: colors.accentPositive,
@@ -22,6 +23,7 @@ export interface ChartDiagramProps {
   lineSeries?: ChartSlideData['lineSeries']
   indicators?: ChartSlideData['indicators']
   radarSeries?: ChartSlideData['radarSeries']
+  proportionItems?: ChartSlideData['proportionItems']
   chartHeight?: number
   colorPalette?: string
 }
@@ -33,10 +35,46 @@ export function ChartDiagram(props: ChartDiagramProps) {
   switch (props.chartType) {
     case 'pie':
       return <PieChart data={props.slices ?? []} innerRadius={props.innerRadius} height={h} colorPalette={cp} />
+    case 'donut':
+      return <PieChart data={props.slices ?? []} innerRadius={props.innerRadius ?? 45} height={h} colorPalette={cp} />
+    case 'rose':
+      return <PieChart data={props.slices ?? []} roseType="area" height={h} colorPalette={cp} />
     case 'line':
       return <LineChart categories={props.categories ?? []} series={props.lineSeries ?? []} height={h} colorPalette={cp} />
+    case 'area':
+      return <LineChart categories={props.categories ?? []} series={props.lineSeries ?? []} forceArea height={h} colorPalette={cp} />
     case 'radar':
       return <RadarChart indicators={props.indicators ?? []} series={props.radarSeries ?? []} height={h} colorPalette={cp} />
+    case 'proportion':
+      return <ProportionChart items={props.proportionItems ?? []} height={h} colorPalette={cp} />
+    case 'stacked-bar': {
+      const bars = props.bars ?? []
+      const categories = bars.map(b => b.category)
+      const seriesNames = [...new Set(bars.flatMap(b => b.values.map(v => v.name)))]
+      const series = seriesNames.map(name => {
+        const firstMatch = bars.flatMap(b => b.values).find(v => v.name === name)
+        return {
+          name,
+          data: bars.map(b => b.values.find(v => v.name === name)?.value ?? 0),
+          color: firstMatch?.color ? colorMap[firstMatch.color] : undefined,
+        }
+      })
+      return <BarChart categories={categories} series={series} stacked height={h} colorPalette={cp} />
+    }
+    case 'horizontal-bar': {
+      const bars = props.bars ?? []
+      const categories = bars.map(b => b.category)
+      const seriesNames = [...new Set(bars.flatMap(b => b.values.map(v => v.name)))]
+      const series = seriesNames.map(name => {
+        const firstMatch = bars.flatMap(b => b.values).find(v => v.name === name)
+        return {
+          name,
+          data: bars.map(b => b.values.find(v => v.name === name)?.value ?? 0),
+          color: firstMatch?.color ? colorMap[firstMatch.color] : undefined,
+        }
+      })
+      return <BarChart categories={categories} series={series} orientation="horizontal" height={h} colorPalette={cp} />
+    }
     case 'bar':
     default: {
       const bars = props.bars ?? []

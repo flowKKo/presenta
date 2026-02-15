@@ -13,9 +13,10 @@ interface PieChartProps {
   innerRadius?: number
   height?: number
   colorPalette?: string
+  roseType?: 'area' | 'radius'
 }
 
-export default function PieChart({ data, innerRadius = 0, height, colorPalette }: PieChartProps) {
+export default function PieChart({ data, innerRadius = 0, height, colorPalette, roseType }: PieChartProps) {
   const pal = colorPalette ? getChartPalette(colorPalette) : undefined
   const isDonut = innerRadius > 0
   const total = data.reduce((s, d) => s + d.value, 0)
@@ -35,6 +36,7 @@ export default function PieChart({ data, innerRadius = 0, height, colorPalette }
         type: 'pie' as const,
         radius: isDonut ? [`${innerRadius}%`, '72%'] : ['0%', '72%'],
         center: ['50%', '46%'],
+        ...(roseType ? { roseType } : {}),
         data: pal ? data.map((d, i) => ({ ...d, itemStyle: { color: pal[i % pal.length] } })) : data,
         label: {
           show: true,

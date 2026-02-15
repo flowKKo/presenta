@@ -26,7 +26,7 @@ export interface KeyPointSlideData {
 }
 
 // ─── 3. Chart (expanded) ───
-export type ChartType = 'bar' | 'pie' | 'line' | 'radar'
+export type ChartType = 'bar' | 'horizontal-bar' | 'stacked-bar' | 'pie' | 'donut' | 'rose' | 'line' | 'area' | 'radar' | 'proportion'
 
 export interface ChartBar {
   category: string
@@ -36,6 +36,7 @@ export interface ChartSlice { name: string; value: number }
 export interface LineSeries { name: string; data: number[]; area?: boolean }
 export interface RadarIndicator { name: string; max: number }
 export interface RadarSeries { name: string; values: number[] }
+export interface ProportionItem { name: string; value: number; max?: number }
 
 export interface ChartSlideData {
   type: 'chart'
@@ -60,6 +61,8 @@ export interface ChartSlideData {
   // radar
   indicators?: RadarIndicator[]
   radarSeries?: RadarSeries[]
+  // proportion
+  proportionItems?: ProportionItem[]
 }
 
 // ─── 4. GridItem Engine ───
@@ -253,7 +256,7 @@ export type BlockData =
   | { type: 'concentric'; rings: ConcentricRing[]; variant: ConcentricVariant; textColor?: string; colorPalette?: string }
   | { type: 'hub-spoke'; center: { label: string; description?: string }; spokes: { label: string; description?: string }[]; variant: HubSpokeVariant; textColor?: string; colorPalette?: string }
   | { type: 'venn'; sets: { label: string; description?: string }[]; intersectionLabel?: string; variant: VennVariant; textColor?: string; colorPalette?: string }
-  | { type: 'chart'; chartType: ChartType; bars?: ChartBar[]; slices?: ChartSlice[]; innerRadius?: number; categories?: string[]; lineSeries?: LineSeries[]; indicators?: RadarIndicator[]; radarSeries?: RadarSeries[]; highlight?: string; colorPalette?: string }
+  | { type: 'chart'; chartType: ChartType; bars?: ChartBar[]; slices?: ChartSlice[]; innerRadius?: number; categories?: string[]; lineSeries?: LineSeries[]; indicators?: RadarIndicator[]; radarSeries?: RadarSeries[]; proportionItems?: ProportionItem[]; highlight?: string; colorPalette?: string }
   | { type: 'image'; src?: string; alt?: string; fit?: 'cover' | 'contain' | 'fill'; placeholder?: string }
 
 export interface ContentBlock {

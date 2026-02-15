@@ -88,16 +88,21 @@ export function extractCommonItems(data: SlideData): CommonSlideData {
 function extractChartItems(data: ChartSlideData): CommonItem[] {
   switch (data.chartType) {
     case 'bar':
+    case 'horizontal-bar':
+    case 'stacked-bar':
       return (data.bars ?? []).map((b) => ({
         name: b.category,
         value: b.values[0]?.value,
       }))
     case 'pie':
+    case 'donut':
+    case 'rose':
       return (data.slices ?? []).map((s) => ({
         name: s.name,
         value: s.value,
       }))
     case 'line':
+    case 'area':
       return (data.categories ?? []).map((cat, i) => ({
         name: cat,
         value: data.lineSeries?.[0]?.data[i],
@@ -106,6 +111,11 @@ function extractChartItems(data: ChartSlideData): CommonItem[] {
       return (data.indicators ?? []).map((ind, i) => ({
         name: ind.name,
         value: data.radarSeries?.[0]?.values[i],
+      }))
+    case 'proportion':
+      return (data.proportionItems ?? []).map((p) => ({
+        name: p.name,
+        value: p.value,
       }))
   }
 }
@@ -248,9 +258,29 @@ function buildChart(title: string, body: string | undefined, items: CommonItem[]
         type: 'chart', chartType: 'bar', title, body,
         bars: withValues.map((i) => ({ category: i.name, values: [{ name: '值', value: i.value }] })),
       }
+    case 'horizontal-bar':
+      return {
+        type: 'chart', chartType: 'horizontal-bar', title, body,
+        bars: withValues.map((i) => ({ category: i.name, values: [{ name: '值', value: i.value }] })),
+      }
+    case 'stacked-bar':
+      return {
+        type: 'chart', chartType: 'stacked-bar', title, body,
+        bars: withValues.map((i) => ({ category: i.name, values: [{ name: '系列A', value: Math.round(i.value * 0.6) }, { name: '系列B', value: Math.round(i.value * 0.4) }] })),
+      }
     case 'pie':
       return {
         type: 'chart', chartType: 'pie', title, body,
+        slices: withValues.map((i) => ({ name: i.name, value: i.value })),
+      }
+    case 'donut':
+      return {
+        type: 'chart', chartType: 'donut', title, body,
+        slices: withValues.map((i) => ({ name: i.name, value: i.value })),
+      }
+    case 'rose':
+      return {
+        type: 'chart', chartType: 'rose', title, body,
         slices: withValues.map((i) => ({ name: i.name, value: i.value })),
       }
     case 'line':
@@ -259,11 +289,22 @@ function buildChart(title: string, body: string | undefined, items: CommonItem[]
         categories: items.map((i) => i.name),
         lineSeries: [{ name: '数据', data: withValues.map((i) => i.value) }],
       }
+    case 'area':
+      return {
+        type: 'chart', chartType: 'area', title, body,
+        categories: items.map((i) => i.name),
+        lineSeries: [{ name: '数据', data: withValues.map((i) => i.value) }],
+      }
     case 'radar':
       return {
         type: 'chart', chartType: 'radar', title, body,
         indicators: withValues.map((i) => ({ name: i.name, max: Math.max(i.value * 1.5, 100) })),
         radarSeries: [{ name: '数据', values: withValues.map((i) => i.value) }],
+      }
+    case 'proportion':
+      return {
+        type: 'chart', chartType: 'proportion', title, body,
+        proportionItems: withValues.map((i) => ({ name: i.name, value: i.value, max: 100 })),
       }
   }
 }

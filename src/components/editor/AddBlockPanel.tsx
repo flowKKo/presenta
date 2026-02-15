@@ -31,6 +31,12 @@ const BLOCK_OPTIONS: BlockOption[] = [
   { label: '饼图', category: '图表', createData: () => ({ type: 'chart', chartType: 'pie', slices: [{ name: '项目A', value: 40 }, { name: '项目B', value: 35 }, { name: '项目C', value: 25 }] }) },
   { label: '折线图', category: '图表', createData: () => ({ type: 'chart', chartType: 'line', categories: ['一月', '二月', '三月'], lineSeries: [{ name: '数据', data: [30, 45, 60] }] }) },
   { label: '雷达图', category: '图表', createData: () => ({ type: 'chart', chartType: 'radar', indicators: [{ name: '速度', max: 100 }, { name: '质量', max: 100 }, { name: '成本', max: 100 }], radarSeries: [{ name: '数据', values: [80, 60, 70] }] }) },
+  { label: '横向柱状', category: '图表', createData: () => ({ type: 'chart', chartType: 'horizontal-bar', bars: [{ category: 'A', values: [{ name: '值', value: 85 }] }, { category: 'B', values: [{ name: '值', value: 62 }] }, { category: 'C', values: [{ name: '值', value: 45 }] }] }) },
+  { label: '圆环图', category: '图表', createData: () => ({ type: 'chart', chartType: 'donut', slices: [{ name: '项目A', value: 40 }, { name: '项目B', value: 35 }, { name: '项目C', value: 25 }] }) },
+  { label: '比例图', category: '图表', createData: () => ({ type: 'chart', chartType: 'proportion', proportionItems: [{ name: '完成率', value: 78 }, { name: '达标率', value: 92 }, { name: '覆盖率', value: 65 }] }) },
+  { label: '堆叠柱状', category: '图表', createData: () => ({ type: 'chart', chartType: 'stacked-bar', bars: [{ category: 'Q1', values: [{ name: '产品A', value: 30 }, { name: '产品B', value: 20 }] }, { category: 'Q2', values: [{ name: '产品A', value: 45 }, { name: '产品B', value: 25 }] }, { category: 'Q3', values: [{ name: '产品A', value: 38 }, { name: '产品B', value: 32 }] }] }) },
+  { label: '面积图', category: '图表', createData: () => ({ type: 'chart', chartType: 'area', categories: ['一月', '二月', '三月', '四月'], lineSeries: [{ name: '数据', data: [30, 45, 60, 72] }] }) },
+  { label: '玫瑰图', category: '图表', createData: () => ({ type: 'chart', chartType: 'rose', slices: [{ name: '项目A', value: 40 }, { name: '项目B', value: 35 }, { name: '项目C', value: 25 }, { name: '项目D', value: 18 }] }) },
   // Media
   { label: '图片', category: '媒体', createData: () => ({ type: 'image', placeholder: '点击添加图片' }) },
 ]

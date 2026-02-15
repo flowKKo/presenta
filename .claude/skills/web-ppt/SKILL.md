@@ -50,7 +50,7 @@ Script (slides.md)
 | `src/data/decks/index.ts` | Auto-discovery registry via `import.meta.glob` (no manual registration) |
 | `src/theme/swiss.ts` | Theme: colors, echarts theme, motion config, card style |
 | `src/components/engines/*.tsx` | 7 diagram engines (GridItem, Sequence, Compare, Funnel, Concentric, HubSpoke, Venn) |
-| `src/components/slides/ChartSlide.tsx` | ECharts renderer (bar, pie, line, radar) |
+| `src/components/slides/ChartSlide.tsx` | ECharts renderer (bar, horizontal-bar, pie, donut, line, radar, proportion) |
 | `src/components/blocks/` | Block model: BlockRenderer, BlockSlideRenderer, BlockWrapper |
 
 ---
@@ -95,27 +95,29 @@ Large centered statement with optional body text. Use for core takeaways, quotes
 
 #### 3. `chart` — Data Visualization (ECharts)
 
-Full-width chart with title. **4 chart sub-types:**
+Full-width chart with title. **10 chart sub-types:**
 
 ```ts
 {
   type: 'chart',
-  chartType: 'bar' | 'pie' | 'line' | 'radar',
+  chartType: 'bar' | 'horizontal-bar' | 'stacked-bar' | 'pie' | 'donut' | 'rose' | 'line' | 'area' | 'radar' | 'proportion',
   title: string,
   body?: string,
   highlight?: string,    // big number callout (e.g., "¥12.8M")
   chartHeight?: number,  // px, default auto
-  // bar-specific:
+  // bar / horizontal-bar:
   bars?: ChartBar[],     // { category, values: { name, value, color? }[] }
-  // pie-specific:
+  // pie / donut:
   slices?: ChartSlice[], // { name, value }
-  innerRadius?: number,  // 0-100 for donut effect
+  innerRadius?: number,  // 0-100 for donut effect (donut defaults to 45)
   // line-specific:
   categories?: string[],
   lineSeries?: LineSeries[], // { name, data: number[], area?: boolean }
   // radar-specific:
   indicators?: RadarIndicator[], // { name, max }
   radarSeries?: RadarSeries[],   // { name, values: number[] }
+  // proportion:
+  proportionItems?: ProportionItem[],  // { name, value, max? }
 }
 ```
 
@@ -123,10 +125,16 @@ Full-width chart with title. **4 chart sub-types:**
 
 | Chart | Best For | Data Shape |
 |-------|----------|------------|
-| `bar` | Category comparison, rankings, time series | 3-8 categories, 1-3 series per category |
-| `pie` | Proportional breakdown, market share | 3-6 slices (use `innerRadius: 40` for donut) |
+| `bar` | Category comparison, vertical value ranking | 3-8 categories, 1-3 series per category |
+| `horizontal-bar` | Leaderboards, long-label comparisons, rankings | 3-10 categories (labels on y-axis) |
+| `stacked-bar` | Composition breakdown, revenue by segment | 3-8 categories, 2-4 series stacked |
+| `pie` | Proportional breakdown, market share | 3-6 slices |
+| `donut` | Proportional breakdown + total display | 3-6 slices (center shows total) |
+| `rose` | Proportional comparison with magnitude emphasis | 3-8 slices (radius encodes value) |
 | `line` | Trends over time, growth curves | 4-12 time points, 1-3 series |
+| `area` | Trends with volume emphasis, growth visualization | 4-12 time points, 1-3 series (filled) |
 | `radar` | Multi-dimensional comparison, capability profiles | 4-6 dimensions, 2-3 items compared |
+| `proportion` | Completion rates, coverage, percentage comparison | 3-8 items with value/max |
 
 ---
 
@@ -351,7 +359,7 @@ The `block-slide` type enables **multiple diagrams on a single slide** via posit
 | `concentric` | `{ rings, variant }` |
 | `hub-spoke` | `{ center, spokes, variant }` |
 | `venn` | `{ sets, intersectionLabel?, variant }` |
-| `chart` | `{ chartType, bars?, slices?, innerRadius?, categories?, lineSeries?, indicators?, radarSeries?, highlight? }` |
+| `chart` | `{ chartType, bars?, slices?, innerRadius?, categories?, lineSeries?, indicators?, radarSeries?, proportionItems?, highlight? }` |
 | `image` | `{ src?, alt?, fit?, placeholder? }` — placeholder for images; always generate with `src` omitted |
 
 **Content-aware block height guide:**
@@ -539,8 +547,14 @@ Slide 7: "用户转化路径"
 | One big takeaway | `key-point` | Single statement, no data |
 | Trend over time | `chart` (line) | Time-series, growth curves |
 | Category comparison | `chart` (bar) | Comparing values across categories |
+| Ranking / leaderboard | `chart` (horizontal-bar) | Long-label rankings, sorted comparisons |
+| Composition / segment breakdown | `chart` (stacked-bar) | Revenue by product line, cost structure |
 | Proportion breakdown | `chart` (pie) | Parts of a whole, market share |
+| Proportion + total | `chart` (donut) | Parts of a whole with center total |
+| Proportion with magnitude | `chart` (rose) | Comparing slices where size difference matters |
+| Trend with volume | `chart` (area) | Growth curves with filled area emphasis |
 | Multi-dimension assessment | `chart` (radar) | Comparing items across 4-6 dimensions |
+| Completion / coverage rates | `chart` (proportion) | Progress bars, percentage comparisons |
 | KPI dashboard / metrics | `grid-item` (solid) | Multiple numeric values with labels |
 | Feature/capability list | `grid-item` (outline/sideline) | Text-heavy items without values |
 | Process / workflow | `sequence` (arrows/timeline) | Ordered steps with progression |
@@ -606,6 +620,7 @@ After generating all slides, review EVERY slide against this checklist. **Fix vi
 15. **Every image block has a descriptive `placeholder`** — e.g., "数据中心服务器机房实景", not "图片".
 16. **Block-slides ≤ 50% of total deck** — prefer standalone slide types when content fills a full slide naturally.
 17. **Deck has section dividers every 4-6 content slides** — `title` or `key-point` slides provide breathing room.
+18. **Chart type diversity** — no more than 3 charts of the same `chartType` in a single deck. If data fits, prefer `line` (trends), `donut` (proportions), `proportion` (percentages), `horizontal-bar` (rankings) over the default `bar`. Only use `bar` when vertical category comparison is clearly needed.
 
 ---
 
@@ -757,6 +772,7 @@ A 20-slide deck should have roughly: 4 title/key-point + 5-6 standalone diagrams
 - **Mix variants** — don't use `solid` grid-item for every grid slide; try `outline`, `sideline`, `topline`
 - **Vary layout patterns** — no 2 consecutive block-slides should use the same pattern (A-H)
 - **Alternate density** — follow a dense data slide with a lighter visual (title, key-point, or image-heavy block-slide)
+- **Chart type diversity** — no more than 3 charts of the same `chartType` in a single deck. If data fits, prefer `area` (trends), `stacked-bar` (composition), `donut` (proportions), `rose` (magnitude comparison), `proportion` (percentages), `horizontal-bar` (rankings) over the default `bar`. Only use `bar` when vertical category comparison is clearly needed.
 
 ### Semantic Color Usage
 
@@ -935,12 +951,13 @@ interface KeyPointSlideData {
 }
 
 interface ChartSlideData {
-  type: 'chart'; chartType: 'bar' | 'pie' | 'line' | 'radar'
+  type: 'chart'; chartType: 'bar' | 'horizontal-bar' | 'stacked-bar' | 'pie' | 'donut' | 'rose' | 'line' | 'area' | 'radar' | 'proportion'
   title: string; body?: string; highlight?: string; chartHeight?: number
   titleSize?: number; bodySize?: number  // Standard: titleSize:40, bodySize:20
   bars?: ChartBar[]; slices?: ChartSlice[]; innerRadius?: number
   categories?: string[]; lineSeries?: LineSeries[]
   indicators?: RadarIndicator[]; radarSeries?: RadarSeries[]
+  proportionItems?: ProportionItem[]  // { name, value, max? }
 }
 
 interface GridItemSlideData {
@@ -1010,6 +1027,7 @@ interface ChartSlice { name: string; value: number }
 interface LineSeries { name: string; data: number[]; area?: boolean }
 interface RadarIndicator { name: string; max: number }
 interface RadarSeries { name: string; values: number[] }
+interface ProportionItem { name: string; value: number; max?: number }
 interface ContentBlock { id: string; x: number; y: number; width: number; height: number; data: BlockData }
 // BlockData includes: title-body, grid-item, sequence, compare, funnel, concentric, hub-spoke, venn, chart, image
 // Image block: { type: 'image'; src?: string; alt?: string; fit?: 'cover' | 'contain' | 'fill'; placeholder?: string }
@@ -1021,7 +1039,7 @@ type FunnelVariant = 'funnel' | 'pyramid' | 'slope'
 type ConcentricVariant = 'circles' | 'diamond' | 'target'
 type HubSpokeVariant = 'orbit' | 'solar' | 'pinwheel'
 type VennVariant = 'classic' | 'linear' | 'linear-filled'
-type ChartType = 'bar' | 'pie' | 'line' | 'radar'
+type ChartType = 'bar' | 'horizontal-bar' | 'stacked-bar' | 'pie' | 'donut' | 'rose' | 'line' | 'area' | 'radar' | 'proportion'
 ```
 
 ---
