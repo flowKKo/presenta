@@ -1,3 +1,4 @@
+import { useId } from 'react'
 import { motion } from 'framer-motion'
 import type { CompareSlideData } from '../../data/types'
 import { colors, motionConfig, generateGradientColors } from '../../theme/swiss'
@@ -7,8 +8,9 @@ import EditableText from '../editor/EditableText'
 function VersusMode({ sides, textColor, colorPalette }: { sides: CompareSlideData['sides']; textColor?: string; colorPalette?: string }) {
   if (!sides || sides.length < 2) return null
   const palette = generateGradientColors(sides.length, colorPalette)
+  const cols = Math.min(sides.length, 4)
   return (
-    <div className="grid grid-cols-2 gap-6 flex-1">
+    <div className="grid gap-6 flex-1" style={{ gridTemplateColumns: `repeat(${cols}, minmax(0, 1fr))` }}>
       {sides.map((side, si) => (
         <motion.div key={si} variants={motionConfig.child} className="rounded-xl p-5" style={{ background: colors.card, borderTop: `4px solid ${palette[si]}` }}>
           <EditableText value={side.name} field={`sides.${si}.name`} as="div" className="text-lg font-bold mb-4" style={{ color: palette[si] }} />
@@ -27,6 +29,7 @@ function VersusMode({ sides, textColor, colorPalette }: { sides: CompareSlideDat
 }
 
 function QuadrantMode({ quadrantItems, xAxis, yAxis, colorPalette }: Pick<CompareSlideData, 'quadrantItems' | 'xAxis' | 'yAxis'> & { colorPalette?: string }) {
+  const uid = useId()
   if (!quadrantItems) return null
   const palette = generateGradientColors(quadrantItems.length, colorPalette)
   const pad = 60
@@ -56,10 +59,10 @@ function QuadrantMode({ quadrantItems, xAxis, yAxis, colorPalette }: Pick<Compar
         preserveAspectRatio="xMidYMid meet"
       >
         <defs>
-          <marker id="arrow-right" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+          <marker id={`${uid}-arr-r`} markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
             <path d="M0,0 L8,3 L0,6" fill={axisColor} />
           </marker>
-          <marker id="arrow-up" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+          <marker id={`${uid}-arr-u`} markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
             <path d="M0,0 L8,3 L0,6" fill={axisColor} />
           </marker>
         </defs>
@@ -78,8 +81,8 @@ function QuadrantMode({ quadrantItems, xAxis, yAxis, colorPalette }: Pick<Compar
         ))}
 
         {/* Axes — dashed with arrows */}
-        <line x1={pad} y1={cy} x2={pad + w - 2} y2={cy} stroke={axisColor} strokeWidth="1" strokeDasharray="6 4" markerEnd="url(#arrow-right)" />
-        <line x1={cx} y1={pad + h} x2={cx} y2={pad + 2} stroke={axisColor} strokeWidth="1" strokeDasharray="6 4" markerEnd="url(#arrow-up)" />
+        <line x1={pad} y1={cy} x2={pad + w - 2} y2={cy} stroke={axisColor} strokeWidth="1" strokeDasharray="6 4" markerEnd={`url(#${uid}-arr-r)`} />
+        <line x1={cx} y1={pad + h} x2={cx} y2={pad + 2} stroke={axisColor} strokeWidth="1" strokeDasharray="6 4" markerEnd={`url(#${uid}-arr-u)`} />
 
         {/* Axis labels — positioned at ends */}
         {xAxis && <text x={pad + w + 6} y={cy + 5} textAnchor="start" fontSize="13" fontWeight="600" fill={colors.textSecondary}>{xAxis}</text>}

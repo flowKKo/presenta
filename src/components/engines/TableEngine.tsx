@@ -11,7 +11,7 @@ export function TableDiagram({ headers, rows, variant, textColor, colorPalette }
 
   return (
     <div className="w-full h-full overflow-auto flex items-start justify-center p-2">
-      <table className="w-full border-collapse" style={{ maxWidth: 760, color: textColor || colors.textPrimary }}>
+      <table className="w-full" style={{ maxWidth: 760, color: textColor || colors.textPrimary, borderSpacing: 0 }}>
         <thead>
           <tr>
             {headers.map((h, i) => (

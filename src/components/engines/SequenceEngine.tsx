@@ -46,7 +46,7 @@ function PillStep({ label, description, index, color, textColor }: { label: stri
 
 function RibbonStep({ label, description, index, color, isLast, textColor }: { label: string; description?: string; index: number; color: string; isLast: boolean; textColor?: string }) {
   return (
-    <motion.div variants={motionConfig.child} className="flex-1 min-w-0 relative">
+    <motion.div variants={motionConfig.child} className="flex-1 min-w-0 relative" style={!isLast ? { marginRight: '-4%' } : undefined}>
       <div className="p-4 text-center" style={{ backgroundColor: color, clipPath: isLast ? undefined : 'polygon(0 0, 90% 0, 100% 50%, 90% 100%, 0 100%)' }}>
         <EditableText value={label} field={`steps.${index}.label`} as="div" className="text-sm font-bold" style={{ color: textColor || 'white' }} />
         {description && <EditableText value={description} field={`steps.${index}.description`} as="div" className="text-xs mt-1" style={{ color: textColor || 'white', opacity: 0.8 }} />}

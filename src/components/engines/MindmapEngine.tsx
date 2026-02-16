@@ -1,3 +1,4 @@
+import { useMemo } from 'react'
 import { motion } from 'framer-motion'
 import type { MindmapSlideData, MindmapNode } from '../../data/types'
 import { colors, motionConfig, generateGradientColors } from '../../theme/swiss'
@@ -76,7 +77,7 @@ function layoutTree(root: MindmapNode): LayoutNode[] {
 export function MindmapDiagram({ root, textColor, colorPalette }: { root: MindmapSlideData['root']; textColor?: string; colorPalette?: string }) {
   const branches = root.children?.length ?? 0
   const palette = generateGradientColors(Math.max(branches, 1), colorPalette)
-  const nodes = layoutTree(root)
+  const nodes = useMemo(() => layoutTree(root), [root])
 
   return (
     <svg width="100%" height="100%" viewBox={`0 0 ${VB_W} ${VB_H}`} preserveAspectRatio="xMidYMid meet">

@@ -1,3 +1,4 @@
+import { useId } from 'react'
 import { motion } from 'framer-motion'
 import type { CycleSlideData } from '../../data/types'
 import { colors, motionConfig, generateGradientColors } from '../../theme/swiss'
@@ -6,7 +7,11 @@ import EngineTitle from './shared/EngineTitle'
 const VB_W = 800
 const VB_H = 480
 
-function CircularCycle({ steps, palette, textColor }: { steps: CycleSlideData['steps']; palette: string[]; textColor?: string }) {
+function truncateLabel(text: string, maxChars: number): string {
+  return text.length > maxChars ? text.slice(0, maxChars - 1) + '…' : text
+}
+
+function CircularCycle({ steps, palette, textColor, uid }: { steps: CycleSlideData['steps']; palette: string[]; textColor?: string; uid: string }) {
   const n = steps.length
   const cx = VB_W / 2
   const cy = VB_H / 2
@@ -21,7 +26,7 @@ function CircularCycle({ steps, palette, textColor }: { steps: CycleSlideData['s
   return (
     <>
       <defs>
-        <marker id="cyc-arr" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
+        <marker id={`${uid}-cyc`} markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
           <polygon points="0,0 8,3 0,6" fill={colors.textCaption} opacity={0.5} />
         </marker>
       </defs>
@@ -45,7 +50,7 @@ function CircularCycle({ steps, palette, textColor }: { steps: CycleSlideData['s
             key={`a-${i}`}
             d={`M ${sx} ${sy} Q ${cpX} ${cpY} ${ex} ${ey}`}
             fill="none" stroke={colors.textCaption} strokeWidth="1.8"
-            strokeDasharray="5 4" markerEnd="url(#cyc-arr)" opacity={0.35}
+            strokeDasharray="5 4" markerEnd={`url(#${uid}-cyc)`} opacity={0.35}
           />
         )
       })}
@@ -54,11 +59,11 @@ function CircularCycle({ steps, palette, textColor }: { steps: CycleSlideData['s
         <g key={i}>
           <circle cx={pos.x} cy={pos.y} r={nodeR} fill={palette[i]} fillOpacity={0.14} stroke={palette[i]} strokeWidth="2.5" />
           <text x={pos.x} y={steps[i].description ? pos.y - 5 : pos.y + 1} textAnchor="middle" dominantBaseline="middle" fontSize={n > 6 ? 11 : 13} fontWeight="700" fill={textColor || colors.textPrimary}>
-            {steps[i].label}
+            {truncateLabel(steps[i].label, Math.floor(nodeR / 5))}
           </text>
           {steps[i].description && (
             <text x={pos.x} y={pos.y + 11} textAnchor="middle" dominantBaseline="middle" fontSize={10} fill={colors.textSecondary}>
-              {steps[i].description}
+              {truncateLabel(steps[i].description!, Math.floor(nodeR / 4))}
             </text>
           )}
         </g>
@@ -113,11 +118,11 @@ function GearCycle({ steps, palette, textColor }: { steps: CycleSlideData['steps
           <polygon points={gearPath(pos.x, pos.y, nodeR, 8)} fill={palette[i]} fillOpacity={0.12} stroke={palette[i]} strokeWidth="2" />
           <circle cx={pos.x} cy={pos.y} r={nodeR - 6} fill={palette[i]} fillOpacity={0.06} />
           <text x={pos.x} y={steps[i].description ? pos.y - 5 : pos.y + 1} textAnchor="middle" dominantBaseline="middle" fontSize={n > 6 ? 11 : 13} fontWeight="700" fill={textColor || colors.textPrimary}>
-            {steps[i].label}
+            {truncateLabel(steps[i].label, Math.floor(nodeR / 5))}
           </text>
           {steps[i].description && (
             <text x={pos.x} y={pos.y + 11} textAnchor="middle" dominantBaseline="middle" fontSize={10} fill={colors.textSecondary}>
-              {steps[i].description}
+              {truncateLabel(steps[i].description!, Math.floor(nodeR / 4))}
             </text>
           )}
         </g>
@@ -126,7 +131,7 @@ function GearCycle({ steps, palette, textColor }: { steps: CycleSlideData['steps
   )
 }
 
-function LoopCycle({ steps, palette, textColor }: { steps: CycleSlideData['steps']; palette: string[]; textColor?: string }) {
+function LoopCycle({ steps, palette, textColor, uid }: { steps: CycleSlideData['steps']; palette: string[]; textColor?: string; uid: string }) {
   const n = steps.length
   const cx = VB_W / 2
   const cy = VB_H / 2
@@ -146,7 +151,7 @@ function LoopCycle({ steps, palette, textColor }: { steps: CycleSlideData['steps
   return (
     <>
       <defs>
-        <marker id="loop-arr" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
+        <marker id={`${uid}-loop`} markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
           <polygon points="0,0 8,3 0,6" fill={colors.textCaption} opacity={0.5} />
         </marker>
       </defs>
@@ -166,7 +171,7 @@ function LoopCycle({ steps, palette, textColor }: { steps: CycleSlideData['steps
           <path key={`a-${i}`}
             d={`M ${from.x} ${from.y} Q ${cpX} ${cpY} ${to.x} ${to.y}`}
             fill="none" stroke={colors.textCaption} strokeWidth="1.5"
-            strokeDasharray="4 3" markerEnd="url(#loop-arr)" opacity={0.3}
+            strokeDasharray="4 3" markerEnd={`url(#${uid}-loop)`} opacity={0.3}
           />
         )
       })}
@@ -178,11 +183,11 @@ function LoopCycle({ steps, palette, textColor }: { steps: CycleSlideData['steps
           <g key={i}>
             <rect x={pos.x - w / 2} y={pos.y - h / 2} width={w} height={h} rx={h / 2} fill={palette[i]} fillOpacity={0.14} stroke={palette[i]} strokeWidth="2" />
             <text x={pos.x} y={steps[i].description ? pos.y - 4 : pos.y + 1} textAnchor="middle" dominantBaseline="middle" fontSize={n > 6 ? 11 : 12} fontWeight="700" fill={textColor || colors.textPrimary}>
-              {steps[i].label}
+              {truncateLabel(steps[i].label, Math.floor(w / 8))}
             </text>
             {steps[i].description && (
               <text x={pos.x} y={pos.y + 12} textAnchor="middle" dominantBaseline="middle" fontSize={10} fill={colors.textSecondary}>
-                {steps[i].description}
+                {truncateLabel(steps[i].description!, Math.floor(w / 7))}
               </text>
             )}
           </g>
@@ -193,6 +198,7 @@ function LoopCycle({ steps, palette, textColor }: { steps: CycleSlideData['steps
 }
 
 export function CycleDiagram({ steps, variant, textColor, colorPalette }: { steps: CycleSlideData['steps']; variant: CycleSlideData['variant']; textColor?: string; colorPalette?: string }) {
+  const uid = useId()
   const palette = generateGradientColors(steps.length, colorPalette)
   if (steps.length === 0) return null
 
@@ -201,9 +207,9 @@ export function CycleDiagram({ steps, variant, textColor, colorPalette }: { step
       {variant === 'gear' ? (
         <GearCycle steps={steps} palette={palette} textColor={textColor} />
       ) : variant === 'loop' ? (
-        <LoopCycle steps={steps} palette={palette} textColor={textColor} />
+        <LoopCycle steps={steps} palette={palette} textColor={textColor} uid={uid} />
       ) : (
-        <CircularCycle steps={steps} palette={palette} textColor={textColor} />
+        <CircularCycle steps={steps} palette={palette} textColor={textColor} uid={uid} />
       )}
     </svg>
   )

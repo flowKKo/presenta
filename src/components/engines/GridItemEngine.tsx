@@ -11,7 +11,7 @@ const colorMap: Record<string, string> = {
 }
 
 function getColumns(count: number, override?: number): number {
-  if (override) return override
+  if (override != null && override > 0) return override
   if (count <= 3) return count
   if (count <= 6) return 3
   return 4

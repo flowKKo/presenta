@@ -6,6 +6,10 @@ import EngineTitle from './shared/EngineTitle'
 const VB_W = 800
 const VB_H = 480
 
+function truncateLabel(text: string, maxChars: number): string {
+  return text.length > maxChars ? text.slice(0, maxChars - 1) + '…' : text
+}
+
 export function HubSpokeDiagram({ center, spokes, variant, textColor, colorPalette }: { center: HubSpokeSlideData['center']; spokes: HubSpokeSlideData['spokes']; variant: HubSpokeSlideData['variant']; textColor?: string; colorPalette?: string }) {
   const palette = generateGradientColors(spokes.length, colorPalette)
 
@@ -62,7 +66,7 @@ export function HubSpokeDiagram({ center, spokes, variant, textColor, colorPalet
               textAnchor="middle" dominantBaseline="middle"
               fontSize="14" fontWeight="700" fill={textColor || 'white'}
             >
-              {spoke.label}
+              {truncateLabel(spoke.label, 6)}
             </text>
             {spoke.description && (
               <text x={sx} y={sy + 14} textAnchor="middle" dominantBaseline="middle" fontSize="11" fill={textColor || 'white'} opacity={0.8}>
@@ -79,7 +83,7 @@ export function HubSpokeDiagram({ center, spokes, variant, textColor, colorPalet
         textAnchor="middle" dominantBaseline="middle"
         fontSize="15" fontWeight="800" fill={textColor || 'white'}
       >
-        {center.label}
+        {truncateLabel(center.label, 8)}
       </text>
       {center.description && (
         <text x={cx} y={cy + 13} textAnchor="middle" dominantBaseline="middle" fontSize="11" fill={textColor || 'white'} opacity={0.8}>

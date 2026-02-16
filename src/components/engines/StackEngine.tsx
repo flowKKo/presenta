@@ -74,11 +74,12 @@ function VerticalStack({ layers, palette, textColor }: { layers: StackSlideData[
 
 function OffsetStack({ layers, palette, textColor }: { layers: StackSlideData['layers']; palette: string[]; textColor?: string }) {
   const n = layers.length
+  const step = Math.min(16, 200 / Math.max(n, 1))
   return (
-    <div className="relative h-full flex items-center justify-center px-8">
+    <div className="relative h-full flex items-center justify-center px-8 overflow-hidden">
       {layers.map((layer, i) => {
         const color = palette[i % palette.length]
-        const offset = i * 16
+        const offset = i * step
         const width = `${Math.max(50, 92 - i * (40 / n))}%`
         return (
           <div
