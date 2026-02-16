@@ -138,9 +138,13 @@ function LeafCard({ item, index, color }: { item: GridItemEntry; index: number; 
 function LabeledCard({ item, index, color }: { item: GridItemEntry; index: number; color: string }) {
   return (
     <motion.div variants={motionConfig.child} className="flex flex-col justify-center h-full">
-      <div className="inline-flex self-start rounded-full px-3 py-0.5 text-xs font-bold mb-2" style={{ backgroundColor: color, color: 'white' }}>
-        {item.value || `#${index + 1}`}
-      </div>
+      <EditableText
+        value={item.value || `#${index + 1}`}
+        field={`items.${index}.value`}
+        as="div"
+        className="inline-flex self-start rounded-full px-3 py-0.5 text-xs font-bold mb-2"
+        style={{ backgroundColor: color, color: 'white' }}
+      />
       <EditableText value={item.title} field={`items.${index}.title`} as="div" className="text-base font-semibold" style={{ color: colors.textPrimary }} />
       {item.description && (
         <EditableText value={item.description} field={`items.${index}.description`} as="div" className="text-sm mt-1" style={{ color: colors.textSecondary }} />
@@ -218,6 +222,7 @@ function SignCard({ item, index, color }: { item: GridItemEntry; index: number; 
 }
 
 export function GridItemDiagram({ items, variant, columns, gap = 16, textColor, colorPalette }: { items: GridItemEntry[]; variant: GridItemSlideData['variant']; columns?: number; gap?: number; textColor?: string; colorPalette?: string }) {
+  if (items.length === 0) return null
   const cols = getColumns(items.length, columns)
   const rows = Math.ceil(items.length / cols)
   const palette = generateGradientColors(items.length, colorPalette)

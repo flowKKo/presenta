@@ -2,6 +2,7 @@ import { motion } from 'framer-motion'
 import type { TableSlideData } from '../../data/types'
 import { colors, motionConfig, generateGradientColors } from '../../theme/swiss'
 import EngineTitle from './shared/EngineTitle'
+import EditableText from '../editor/EditableText'
 
 export function TableDiagram({ headers, rows, variant, textColor, colorPalette }: { headers: TableSlideData['headers']; rows: TableSlideData['rows']; variant: TableSlideData['variant']; textColor?: string; colorPalette?: string }) {
   const palette = generateGradientColors(headers.length, colorPalette)
@@ -25,7 +26,7 @@ export function TableDiagram({ headers, rows, variant, textColor, colorPalette }
                   borderRadius: i === 0 ? '8px 0 0 0' : i === headers.length - 1 ? '0 8px 0 0' : undefined,
                 }}
               >
-                {h}
+                <EditableText value={h} field={`headers.${i}`} as="span" />
               </th>
             ))}
           </tr>
@@ -52,7 +53,7 @@ export function TableDiagram({ headers, rows, variant, textColor, colorPalette }
                       color: rowHighlight ? palette[0] : textColor || colors.textPrimary,
                     }}
                   >
-                    {cell}
+                    <EditableText value={cell} field={`rows.${ri}.cells.${ci}`} as="span" />
                   </td>
                 ))}
               </tr>

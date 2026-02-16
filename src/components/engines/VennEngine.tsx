@@ -9,6 +9,7 @@ const VB_H = 480
 export function VennDiagram({ sets, intersectionLabel, variant, textColor, colorPalette }: { sets: VennSlideData['sets']; variant: VennSlideData['variant']; intersectionLabel?: string; textColor?: string; colorPalette?: string }) {
   const palette = generateGradientColors(sets.length, colorPalette)
   const count = sets.length
+  if (count === 0) return null
 
   const centerX = VB_W / 2
   const centerY = VB_H / 2
@@ -48,6 +49,8 @@ export function VennDiagram({ sets, intersectionLabel, variant, textColor, color
       height="100%"
       viewBox={`0 0 ${VB_W} ${VB_H}`}
       preserveAspectRatio="xMidYMid meet"
+      role="img"
+      aria-label="韦恩图"
     >
       <defs>
         <style>{`.venn-circle { mix-blend-mode: multiply; }`}</style>

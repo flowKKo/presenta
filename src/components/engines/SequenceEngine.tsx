@@ -44,10 +44,14 @@ function PillStep({ label, description, index, color, textColor }: { label: stri
   )
 }
 
-function RibbonStep({ label, description, index, color, isLast, textColor }: { label: string; description?: string; index: number; color: string; isLast: boolean; textColor?: string }) {
+function RibbonStep({ label, description, index, color, isLast, textColor, direction = 'horizontal' }: { label: string; description?: string; index: number; color: string; isLast: boolean; textColor?: string; direction?: 'horizontal' | 'vertical' }) {
+  const isH = direction === 'horizontal'
+  const clipH = 'polygon(0 0, 90% 0, 100% 50%, 90% 100%, 0 100%)'
+  const clipV = 'polygon(0 0, 100% 0, 100% 90%, 50% 100%, 0 90%)'
+  const margin = !isLast ? (isH ? { marginRight: '-4%' } : { marginBottom: '-4%' }) : undefined
   return (
-    <motion.div variants={motionConfig.child} className="flex-1 min-w-0 relative" style={!isLast ? { marginRight: '-4%' } : undefined}>
-      <div className="p-4 text-center" style={{ backgroundColor: color, clipPath: isLast ? undefined : 'polygon(0 0, 90% 0, 100% 50%, 90% 100%, 0 100%)' }}>
+    <motion.div variants={motionConfig.child} className="flex-1 min-w-0 relative" style={margin}>
+      <div className="p-4 text-center" style={{ backgroundColor: color, clipPath: isLast ? undefined : (isH ? clipH : clipV) }}>
         <EditableText value={label} field={`steps.${index}.label`} as="div" className="text-sm font-bold" style={{ color: textColor || 'white' }} />
         {description && <EditableText value={description} field={`steps.${index}.description`} as="div" className="text-xs mt-1" style={{ color: textColor || 'white', opacity: 0.8 }} />}
       </div>
@@ -72,16 +76,22 @@ function NumberedStep({ label, description, index, color }: { label: string; des
   )
 }
 
-function ZigzagStep({ label, description, index, color }: { label: string; description?: string; index: number; color: string }) {
+function ZigzagStep({ label, description, index, color, direction = 'horizontal' }: { label: string; description?: string; index: number; color: string; direction?: 'horizontal' | 'vertical' }) {
   const isEven = index % 2 === 0
+  const isH = direction === 'horizontal'
+  // Horizontal: vertical offset (h-6 spacers). Vertical: horizontal offset via padding
   return (
-    <motion.div variants={motionConfig.child} className="flex-1 min-w-0 flex flex-col items-center text-center">
-      {!isEven && <div className="h-6" />}
-      <div className="rounded-xl p-4 w-full" style={{ background: `${color}14`, borderTop: `3px solid ${color}` }}>
+    <motion.div
+      variants={motionConfig.child}
+      className="flex-1 min-w-0 flex flex-col items-center text-center"
+      style={!isH ? { paddingLeft: isEven ? 0 : 24, paddingRight: isEven ? 24 : 0 } : undefined}
+    >
+      {isH && !isEven && <div className="h-6" />}
+      <div className="rounded-xl p-4 w-full" style={{ background: `${color}14`, borderTop: isH ? `3px solid ${color}` : undefined, borderLeft: !isH ? `3px solid ${color}` : undefined }}>
         <EditableText value={label} field={`steps.${index}.label`} as="div" className="text-sm font-semibold" style={{ color: colors.textPrimary }} />
         {description && <EditableText value={description} field={`steps.${index}.description`} as="div" className="text-xs mt-1" style={{ color: colors.textSecondary }} />}
       </div>
-      {isEven && <div className="h-6" />}
+      {isH && isEven && <div className="h-6" />}
     </motion.div>
   )
 }
@@ -89,6 +99,7 @@ function ZigzagStep({ label, description, index, color }: { label: string; descr
 export function SequenceDiagram({ steps, variant, direction = 'horizontal', gap = 8, textColor, colorPalette }: { steps: SequenceSlideData['steps']; variant: SequenceSlideData['variant']; direction?: 'horizontal' | 'vertical'; gap?: number; textColor?: string; colorPalette?: string }) {
   const isH = direction === 'horizontal'
   const palette = generateGradientColors(steps.length, colorPalette)
+  if (steps.length === 0) return null
 
   const renderSteps = () => {
     switch (variant) {
@@ -106,7 +117,7 @@ export function SequenceDiagram({ steps, variant, direction = 'horizontal', gap 
         ))
       case 'ribbon-arrows':
         return steps.map((s, i) => (
-          <RibbonStep key={i} label={s.label} description={s.description} index={i} color={palette[i]} isLast={i === steps.length - 1} textColor={textColor} />
+          <RibbonStep key={i} label={s.label} description={s.description} index={i} color={palette[i]} isLast={i === steps.length - 1} textColor={textColor} direction={direction} />
         ))
       case 'numbered':
         return steps.map((s, i) => (
@@ -114,7 +125,7 @@ export function SequenceDiagram({ steps, variant, direction = 'horizontal', gap 
         ))
       case 'zigzag':
         return steps.map((s, i) => (
-          <ZigzagStep key={i} label={s.label} description={s.description} index={i} color={palette[i]} />
+          <ZigzagStep key={i} label={s.label} description={s.description} index={i} color={palette[i]} direction={direction} />
         ))
       case 'timeline':
       default:

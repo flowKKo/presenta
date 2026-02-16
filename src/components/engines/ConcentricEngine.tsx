@@ -8,6 +8,7 @@ const VB_W = 800
 const VB_H = 480
 
 export function ConcentricDiagram({ rings, variant, textColor, colorPalette }: { rings: ConcentricSlideData['rings']; variant: ConcentricSlideData['variant']; textColor?: string; colorPalette?: string }) {
+  if (rings.length === 0) return null
   const palette = generateGradientColors(rings.length, colorPalette)
   const count = rings.length
 
@@ -26,6 +27,8 @@ export function ConcentricDiagram({ rings, variant, textColor, colorPalette }: {
       height="100%"
       viewBox={`0 0 ${VB_W} ${VB_H}`}
       preserveAspectRatio="xMidYMid meet"
+      role="img"
+      aria-label="同心圆图"
     >
       {rings.map((_, i) => {
         const ringIndex = count - 1 - i

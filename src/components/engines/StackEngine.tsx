@@ -2,6 +2,7 @@ import { motion } from 'framer-motion'
 import type { StackSlideData } from '../../data/types'
 import { colors, motionConfig, generateGradientColors } from '../../theme/swiss'
 import EngineTitle from './shared/EngineTitle'
+import EditableText from '../editor/EditableText'
 
 function HorizontalStack({ layers, palette, textColor }: { layers: StackSlideData['layers']; palette: string[]; textColor?: string }) {
   const n = layers.length
@@ -20,13 +21,9 @@ function HorizontalStack({ layers, palette, textColor }: { layers: StackSlideDat
             }}
           >
             <div className="flex-1">
-              <div className="text-sm font-bold" style={{ color: textColor || colors.textPrimary }}>
-                {layer.label}
-              </div>
+              <EditableText value={layer.label} field={`layers.${i}.label`} as="div" className="text-sm font-bold" style={{ color: textColor || colors.textPrimary }} />
               {layer.description && (
-                <div className="text-xs mt-0.5" style={{ color: colors.textSecondary }}>
-                  {layer.description}
-                </div>
+                <EditableText value={layer.description} field={`layers.${i}.description`} as="div" className="text-xs mt-0.5" style={{ color: colors.textSecondary }} />
               )}
             </div>
             <div className="text-xs font-mono opacity-30 ml-2" style={{ color: textColor || colors.textCaption }}>
@@ -57,13 +54,9 @@ function VerticalStack({ layers, palette, textColor }: { layers: StackSlideData[
               maxWidth: `${Math.min(120, 600 / n)}px`,
             }}
           >
-            <div className="text-xs font-bold text-center mt-auto" style={{ color: textColor || colors.textPrimary }}>
-              {layer.label}
-            </div>
+            <EditableText value={layer.label} field={`layers.${i}.label`} as="div" className="text-xs font-bold text-center mt-auto" style={{ color: textColor || colors.textPrimary }} />
             {layer.description && (
-              <div className="text-[10px] text-center mt-0.5" style={{ color: colors.textSecondary }}>
-                {layer.description}
-              </div>
+              <EditableText value={layer.description} field={`layers.${i}.description`} as="div" className="text-[10px] text-center mt-0.5" style={{ color: colors.textSecondary }} />
             )}
           </div>
         )
@@ -99,13 +92,9 @@ function OffsetStack({ layers, palette, textColor }: { layers: StackSlideData['l
               {i + 1}
             </span>
             <div>
-              <div className="text-sm font-bold" style={{ color: textColor || colors.textPrimary }}>
-                {layer.label}
-              </div>
+              <EditableText value={layer.label} field={`layers.${i}.label`} as="div" className="text-sm font-bold" style={{ color: textColor || colors.textPrimary }} />
               {layer.description && (
-                <div className="text-xs" style={{ color: colors.textSecondary }}>
-                  {layer.description}
-                </div>
+                <EditableText value={layer.description} field={`layers.${i}.description`} as="div" className="text-xs" style={{ color: colors.textSecondary }} />
               )}
             </div>
           </div>

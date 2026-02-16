@@ -57,6 +57,8 @@ function QuadrantMode({ quadrantItems, xAxis, yAxis, colorPalette }: Pick<Compar
         width="100%" height="100%"
         viewBox={`0 0 ${vbW} ${vbH}`}
         preserveAspectRatio="xMidYMid meet"
+        role="img"
+        aria-label="象限图"
       >
         <defs>
           <marker id={`${uid}-arr-r`} markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
@@ -110,7 +112,7 @@ function IcebergMode({ visible, hidden }: Pick<CompareSlideData, 'visible' | 'hi
     <motion.div variants={motionConfig.child} className="flex flex-col flex-1 gap-0 overflow-hidden rounded-xl">
       {/* above water */}
       <div className="p-5 flex flex-col gap-2" style={{ background: `${colors.accentPositive}18` }}>
-        <div className="text-xs font-semibold uppercase tracking-wide mb-1" style={{ color: colors.accentPositive }}>Visible</div>
+        <div className="text-xs font-semibold uppercase tracking-wide mb-1" style={{ color: colors.accentPositive }}>显性因素</div>
         {visible?.map((item, i) => (
           <div key={i} className="flex items-center gap-2">
             <div className="w-2 h-2 rounded-full" style={{ backgroundColor: colors.accentPositive }} />
@@ -128,7 +130,7 @@ function IcebergMode({ visible, hidden }: Pick<CompareSlideData, 'visible' | 'hi
       <div className="h-1" style={{ background: `linear-gradient(90deg, ${colors.accentNeutral}44, ${colors.accentNeutral}, ${colors.accentNeutral}44)` }} />
       {/* below water */}
       <div className="p-5 flex flex-col gap-2 flex-1" style={{ background: `${colors.accentNeutral}12` }}>
-        <div className="text-xs font-semibold uppercase tracking-wide mb-1" style={{ color: colors.accentNeutral }}>Hidden</div>
+        <div className="text-xs font-semibold uppercase tracking-wide mb-1" style={{ color: colors.accentNeutral }}>隐性因素</div>
         {hidden?.map((item, i) => (
           <div key={i} className="flex items-center gap-2">
             <div className="w-2 h-2 rounded-full" style={{ backgroundColor: colors.accentNeutral }} />

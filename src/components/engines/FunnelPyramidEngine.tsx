@@ -33,8 +33,9 @@ export function FunnelDiagram({ layers, variant, textColor, colorPalette }: { la
   return (
     <div className="flex flex-col items-center gap-1 flex-1">
       {layers.map((layer, i) => (
-        <div
+        <motion.div
           key={i}
+          variants={motionConfig.child}
           className="w-full flex items-center justify-center text-center relative"
           style={{
             flex: 1,
@@ -46,9 +47,9 @@ export function FunnelDiagram({ layers, variant, textColor, colorPalette }: { la
           <div className="px-6 py-2">
             <EditableText value={layer.label} field={`layers.${i}.label`} as="div" className="text-sm font-bold" style={{ color: textColor || 'white' }} />
             {layer.description && <EditableText value={layer.description} field={`layers.${i}.description`} as="div" className="text-xs" style={{ color: textColor || 'white', opacity: 0.8 }} />}
-            {layer.value !== undefined && <div className="text-xs font-semibold" style={{ color: textColor || 'white', opacity: 0.7 }}>{layer.value}</div>}
+            {layer.value !== undefined && <EditableText value={String(layer.value)} field={`layers.${i}.value`} as="div" className="text-xs font-semibold" style={{ color: textColor || 'white', opacity: 0.7 }} />}
           </div>
-        </div>
+        </motion.div>
       ))}
     </div>
   )

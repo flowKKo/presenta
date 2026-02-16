@@ -203,7 +203,7 @@ export function CycleDiagram({ steps, variant, textColor, colorPalette }: { step
   if (steps.length === 0) return null
 
   return (
-    <svg width="100%" height="100%" viewBox={`0 0 ${VB_W} ${VB_H}`} preserveAspectRatio="xMidYMid meet">
+    <svg width="100%" height="100%" viewBox={`0 0 ${VB_W} ${VB_H}`} preserveAspectRatio="xMidYMid meet" role="img" aria-label="循环图">
       {variant === 'gear' ? (
         <GearCycle steps={steps} palette={palette} textColor={textColor} />
       ) : variant === 'loop' ? (

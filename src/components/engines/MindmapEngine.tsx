@@ -80,7 +80,7 @@ export function MindmapDiagram({ root, textColor, colorPalette }: { root: Mindma
   const nodes = useMemo(() => layoutTree(root), [root])
 
   return (
-    <svg width="100%" height="100%" viewBox={`0 0 ${VB_W} ${VB_H}`} preserveAspectRatio="xMidYMid meet">
+    <svg width="100%" height="100%" viewBox={`0 0 ${VB_W} ${VB_H}`} preserveAspectRatio="xMidYMid meet" role="img" aria-label="思维导图">
       {/* Connections */}
       {nodes.filter(n => n.parent).map((n, i) => {
         const p = n.parent!

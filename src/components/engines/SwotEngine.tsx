@@ -2,6 +2,7 @@ import { motion } from 'framer-motion'
 import type { SwotSlideData, SwotItem } from '../../data/types'
 import { colors, motionConfig, generateGradientColors } from '../../theme/swiss'
 import EngineTitle from './shared/EngineTitle'
+import EditableText from '../editor/EditableText'
 
 const QUADRANT_META = [
   { key: 'strengths', label: '优势 (S)', icon: '↑' },
@@ -34,21 +35,20 @@ export function SwotDiagram({ strengths, weaknesses, opportunities, threats, tex
             </span>
           </div>
           <div className="flex flex-col gap-1.5 overflow-y-auto flex-1">
-            {quadrants[qi].map((item, ii) => (
-              <div key={ii} className="flex items-start gap-2">
-                <span className="w-1.5 h-1.5 rounded-full mt-1.5 shrink-0" style={{ backgroundColor: palette[qi] }} />
-                <div>
-                  <span className="text-xs font-medium" style={{ color: textColor || colors.textPrimary }}>
-                    {item.label}
-                  </span>
-                  {item.description && (
-                    <span className="text-[11px] ml-1" style={{ color: colors.textCaption }}>
-                      — {item.description}
-                    </span>
-                  )}
+            {quadrants[qi].map((item, ii) => {
+              const fieldPrefix = `${meta.key}.${ii}`
+              return (
+                <div key={ii} className="flex items-start gap-2">
+                  <span className="w-1.5 h-1.5 rounded-full mt-1.5 shrink-0" style={{ backgroundColor: palette[qi] }} />
+                  <div>
+                    <EditableText value={item.label} field={`${fieldPrefix}.label`} as="span" className="text-xs font-medium" style={{ color: textColor || colors.textPrimary }} />
+                    {item.description && (
+                      <EditableText value={`— ${item.description}`} field={`${fieldPrefix}.description`} as="span" className="text-[11px] ml-1" style={{ color: colors.textCaption }} />
+                    )}
+                  </div>
                 </div>
-              </div>
-            ))}
+              )
+            })}
           </div>
         </div>
       ))}

@@ -2,10 +2,11 @@ import { motion } from 'framer-motion'
 import type { RoadmapSlideData, RoadmapPhase } from '../../data/types'
 import { colors, motionConfig, generateGradientColors } from '../../theme/swiss'
 import EngineTitle from './shared/EngineTitle'
+import EditableText from '../editor/EditableText'
 
 const statusColors: Record<string, { bg: string; border: string; text: string }> = {
-  done: { bg: '#4CAF5018', border: '#4CAF50', text: '#388E3C' },
-  active: { bg: '#2196F318', border: '#2196F3', text: '#1565C0' },
+  done: { bg: `${colors.accentPositive}18`, border: colors.accentPositive, text: colors.accentPositive },
+  active: { bg: `${colors.accentNeutral}18`, border: colors.accentNeutral, text: colors.accentNeutral },
   pending: { bg: `${colors.textCaption}0C`, border: colors.border, text: colors.textCaption },
 }
 
@@ -18,15 +19,13 @@ function HorizontalRoadmap({ phases, palette, textColor }: { phases: RoadmapPhas
     <div className="flex gap-1 h-full items-stretch overflow-x-auto px-2">
       {phases.map((phase, pi) => (
         <div key={pi} className="flex-1 min-w-0 flex flex-col rounded-xl p-3" style={{ borderTop: `4px solid ${palette[pi % palette.length]}`, background: `${palette[pi % palette.length]}08` }}>
-          <div className="text-sm font-bold mb-3" style={{ color: textColor || colors.textPrimary }}>
-            {phase.label}
-          </div>
+          <EditableText value={phase.label} field={`phases.${pi}.label`} as="div" className="text-sm font-bold mb-3" style={{ color: textColor || colors.textPrimary }} />
           <div className="flex flex-col gap-1.5 flex-1">
             {phase.items.map((item, ii) => {
               const s = getStatusStyle(item.status)
               return (
                 <div key={ii} className="flex items-center gap-2 rounded-lg px-3 py-1.5" style={{ background: s.bg, borderLeft: `3px solid ${s.border}` }}>
-                  <span className="text-xs font-medium" style={{ color: s.text }}>{item.label}</span>
+                  <EditableText value={item.label} field={`phases.${pi}.items.${ii}.label`} as="span" className="text-xs font-medium" style={{ color: s.text }} />
                 </div>
               )
             })}
@@ -53,9 +52,7 @@ function VerticalRoadmap({ phases, palette, textColor }: { phases: RoadmapPhase[
           </div>
           {/* Content */}
           <div className="flex-1 pb-2">
-            <div className="text-sm font-bold mb-2" style={{ color: textColor || colors.textPrimary }}>
-              {phase.label}
-            </div>
+            <EditableText value={phase.label} field={`phases.${pi}.label`} as="div" className="text-sm font-bold mb-2" style={{ color: textColor || colors.textPrimary }} />
             <div className="flex flex-wrap gap-1.5">
               {phase.items.map((item, ii) => {
                 const s = getStatusStyle(item.status)
@@ -63,7 +60,7 @@ function VerticalRoadmap({ phases, palette, textColor }: { phases: RoadmapPhase[
                   <span key={ii} className="inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium" style={{ background: s.bg, border: `1px solid ${s.border}`, color: s.text }}>
                     {item.status === 'done' && <span>&#10003;</span>}
                     {item.status === 'active' && <span className="w-1.5 h-1.5 rounded-full bg-current" />}
-                    {item.label}
+                    <EditableText value={item.label} field={`phases.${pi}.items.${ii}.label`} as="span" />
                   </span>
                 )
               })}
@@ -97,15 +94,13 @@ function MilestoneRoadmap({ phases, palette, textColor }: { phases: RoadmapPhase
                     borderColor: color,
                   }}
                 />
-                <div className="text-xs font-bold text-center mb-1.5" style={{ color: textColor || colors.textPrimary }}>
-                  {phase.label}
-                </div>
+                <EditableText value={phase.label} field={`phases.${pi}.label`} as="div" className="text-xs font-bold text-center mb-1.5" style={{ color: textColor || colors.textPrimary }} />
                 <div className="flex flex-col items-center gap-1">
                   {phase.items.map((item, ii) => {
                     const s = getStatusStyle(item.status)
                     return (
                       <span key={ii} className="text-[11px]" style={{ color: s.text }}>
-                        {item.status === 'done' ? '✓ ' : ''}{item.label}
+                        {item.status === 'done' ? '✓ ' : ''}<EditableText value={item.label} field={`phases.${pi}.items.${ii}.label`} as="span" />
                       </span>
                     )
                   })}

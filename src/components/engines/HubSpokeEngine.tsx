@@ -12,6 +12,7 @@ function truncateLabel(text: string, maxChars: number): string {
 
 export function HubSpokeDiagram({ center, spokes, variant, textColor, colorPalette }: { center: HubSpokeSlideData['center']; spokes: HubSpokeSlideData['spokes']; variant: HubSpokeSlideData['variant']; textColor?: string; colorPalette?: string }) {
   const palette = generateGradientColors(spokes.length, colorPalette)
+  if (spokes.length === 0) return null
 
   const cx = VB_W / 2
   const cy = VB_H / 2
@@ -29,6 +30,8 @@ export function HubSpokeDiagram({ center, spokes, variant, textColor, colorPalet
       height="100%"
       viewBox={`0 0 ${VB_W} ${VB_H}`}
       preserveAspectRatio="xMidYMid meet"
+      role="img"
+      aria-label="中心辐射图"
     >
       {variant === 'orbit' && (
         <ellipse cx={cx} cy={cy} rx={orbitRx} ry={orbitRy} fill="none" stroke={colors.border} strokeWidth="1.5" strokeDasharray="8 5" />
@@ -66,11 +69,11 @@ export function HubSpokeDiagram({ center, spokes, variant, textColor, colorPalet
               textAnchor="middle" dominantBaseline="middle"
               fontSize="14" fontWeight="700" fill={textColor || 'white'}
             >
-              {truncateLabel(spoke.label, 6)}
+              {truncateLabel(spoke.label, 8)}
             </text>
             {spoke.description && (
               <text x={sx} y={sy + 14} textAnchor="middle" dominantBaseline="middle" fontSize="11" fill={textColor || 'white'} opacity={0.8}>
-                {spoke.description}
+                {truncateLabel(spoke.description, 10)}
               </text>
             )}
           </g>
@@ -83,7 +86,7 @@ export function HubSpokeDiagram({ center, spokes, variant, textColor, colorPalet
         textAnchor="middle" dominantBaseline="middle"
         fontSize="15" fontWeight="800" fill={textColor || 'white'}
       >
-        {truncateLabel(center.label, 8)}
+        {truncateLabel(center.label, 10)}
       </text>
       {center.description && (
         <text x={cx} y={cy + 13} textAnchor="middle" dominantBaseline="middle" fontSize="11" fill={textColor || 'white'} opacity={0.8}>
