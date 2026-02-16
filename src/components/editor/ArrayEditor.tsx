@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react'
+import { useRef, type ReactNode } from 'react'
 
 interface ArrayEditorProps<T> {
   items: T[]
@@ -17,6 +17,18 @@ export default function ArrayEditor<T>({
   minItems = 1,
   label,
 }: ArrayEditorProps<T>) {
+  // Stable keys: track monotonically increasing IDs for each item slot
+  const counterRef = useRef(0)
+  const keysRef = useRef<number[]>([])
+  // Grow keys array to match items length (new items get new keys)
+  while (keysRef.current.length < items.length) {
+    keysRef.current.push(counterRef.current++)
+  }
+  // Shrink if items were removed from the end
+  if (keysRef.current.length > items.length) {
+    keysRef.current.length = items.length
+  }
+
   const updateItem = (index: number, item: T) => {
     const next = [...items]
     next[index] = item
@@ -25,6 +37,7 @@ export default function ArrayEditor<T>({
 
   const removeItem = (index: number) => {
     if (items.length <= minItems) return
+    keysRef.current.splice(index, 1)
     onChange(items.filter((_, i) => i !== index))
   }
 
@@ -33,6 +46,9 @@ export default function ArrayEditor<T>({
     if (target < 0 || target >= items.length) return
     const next = [...items]
     ;[next[index], next[target]] = [next[target], next[index]]
+    // Swap keys to follow items
+    const keys = keysRef.current
+    ;[keys[index], keys[target]] = [keys[target], keys[index]]
     onChange(next)
   }
 
@@ -40,7 +56,7 @@ export default function ArrayEditor<T>({
     <div className="space-y-2">
       {label && <div className="text-[11px] font-medium text-gray-500 uppercase tracking-wide">{label}</div>}
       {items.map((item, i) => (
-        <div key={i} className="flex items-start gap-2 bg-white border border-gray-100 rounded-lg p-2">
+        <div key={keysRef.current[i]} className="flex items-start gap-2 bg-white border border-gray-100 rounded-lg p-2">
           {/* Numbering badge */}
           <span className="w-5 h-5 rounded-full bg-gray-100 text-gray-400 text-[10px] font-semibold flex items-center justify-center shrink-0 mt-0.5">
             {i + 1}
