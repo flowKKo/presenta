@@ -2,7 +2,9 @@ import type { DeckExportPayload, DeckMeta, SlideData } from './types'
 
 const VALID_SLIDE_TYPES = new Set([
   'title', 'key-point', 'chart', 'grid-item', 'sequence',
-  'compare', 'funnel', 'concentric', 'hub-spoke', 'venn', 'block-slide',
+  'compare', 'funnel', 'concentric', 'hub-spoke', 'venn',
+  'cycle', 'table', 'roadmap', 'swot', 'mindmap', 'stack',
+  'block-slide',
 ])
 
 export function exportDeck(title: string, description: string | undefined, slides: SlideData[]) {
