@@ -1,4 +1,4 @@
-import { useCallback, useLayoutEffect, useRef, type ReactNode } from 'react'
+import { useCallback, useEffect, useLayoutEffect, useRef, type ReactNode } from 'react'
 import { useEditor } from './EditorProvider'
 import ResizeHandles from './ResizeHandles'
 import type { ContentBox } from '../../data/editor-types'
@@ -28,36 +28,52 @@ export default function ContentBoxWrapper({ slideIndex, slideData, children }: C
     }
   }, [editMode, slideData.type, slideIndex, slideData, setSlideDataOverrideQuiet])
 
+  // Use refs for stable callback references
+  const setContentBoxQuietRef = useRef(setContentBoxQuiet)
+  setContentBoxQuietRef.current = setContentBoxQuiet
+
   const handleClick = useCallback((e: React.MouseEvent) => {
     if (!editMode) return
     e.stopPropagation()
     setSelection({ type: 'content-box', slideIndex })
   }, [editMode, setSelection, slideIndex])
 
-  const handlePointerMove = useCallback((e: PointerEvent) => {
+  // Stable handlers via refs — never change identity
+  const slideIndexRef = useRef(slideIndex)
+  slideIndexRef.current = slideIndex
+
+  const handlePointerMove = useRef((e: PointerEvent) => {
     if (!dragRef.current) return
     const { startMouse, startBox, containerRect } = dragRef.current
     const dx = ((e.clientX - startMouse.x) / containerRect.width) * 100
     const dy = ((e.clientY - startMouse.y) / containerRect.height) * 100
-    setContentBoxQuiet(slideIndex, {
+    setContentBoxQuietRef.current(slideIndexRef.current, {
       ...startBox,
       x: startBox.x + dx,
       y: startBox.y + dy,
     })
-  }, [slideIndex, setContentBoxQuiet])
+  }).current
 
-  const handlePointerUp = useCallback((e: PointerEvent) => {
+  const handlePointerUp = useRef((e: PointerEvent) => {
     dragRef.current = null
-    ;(e.target as HTMLElement).releasePointerCapture(e.pointerId)
+    try { (e.target as HTMLElement).releasePointerCapture(e.pointerId) } catch {}
     document.removeEventListener('pointermove', handlePointerMove)
     document.removeEventListener('pointerup', handlePointerUp)
-  }, [handlePointerMove])
+    document.removeEventListener('pointercancel', handlePointerUp)
+  }).current
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      document.removeEventListener('pointermove', handlePointerMove)
+      document.removeEventListener('pointerup', handlePointerUp)
+      document.removeEventListener('pointercancel', handlePointerUp)
+    }
+  }, [handlePointerMove, handlePointerUp])
 
   const handleDragStart = useCallback((e: React.PointerEvent) => {
     if (!editMode || !isSelected) return
-    // Only drag on the wrapper itself, not child interactions
     if ((e.target as HTMLElement).closest('[data-resize-handle]')) return
-    // Don't start drag when user interacts with editable text
     if ((e.target as HTMLElement).closest('[data-editable-text]')) return
     e.preventDefault()
     beginDrag()
@@ -70,6 +86,7 @@ export default function ContentBoxWrapper({ slideIndex, slideData, children }: C
     ;(e.target as HTMLElement).setPointerCapture(e.pointerId)
     document.addEventListener('pointermove', handlePointerMove)
     document.addEventListener('pointerup', handlePointerUp)
+    document.addEventListener('pointercancel', handlePointerUp)
   }, [editMode, isSelected, box, beginDrag, handlePointerMove, handlePointerUp])
 
   const handleResize = useCallback((newBounds: { x: number; y: number; width: number; height: number }) => {

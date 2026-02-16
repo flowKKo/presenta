@@ -649,6 +649,10 @@ export function EditorProvider({ deckId, originalSlides, deckTitle: initialTitle
   }, [])
 
   // Keyboard shortcuts: Ctrl+Z / Ctrl+Shift+Z, Delete/Backspace
+  // Use ref for selection to avoid re-attaching listener on every selection change
+  const selectionRef = useRef(state.selection)
+  selectionRef.current = state.selection
+
   useEffect(() => {
     if (!state.editMode) return
     const handler = (e: KeyboardEvent) => {
@@ -669,7 +673,7 @@ export function EditorProvider({ deckId, originalSlides, deckTitle: initialTitle
 
       // Delete/Backspace: remove selected element
       if (e.key === 'Delete' || e.key === 'Backspace') {
-        const sel = state.selection
+        const sel = selectionRef.current
         if (!sel) return
         e.preventDefault()
         if (sel.type === 'block') {
@@ -681,7 +685,7 @@ export function EditorProvider({ deckId, originalSlides, deckTitle: initialTitle
     }
     window.addEventListener('keydown', handler)
     return () => window.removeEventListener('keydown', handler)
-  }, [state.editMode, state.selection])
+  }, [state.editMode])
 
   const toggleEditMode = useCallback(() => dispatch({ type: 'TOGGLE_EDIT_MODE' }), [])
   const setTool = useCallback((tool: ActiveTool) => dispatch({ type: 'SET_TOOL', tool }), [])

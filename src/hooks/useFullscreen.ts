@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from 'react'
+import { useState, useCallback, useEffect, useRef } from 'react'
 
 export function useFullscreen(totalSlides: number) {
   const [currentIndex, setCurrentIndex] = useState<number | null>(null)
@@ -33,15 +33,19 @@ export function useFullscreen(totalSlides: number) {
   }, [])
 
   // Sync with browser native fullscreen exit (Escape via browser)
+  // Use ref to avoid re-attaching listener on every slide change
+  const currentIndexRef = useRef(currentIndex)
+  currentIndexRef.current = currentIndex
+
   useEffect(() => {
     const handleChange = () => {
-      if (!document.fullscreenElement && currentIndex !== null) {
+      if (!document.fullscreenElement && currentIndexRef.current !== null) {
         setCurrentIndex(null)
       }
     }
     document.addEventListener('fullscreenchange', handleChange)
     return () => document.removeEventListener('fullscreenchange', handleChange)
-  }, [currentIndex])
+  }, [])
 
   return { currentIndex, isActive, enter, exit, next, prev }
 }

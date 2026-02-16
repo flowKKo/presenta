@@ -30,30 +30,45 @@ export default function BlockWrapper({
   const bounds = { x: block.x, y: block.y, width: block.width, height: block.height }
   const dragRef = useRef<{ startMouse: { x: number; y: number }; startBounds: typeof bounds; containerRect: DOMRect } | null>(null)
 
+  // Use refs for stable handler references to avoid listener leaks
+  const onUpdateQuietRef = useRef(onUpdateQuiet)
+  onUpdateQuietRef.current = onUpdateQuiet
+
   const handleClick = useCallback((e: React.MouseEvent) => {
     if (!editMode) return
     e.stopPropagation()
     onSelect()
   }, [editMode, onSelect])
 
-  const handlePointerMove = useCallback((e: PointerEvent) => {
+  // Stable handlers via refs — never change identity
+  const handlePointerMove = useRef((e: PointerEvent) => {
     if (!dragRef.current) return
     const { startMouse, startBounds, containerRect } = dragRef.current
     const dx = ((e.clientX - startMouse.x) / containerRect.width) * 100
     const dy = ((e.clientY - startMouse.y) / containerRect.height) * 100
-    onUpdateQuiet({
+    onUpdateQuietRef.current({
       ...startBounds,
       x: startBounds.x + dx,
       y: startBounds.y + dy,
     })
-  }, [onUpdateQuiet])
+  }).current
 
-  const handlePointerUp = useCallback((e: PointerEvent) => {
+  const handlePointerUp = useRef((e: PointerEvent) => {
     dragRef.current = null
-    ;(e.target as HTMLElement).releasePointerCapture(e.pointerId)
+    try { (e.target as HTMLElement).releasePointerCapture(e.pointerId) } catch {}
     document.removeEventListener('pointermove', handlePointerMove)
     document.removeEventListener('pointerup', handlePointerUp)
-  }, [handlePointerMove])
+    document.removeEventListener('pointercancel', handlePointerUp)
+  }).current
+
+  // Cleanup on unmount — release any dangling listeners
+  useEffect(() => {
+    return () => {
+      document.removeEventListener('pointermove', handlePointerMove)
+      document.removeEventListener('pointerup', handlePointerUp)
+      document.removeEventListener('pointercancel', handlePointerUp)
+    }
+  }, [handlePointerMove, handlePointerUp])
 
   const handleDragStart = useCallback((e: React.PointerEvent) => {
     if (!editMode || !isSelected) return
@@ -70,6 +85,7 @@ export default function BlockWrapper({
     ;(e.target as HTMLElement).setPointerCapture(e.pointerId)
     document.addEventListener('pointermove', handlePointerMove)
     document.addEventListener('pointerup', handlePointerUp)
+    document.addEventListener('pointercancel', handlePointerUp)
   }, [editMode, isSelected, bounds, onDragStart, handlePointerMove, handlePointerUp])
 
   const handleResize = useCallback((newBounds: { x: number; y: number; width: number; height: number }) => {

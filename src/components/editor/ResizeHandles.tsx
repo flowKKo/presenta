@@ -1,4 +1,4 @@
-import { useCallback, useRef } from 'react'
+import { useCallback, useEffect, useRef } from 'react'
 import type { ResizeConstraint, HandlePosition } from '../../data/editor-types'
 import { getHandlePositions } from '../../data/editor-types'
 
@@ -66,7 +66,14 @@ export default function ResizeHandles({ constraint, bounds, onResize, onResizeSt
   const positions = getHandlePositions(constraint)
   const startRef = useRef<{ pos: HandlePosition; startBounds: Bounds; startMouse: { x: number; y: number }; containerRect: DOMRect } | null>(null)
 
-  const handlePointerMove = useCallback((e: PointerEvent) => {
+  // Use refs for stable callback references
+  const constraintRef = useRef(constraint)
+  constraintRef.current = constraint
+  const onResizeRef = useRef(onResize)
+  onResizeRef.current = onResize
+
+  // Stable handlers via refs — never change identity
+  const handlePointerMove = useRef((e: PointerEvent) => {
     if (!startRef.current) return
     const { pos, startBounds, startMouse, containerRect } = startRef.current
 
@@ -76,7 +83,7 @@ export default function ResizeHandles({ constraint, bounds, onResize, onResizeSt
 
     let newBounds = { ...startBounds }
 
-    if (constraint === 'proportional') {
+    if (constraintRef.current === 'proportional') {
       // Proportional: use corner handles, maintain aspect ratio
       const aspect = startBounds.width / startBounds.height
       let dw = 0
@@ -140,15 +147,25 @@ export default function ResizeHandles({ constraint, bounds, onResize, onResizeSt
       if (pos.includes('top')) newBounds.y = startBounds.y + startBounds.height - MIN_SIZE
     }
 
-    onResize(newBounds)
-  }, [constraint, onResize])
+    onResizeRef.current(newBounds)
+  }).current
 
-  const handlePointerUp = useCallback((e: PointerEvent) => {
+  const handlePointerUp = useRef((e: PointerEvent) => {
     startRef.current = null
-    ;(e.target as HTMLElement).releasePointerCapture(e.pointerId)
+    try { (e.target as HTMLElement).releasePointerCapture(e.pointerId) } catch {}
     document.removeEventListener('pointermove', handlePointerMove)
     document.removeEventListener('pointerup', handlePointerUp)
-  }, [handlePointerMove])
+    document.removeEventListener('pointercancel', handlePointerUp)
+  }).current
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      document.removeEventListener('pointermove', handlePointerMove)
+      document.removeEventListener('pointerup', handlePointerUp)
+      document.removeEventListener('pointercancel', handlePointerUp)
+    }
+  }, [handlePointerMove, handlePointerUp])
 
   const handlePointerDown = useCallback((pos: HandlePosition, e: React.PointerEvent) => {
     e.stopPropagation()
@@ -164,6 +181,7 @@ export default function ResizeHandles({ constraint, bounds, onResize, onResizeSt
     ;(e.target as HTMLElement).setPointerCapture(e.pointerId)
     document.addEventListener('pointermove', handlePointerMove)
     document.addEventListener('pointerup', handlePointerUp)
+    document.addEventListener('pointercancel', handlePointerUp)
   }, [bounds, onResizeStart, handlePointerMove, handlePointerUp])
 
   return (
@@ -171,6 +189,7 @@ export default function ResizeHandles({ constraint, bounds, onResize, onResizeSt
       {positions.map((pos) => (
         <div
           key={pos}
+          data-resize-handle=""
           style={{
             ...getHandleStyle(pos, bounds),
             background: color,

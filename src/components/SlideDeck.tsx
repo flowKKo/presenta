@@ -95,6 +95,7 @@ function SlideDeckInner({ slides, onBack }: Omit<SlideDeckProps, 'deckId' | 'dec
     let accDelta = 0
     let cooldown = false
     let resetTimer: ReturnType<typeof setTimeout>
+    let cooldownTimer: ReturnType<typeof setTimeout>
     const THRESHOLD = 4
 
     const handleWheel = (e: WheelEvent) => {
@@ -109,19 +110,19 @@ function SlideDeckInner({ slides, onBack }: Omit<SlideDeckProps, 'deckId' | 'dec
         goNextRef.current()
         accDelta = 0
         cooldown = true
-        setTimeout(() => { cooldown = false }, 250)
+        cooldownTimer = setTimeout(() => { cooldown = false }, 250)
       } else if (accDelta < -THRESHOLD) {
         goPrevRef.current()
         accDelta = 0
         cooldown = true
-        setTimeout(() => { cooldown = false }, 250)
+        cooldownTimer = setTimeout(() => { cooldown = false }, 250)
       }
     }
     el.addEventListener('wheel', handleWheel, { passive: false })
-    return () => { el.removeEventListener('wheel', handleWheel); clearTimeout(resetTimer) }
+    return () => { el.removeEventListener('wheel', handleWheel); clearTimeout(resetTimer); clearTimeout(cooldownTimer) }
   }, [])  // stable — reads from refs
 
-  // ─── Keyboard navigation ───
+  // ─── Keyboard navigation (uses refs to avoid re-attaching on slide count changes) ───
 
   useEffect(() => {
     const handleKey = (e: KeyboardEvent) => {
@@ -133,18 +134,18 @@ function SlideDeckInner({ slides, onBack }: Omit<SlideDeckProps, 'deckId' | 'dec
         case 'ArrowDown':
         case 'PageDown':
           e.preventDefault()
-          goNext()
+          goNextRef.current()
           break
         case 'ArrowUp':
         case 'PageUp':
           e.preventDefault()
-          goPrev()
+          goPrevRef.current()
           break
       }
     }
     window.addEventListener('keydown', handleKey)
     return () => window.removeEventListener('keydown', handleKey)
-  }, [goNext, goPrev])
+  }, [])  // stable — reads from refs
 
   // ─── Bounds protection ───
 
