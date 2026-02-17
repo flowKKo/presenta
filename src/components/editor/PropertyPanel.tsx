@@ -275,9 +275,14 @@ function getBlockPreview(data: BlockData): string {
     case 'concentric': return data.rings.map((r) => r.label).join(', ')
     case 'hub-spoke': return data.center.label
     case 'venn': return data.sets.map((s) => s.label).join(' ∩ ')
+    case 'cycle': return data.steps.map((s) => s.label).join(' → ')
+    case 'table': return data.headers.join(', ')
+    case 'roadmap': return data.phases.map((p) => p.label).join(' → ')
+    case 'swot': return 'SWOT'
+    case 'mindmap': return data.root.label
+    case 'stack': return data.layers.map((l) => l.label).join(', ')
     case 'chart': return data.chartType
     case 'image': return data.src ? (data.alt || '已上传图片') : (data.placeholder || '图片占位')
-    default: return ''
   }
 }
 

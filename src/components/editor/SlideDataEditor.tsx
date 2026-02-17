@@ -350,6 +350,14 @@ export default function SlideDataEditor({ data, onChange, isBlock }: SlideDataEd
 
     case 'stack':
       return <StackEditor data={data} onChange={onChange} commonFields={commonFields} fontSizeFields={fontSizeFields} colorFields={colorFields} />
+
+    case 'block-slide':
+      return null
+
+    default: {
+      const _exhaustive: never = data
+      return _exhaustive
+    }
   }
 }
 
@@ -600,9 +608,9 @@ function ChartEditor({ data, onChange, isBlock, fontSizeFields, colorFields }: {
 
       {data.chartType === 'gauge' && (
         <Section title="仪表盘数据">
-          <NumberInput label="当前值" value={data.gaugeData?.value ?? 0} onChange={(v) => onChange({ ...data, gaugeData: { ...data.gaugeData!, value: v } })} />
-          <NumberInput label="最大值" value={data.gaugeData?.max ?? 100} onChange={(v) => onChange({ ...data, gaugeData: { ...data.gaugeData!, max: v } })} />
-          <TextInput label="名称" value={data.gaugeData?.name ?? ''} onChange={(v) => onChange({ ...data, gaugeData: { ...data.gaugeData!, name: v } })} />
+          <NumberInput label="当前值" value={data.gaugeData?.value ?? 0} onChange={(v) => onChange({ ...data, gaugeData: { value: v, max: data.gaugeData?.max ?? 100, name: data.gaugeData?.name ?? '' } })} />
+          <NumberInput label="最大值" value={data.gaugeData?.max ?? 100} onChange={(v) => onChange({ ...data, gaugeData: { value: data.gaugeData?.value ?? 0, max: v, name: data.gaugeData?.name ?? '' } })} />
+          <TextInput label="名称" value={data.gaugeData?.name ?? ''} onChange={(v) => onChange({ ...data, gaugeData: { value: data.gaugeData?.value ?? 0, max: data.gaugeData?.max ?? 100, name: v } })} />
         </Section>
       )}
 

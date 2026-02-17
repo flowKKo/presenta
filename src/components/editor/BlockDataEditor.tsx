@@ -82,8 +82,10 @@ function slideDataToBlock(slideData: SlideData, originalType: BlockData['type'])
       const { type, title, body, titleSize, bodySize, titleColor, textColor, chartHeight, ...chartData } = slideData
       return { type: 'chart' as const, ...chartData }
     }
-    default:
-      // Should not happen, but return original
+    case 'title':
+    case 'key-point':
+    case 'block-slide':
+      // These slide types don't map to block data — should never reach here
       return { type: 'title-body', title: '', body: '' }
   }
 }

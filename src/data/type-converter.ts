@@ -266,7 +266,12 @@ function applyVariant(data: SlideData, variant?: string): SlideData {
     case 'roadmap': return { ...data, variant: variant as RoadmapVariant }
     case 'stack': return { ...data, variant: variant as StackVariant }
     case 'chart': return { ...data, chartType: variant as ChartType }
-    default: return data
+    case 'title':
+    case 'key-point':
+    case 'swot':
+    case 'mindmap':
+    case 'block-slide':
+      return data
   }
 }
 
@@ -792,10 +797,13 @@ function getVariant(data: SlideData): string | undefined {
     case 'cycle': return data.variant
     case 'table': return data.variant
     case 'roadmap': return data.variant
-    case 'swot': return undefined
-    case 'mindmap': return undefined
     case 'stack': return data.variant
     case 'chart': return data.chartType
-    default: return undefined
+    case 'title':
+    case 'key-point':
+    case 'swot':
+    case 'mindmap':
+    case 'block-slide':
+      return undefined
   }
 }

@@ -30,8 +30,9 @@ function layoutTree(root: MindmapNode): LayoutNode[] {
 
   // Split branches into left and right sides
   const half = Math.ceil(branches / 2)
-  const leftBranches = root.children!.slice(0, half)
-  const rightBranches = root.children!.slice(half)
+  const children = root.children ?? []
+  const leftBranches = children.slice(0, half)
+  const rightBranches = children.slice(half)
 
   const xSpread1 = 200 // depth 1 distance from center
   const xSpread2 = 150 // depth 2 additional distance
