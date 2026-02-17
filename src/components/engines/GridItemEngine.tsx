@@ -17,15 +17,18 @@ function getColumns(count: number, override?: number): number {
   return 4
 }
 
-function CardContent({ item, index }: { item: GridItemEntry; index: number }) {
+function CardContent({ item, index, showIcon = true }: { item: GridItemEntry; index: number; showIcon?: boolean }) {
   return (
     <>
+      {showIcon && item.icon && (
+        <span className="text-4xl mb-2 block">{item.icon}</span>
+      )}
       {item.value && (
         <EditableText
           value={item.value}
           field={`items.${index}.value`}
           as="div"
-          className="text-3xl font-extrabold mb-1"
+          className="text-4xl font-extrabold mb-1"
           style={{ color: item.valueColor ? colorMap[item.valueColor] : colors.accentNeutral }}
         />
       )}
@@ -33,7 +36,7 @@ function CardContent({ item, index }: { item: GridItemEntry; index: number }) {
         value={item.title}
         field={`items.${index}.title`}
         as="div"
-        className="text-base font-semibold"
+        className="text-xl font-semibold"
         style={{ color: colors.textPrimary }}
       />
       {item.description && (
@@ -41,7 +44,7 @@ function CardContent({ item, index }: { item: GridItemEntry; index: number }) {
           value={item.description}
           field={`items.${index}.description`}
           as="div"
-          className="text-sm mt-1"
+          className="text-base mt-1"
           style={{ color: colors.textSecondary }}
         />
       )}
@@ -104,7 +107,7 @@ function TopCircleCard({ item, index, color, textColor }: { item: GridItemEntry;
         className="w-20 h-20 rounded-full flex items-center justify-center text-2xl font-bold mb-4"
         style={{ backgroundColor: color, color: textColor || 'white' }}
       >
-        {index + 1}
+        {item.icon || (index + 1)}
       </div>
       {item.value && (
         <EditableText
@@ -162,6 +165,9 @@ function LeafCard({ item, index, color }: { item: GridItemEntry; index: number; 
 function LabeledCard({ item, index, color }: { item: GridItemEntry; index: number; color: string }) {
   return (
     <motion.div variants={motionConfig.child} className="flex flex-col justify-center h-full">
+      {item.icon && (
+        <span className="text-4xl mb-2 block">{item.icon}</span>
+      )}
       <EditableText
         value={item.value || `#${index + 1}`}
         field={`items.${index}.value`}
@@ -169,9 +175,9 @@ function LabeledCard({ item, index, color }: { item: GridItemEntry; index: numbe
         className="inline-flex self-start rounded-full px-3 py-1 text-xs font-bold mb-2"
         style={{ backgroundColor: `${color}20`, color: color }}
       />
-      <EditableText value={item.title} field={`items.${index}.title`} as="div" className="text-base font-semibold" style={{ color: colors.textPrimary }} />
+      <EditableText value={item.title} field={`items.${index}.title`} as="div" className="text-xl font-semibold" style={{ color: colors.textPrimary }} />
       {item.description && (
-        <EditableText value={item.description} field={`items.${index}.description`} as="div" className="text-sm mt-1" style={{ color: colors.textSecondary }} />
+        <EditableText value={item.description} field={`items.${index}.description`} as="div" className="text-base mt-1" style={{ color: colors.textSecondary }} />
       )}
     </motion.div>
   )
@@ -197,15 +203,16 @@ function PillarCard({ item, index, color, textColor }: { item: GridItemEntry; in
       className="rounded-xl flex flex-col h-full overflow-hidden"
       style={{ border: `2px solid ${color}30` }}
     >
-      <div className="px-4 py-3 text-center" style={{ background: color }}>
-        <EditableText value={item.title} field={`items.${index}.title`} as="div" className="text-sm font-bold" style={{ color: textColor || 'white' }} />
+      <div className="px-4 py-3 text-center flex items-center justify-center gap-2" style={{ background: color }}>
+        {item.icon && <span>{item.icon}</span>}
+        <EditableText value={item.title} field={`items.${index}.title`} as="div" className="text-base font-bold" style={{ color: textColor || 'white' }} />
       </div>
       <div className="flex-1 p-4 flex flex-col justify-center" style={{ background: `${color}08` }}>
         {item.value && (
-          <EditableText value={item.value} field={`items.${index}.value`} as="div" className="text-2xl font-extrabold mb-1 text-center" style={{ color: item.valueColor ? colorMap[item.valueColor] : color }} />
+          <EditableText value={item.value} field={`items.${index}.value`} as="div" className="text-3xl font-extrabold mb-1 text-center" style={{ color: item.valueColor ? colorMap[item.valueColor] : color }} />
         )}
         {item.description && (
-          <EditableText value={item.description} field={`items.${index}.description`} as="div" className="text-xs text-center" style={{ color: colors.textSecondary }} />
+          <EditableText value={item.description} field={`items.${index}.description`} as="div" className="text-sm text-center" style={{ color: colors.textSecondary }} />
         )}
       </div>
     </motion.div>
@@ -218,9 +225,9 @@ function DiamondCard({ item, index, color }: { item: GridItemEntry; index: numbe
       <div className="relative w-16 h-16 mb-3 flex items-center justify-center">
         <div className="absolute inset-0 rotate-45 rounded-md" style={{ backgroundColor: color, opacity: 0.15 }} />
         <div className="absolute inset-2 rotate-45 rounded-sm" style={{ backgroundColor: color }} />
-        <span className="relative text-sm font-bold text-white z-10">{index + 1}</span>
+        <span className="relative text-sm font-bold text-white z-10">{item.icon || (index + 1)}</span>
       </div>
-      <CardContent item={item} index={index} />
+      <CardContent item={item} index={index} showIcon={false} />
     </motion.div>
   )
 }
@@ -228,17 +235,18 @@ function DiamondCard({ item, index, color }: { item: GridItemEntry; index: numbe
 function SignCard({ item, index, color }: { item: GridItemEntry; index: number; color: string }) {
   return (
     <motion.div variants={motionConfig.child} className="flex flex-col items-center h-full">
-      <div className="w-full rounded-lg p-4 text-center relative" style={{ background: color }}>
-        <EditableText value={item.title} field={`items.${index}.title`} as="div" className="text-sm font-bold" style={{ color: 'white' }} />
+      <div className="w-full rounded-lg p-4 text-center relative flex items-center justify-center gap-2" style={{ background: color }}>
+        {item.icon && <span>{item.icon}</span>}
+        <EditableText value={item.title} field={`items.${index}.title`} as="div" className="text-base font-bold" style={{ color: 'white' }} />
         {/* sign post triangle */}
         <div className="absolute left-1/2 -bottom-2 -translate-x-1/2 w-0 h-0" style={{ borderLeft: '8px solid transparent', borderRight: '8px solid transparent', borderTop: `8px solid ${color}` }} />
       </div>
       <div className="mt-4 text-center">
         {item.value && (
-          <EditableText value={item.value} field={`items.${index}.value`} as="div" className="text-2xl font-extrabold mb-1" style={{ color: item.valueColor ? colorMap[item.valueColor] : colors.accentNeutral }} />
+          <EditableText value={item.value} field={`items.${index}.value`} as="div" className="text-3xl font-extrabold mb-1" style={{ color: item.valueColor ? colorMap[item.valueColor] : colors.accentNeutral }} />
         )}
         {item.description && (
-          <EditableText value={item.description} field={`items.${index}.description`} as="div" className="text-xs" style={{ color: colors.textSecondary }} />
+          <EditableText value={item.description} field={`items.${index}.description`} as="div" className="text-sm" style={{ color: colors.textSecondary }} />
         )}
       </div>
     </motion.div>

@@ -181,7 +181,7 @@ Grid of cards showing structured items. The most versatile layout engine.
   type: 'grid-item',
   title: string,
   body?: string,
-  items: GridItemEntry[],  // { title, description?, value?, valueColor? }
+  items: GridItemEntry[],  // { title, description?, value?, valueColor?, icon? }
   variant: GridItemVariant,
   columns?: number,        // override auto (default: based on item count)
 }
@@ -205,6 +205,12 @@ Grid of cards showing structured items. The most versatile layout engine.
 | `signs` | Signpost/banner style | Directional items, milestones |
 
 **`valueColor`** options: `'positive'` (green), `'negative'` (red), `'neutral'` (blue-grey)
+
+**`icon`** — emoji character for visual enrichment (e.g. `'🚀'`, `'📊'`, `'💡'`, `'🔒'`)
+- When items represent different categories/capabilities/metrics, **always** provide `icon`
+- Use semantically relevant emoji: `'💰'` revenue, `'👥'` users, `'⚡'` performance, `'🔒'` security
+- Each item's icon should be different
+- solid, outline, sideline, topline, labeled variants show icon most prominently
 
 **Column recommendations**: 2 items → 2 cols, 3 items → 3 cols, 4 items → 2 or 4 cols, 5-6 items → 3 cols
 
@@ -872,6 +878,7 @@ Text that's too short wastes space; text that's too long overflows. Match text l
 
 | Element | Max Chars | Example |
 |---------|-----------|---------|
+| `GridItemEntry.icon` | 1-2 chars | `"🚀"` |
 | `GridItemEntry.title` | 8 chars | `"响应延迟"` |
 | `GridItemEntry.description` | 30 chars | `"P99 延迟从 320ms 降至 45ms"` |
 | `GridItemEntry.value` | 8 chars | `"+42.3%"` |
@@ -1014,9 +1021,10 @@ Understanding the actual pixel space prevents oversized components. All values b
 
 | Engine | Element | Size | Notes |
 |--------|---------|------|-------|
-| GridItem | card title | 16px | Fixed — text wraps at ~10 chars in 2-col |
-| GridItem | card description | 14px | Fixed — wraps at ~18 chars per line |
-| GridItem | card value | 30px | Fixed — bold callout number |
+| GridItem | card icon | 36px | emoji character |
+| GridItem | card title | 20px | Fixed — text wraps at ~12 chars |
+| GridItem | card description | 16px | Fixed — wraps at ~20 chars per line |
+| GridItem | card value | 36px | Fixed — bold callout number |
 | Sequence | step label | 14px | Fixed — fits ~8-10 chars |
 | Sequence | step description | 12px | Fixed — ~16 chars per line |
 | Compare (versus) | side name | 18px | Fixed |
@@ -1268,7 +1276,7 @@ interface BlockSlideData {
 }
 
 // ─── Sub-types ───
-interface GridItemEntry { title: string; description?: string; value?: string; valueColor?: SemanticColor }
+interface GridItemEntry { title: string; description?: string; value?: string; valueColor?: SemanticColor; icon?: string }
 interface SequenceStep { label: string; description?: string }
 interface CompareSide { name: string; items: { label: string; value: string }[] }
 interface QuadrantItem { label: string; x: number; y: number }

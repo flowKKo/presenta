@@ -763,6 +763,7 @@ function GridItemEditor({ data, onChange, commonFields, fontSizeFields, colorFie
           renderRow={(item, _, update) => (
             <div className="space-y-1">
               <TextInput label="标题" value={item.title} onChange={(v) => update({ ...item, title: v })} />
+              <TextInput label="图标" value={item.icon ?? ''} onChange={(v) => update({ ...item, icon: v || undefined })} />
               <TextInput label="描述" value={item.description ?? ''} onChange={(v) => update({ ...item, description: v })} />
               <TextInput label="数值" value={item.value ?? ''} onChange={(v) => update({ ...item, value: v })} />
             </div>

@@ -110,6 +110,7 @@ export interface GridItemEntry {
   description?: string
   value?: string
   valueColor?: SemanticColor
+  icon?: string  // emoji, e.g. '🚀', '📊'
 }
 
 export interface GridItemSlideData {

@@ -583,10 +583,10 @@ export function createDefaultSlide(type: SlideData['type']): SlideData {
       return {
         type: 'grid-item', title: '项目概览', variant: 'solid',
         items: [
-          { title: '项目一', description: '描述内容' },
-          { title: '项目二', description: '描述内容' },
-          { title: '项目三', description: '描述内容' },
-          { title: '项目四', description: '描述内容' },
+          { title: '项目一', description: '描述内容', icon: '📋' },
+          { title: '项目二', description: '描述内容', icon: '⚡' },
+          { title: '项目三', description: '描述内容', icon: '🎯' },
+          { title: '项目四', description: '描述内容', icon: '💡' },
         ],
       }
 
