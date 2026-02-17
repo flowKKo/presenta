@@ -101,12 +101,36 @@ function TopCircleCard({ item, index, color, textColor }: { item: GridItemEntry;
   return (
     <motion.div variants={motionConfig.child} className="flex flex-col items-center text-center justify-center h-full">
       <div
-        className="w-14 h-14 rounded-full flex items-center justify-center text-xl font-bold mb-3"
+        className="w-20 h-20 rounded-full flex items-center justify-center text-2xl font-bold mb-4"
         style={{ backgroundColor: color, color: textColor || 'white' }}
       >
         {index + 1}
       </div>
-      <CardContent item={item} index={index} />
+      {item.value && (
+        <EditableText
+          value={item.value}
+          field={`items.${index}.value`}
+          as="div"
+          className="text-4xl font-extrabold mb-1"
+          style={{ color: item.valueColor ? colorMap[item.valueColor] : colors.accentNeutral }}
+        />
+      )}
+      <EditableText
+        value={item.title}
+        field={`items.${index}.title`}
+        as="div"
+        className="text-lg font-semibold"
+        style={{ color: colors.textPrimary }}
+      />
+      {item.description && (
+        <EditableText
+          value={item.description}
+          field={`items.${index}.description`}
+          as="div"
+          className="text-base mt-1"
+          style={{ color: colors.textSecondary }}
+        />
+      )}
     </motion.div>
   )
 }
@@ -142,8 +166,8 @@ function LabeledCard({ item, index, color }: { item: GridItemEntry; index: numbe
         value={item.value || `#${index + 1}`}
         field={`items.${index}.value`}
         as="div"
-        className="inline-flex self-start rounded-full px-3 py-0.5 text-xs font-bold mb-2"
-        style={{ backgroundColor: color, color: 'white' }}
+        className="inline-flex self-start rounded-full px-3 py-1 text-xs font-bold mb-2"
+        style={{ backgroundColor: `${color}20`, color: color }}
       />
       <EditableText value={item.title} field={`items.${index}.title`} as="div" className="text-base font-semibold" style={{ color: colors.textPrimary }} />
       {item.description && (
