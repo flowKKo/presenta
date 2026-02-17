@@ -16,16 +16,16 @@ function getStatusStyle(status?: string) {
 
 function HorizontalRoadmap({ phases, palette, textColor }: { phases: RoadmapPhase[]; palette: string[]; textColor?: string }) {
   return (
-    <div className="flex gap-1 h-full items-stretch overflow-x-auto px-2">
+    <div className="flex gap-3 h-full items-stretch overflow-x-auto px-2">
       {phases.map((phase, pi) => (
-        <div key={pi} className="flex-1 min-w-0 flex flex-col rounded-xl p-3" style={{ borderTop: `4px solid ${palette[pi % palette.length]}`, background: `${palette[pi % palette.length]}08` }}>
-          <EditableText value={phase.label} field={`phases.${pi}.label`} as="div" className="text-sm font-bold mb-3" style={{ color: textColor || colors.textPrimary }} />
-          <div className="flex flex-col gap-1.5 flex-1">
+        <div key={pi} className="flex-1 min-w-0 flex flex-col rounded-xl p-5" style={{ borderTop: `4px solid ${palette[pi % palette.length]}`, background: `${palette[pi % palette.length]}08` }}>
+          <EditableText value={phase.label} field={`phases.${pi}.label`} as="div" className="text-base font-bold mb-4" style={{ color: textColor || colors.textPrimary }} />
+          <div className="flex flex-col gap-2.5 flex-1">
             {phase.items.map((item, ii) => {
               const s = getStatusStyle(item.status)
               return (
-                <div key={ii} className="flex items-center gap-2 rounded-lg px-3 py-1.5" style={{ background: s.bg, borderLeft: `3px solid ${s.border}` }}>
-                  <EditableText value={item.label} field={`phases.${pi}.items.${ii}.label`} as="span" className="text-xs font-medium" style={{ color: s.text }} />
+                <div key={ii} className="flex items-center gap-2 rounded-lg px-4 py-2.5" style={{ background: s.bg, borderLeft: `3px solid ${s.border}` }}>
+                  <EditableText value={item.label} field={`phases.${pi}.items.${ii}.label`} as="span" className="text-sm font-medium" style={{ color: s.text }} />
                 </div>
               )
             })}
@@ -38,12 +38,12 @@ function HorizontalRoadmap({ phases, palette, textColor }: { phases: RoadmapPhas
 
 function VerticalRoadmap({ phases, palette, textColor }: { phases: RoadmapPhase[]; palette: string[]; textColor?: string }) {
   return (
-    <div className="flex flex-col gap-4 h-full overflow-y-auto px-4">
+    <div className="flex flex-col h-full overflow-y-auto px-4">
       {phases.map((phase, pi) => (
-        <div key={pi} className="flex gap-4">
+        <div key={pi} className="flex gap-4 flex-1 min-h-0">
           {/* Timeline track */}
           <div className="flex flex-col items-center">
-            <div className="w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-bold shrink-0" style={{ backgroundColor: palette[pi % palette.length] }}>
+            <div className="w-10 h-10 rounded-full flex items-center justify-center text-white text-sm font-bold shrink-0" style={{ backgroundColor: palette[pi % palette.length] }}>
               {pi + 1}
             </div>
             {pi < phases.length - 1 && (
@@ -51,13 +51,13 @@ function VerticalRoadmap({ phases, palette, textColor }: { phases: RoadmapPhase[
             )}
           </div>
           {/* Content */}
-          <div className="flex-1 pb-2">
-            <EditableText value={phase.label} field={`phases.${pi}.label`} as="div" className="text-sm font-bold mb-2" style={{ color: textColor || colors.textPrimary }} />
-            <div className="flex flex-wrap gap-1.5">
+          <div className="flex-1 pb-4 pt-1">
+            <EditableText value={phase.label} field={`phases.${pi}.label`} as="div" className="text-base font-bold mb-3" style={{ color: textColor || colors.textPrimary }} />
+            <div className="flex flex-wrap gap-2">
               {phase.items.map((item, ii) => {
                 const s = getStatusStyle(item.status)
                 return (
-                  <span key={ii} className="inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium" style={{ background: s.bg, border: `1px solid ${s.border}`, color: s.text }}>
+                  <span key={ii} className="inline-flex items-center gap-1.5 rounded-full px-4 py-1.5 text-sm font-medium" style={{ background: s.bg, border: `1px solid ${s.border}`, color: s.text }}>
                     {item.status === 'done' && <span>&#10003;</span>}
                     {item.status === 'active' && <span className="w-1.5 h-1.5 rounded-full bg-current" />}
                     <EditableText value={item.label} field={`phases.${pi}.items.${ii}.label`} as="span" />
@@ -88,18 +88,18 @@ function MilestoneRoadmap({ phases, palette, textColor }: { phases: RoadmapPhase
               <div key={pi} className="flex flex-col items-center" style={{ width: `${100 / n}%` }}>
                 {/* Diamond milestone marker */}
                 <div
-                  className="w-5 h-5 rotate-45 border-2 mb-3"
+                  className="w-6 h-6 rotate-45 border-2 mb-4"
                   style={{
                     backgroundColor: allDone ? color : hasActive ? `${color}60` : 'white',
                     borderColor: color,
                   }}
                 />
-                <EditableText value={phase.label} field={`phases.${pi}.label`} as="div" className="text-xs font-bold text-center mb-1.5" style={{ color: textColor || colors.textPrimary }} />
-                <div className="flex flex-col items-center gap-1">
+                <EditableText value={phase.label} field={`phases.${pi}.label`} as="div" className="text-sm font-bold text-center mb-2" style={{ color: textColor || colors.textPrimary }} />
+                <div className="flex flex-col items-center gap-1.5">
                   {phase.items.map((item, ii) => {
                     const s = getStatusStyle(item.status)
                     return (
-                      <span key={ii} className="text-[11px]" style={{ color: s.text }}>
+                      <span key={ii} className="text-sm" style={{ color: s.text }}>
                         {item.status === 'done' ? '✓ ' : ''}<EditableText value={item.label} field={`phases.${pi}.items.${ii}.label`} as="span" />
                       </span>
                     )

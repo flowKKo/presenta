@@ -9,20 +9,22 @@ export function TableDiagram({ headers, rows, variant, textColor, colorPalette }
   const isBordered = variant === 'bordered'
   const isStriped = variant === 'striped'
   const isHighlight = variant === 'highlight'
+  // Use a single unified header color — first palette color for all columns
+  const headerBg = palette[0]
 
   return (
     <div className="w-full h-full overflow-auto flex items-start justify-center p-2">
-      <table className="w-full" style={{ maxWidth: 760, color: textColor || colors.textPrimary, borderSpacing: 0 }}>
+      <table className="w-full" style={{ color: textColor || colors.textPrimary, borderSpacing: 0 }}>
         <thead>
           <tr>
             {headers.map((h, i) => (
               <th
                 key={i}
-                className="px-4 py-3 text-left text-sm font-bold"
+                className="px-5 py-4 text-left text-base font-bold"
                 style={{
-                  backgroundColor: palette[i % palette.length],
+                  backgroundColor: headerBg,
                   color: '#fff',
-                  borderRight: isBordered && i < headers.length - 1 ? '1px solid rgba(255,255,255,0.3)' : undefined,
+                  borderRight: isBordered && i < headers.length - 1 ? '1px solid rgba(255,255,255,0.2)' : undefined,
                   borderRadius: i === 0 ? '8px 0 0 0' : i === headers.length - 1 ? '0 8px 0 0' : undefined,
                 }}
               >
@@ -36,7 +38,7 @@ export function TableDiagram({ headers, rows, variant, textColor, colorPalette }
             const isEvenRow = ri % 2 === 0
             const rowHighlight = isHighlight && row.highlight
             let bg = 'transparent'
-            if (rowHighlight) bg = `${palette[0]}18`
+            if (rowHighlight) bg = `${headerBg}12`
             else if (isStriped && isEvenRow) bg = `${colors.textCaption}08`
 
             return (
@@ -44,13 +46,13 @@ export function TableDiagram({ headers, rows, variant, textColor, colorPalette }
                 {row.cells.map((cell, ci) => (
                   <td
                     key={ci}
-                    className="px-4 py-2.5 text-sm"
+                    className="px-5 py-3.5 text-base"
                     style={{
                       borderBottom: `1px solid ${colors.border}`,
                       borderRight: isBordered && ci < row.cells.length - 1 ? `1px solid ${colors.border}` : undefined,
                       borderLeft: isBordered && ci === 0 ? `1px solid ${colors.border}` : undefined,
                       fontWeight: rowHighlight ? 600 : 400,
-                      color: rowHighlight ? palette[0] : textColor || colors.textPrimary,
+                      color: rowHighlight ? headerBg : textColor || colors.textPrimary,
                     }}
                   >
                     <EditableText value={cell} field={`rows.${ri}.cells.${ci}`} as="span" />

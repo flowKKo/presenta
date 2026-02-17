@@ -67,39 +67,43 @@ function VerticalStack({ layers, palette, textColor }: { layers: StackSlideData[
 
 function OffsetStack({ layers, palette, textColor }: { layers: StackSlideData['layers']; palette: string[]; textColor?: string }) {
   const n = layers.length
-  const step = Math.min(16, 200 / Math.max(n, 1))
+  // Each card needs enough vertical step to show the card below clearly
+  const step = Math.max(24, Math.min(48, 300 / Math.max(n, 1)))
+  // Approximate card content height (py-4 = 32px + content ~24px)
+  const cardH = 56
+
   return (
-    <div className="relative h-full flex items-center justify-center px-8 overflow-hidden">
-      {layers.map((layer, i) => {
-        const color = palette[i % palette.length]
-        const offset = i * step
-        const width = `${Math.max(50, 92 - i * (40 / n))}%`
-        return (
-          <div
-            key={i}
-            className="absolute rounded-xl px-5 py-3 flex items-center"
-            style={{
-              background: `${color}14`,
-              border: `2px solid ${color}40`,
-              width,
-              top: `${12 + offset}px`,
-              left: '50%',
-              transform: 'translateX(-50%)',
-              zIndex: n - i,
-            }}
-          >
-            <span className="w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold text-white mr-3 shrink-0" style={{ backgroundColor: color }}>
-              {i + 1}
-            </span>
-            <div>
-              <EditableText value={layer.label} field={`layers.${i}.label`} as="div" className="text-sm font-bold" style={{ color: textColor || colors.textPrimary }} />
-              {layer.description && (
-                <EditableText value={layer.description} field={`layers.${i}.description`} as="div" className="text-xs" style={{ color: colors.textSecondary }} />
-              )}
+    <div className="h-full flex items-center justify-center px-8 overflow-hidden">
+      {/* Inner wrapper with known height to vertically center the stack */}
+      <div className="relative w-full" style={{ height: cardH + (n - 1) * step, maxWidth: 640 }}>
+        {layers.map((layer, i) => {
+          const color = palette[i % palette.length]
+          const widthPct = Math.max(60, 100 - i * (35 / Math.max(n, 1)))
+          return (
+            <div
+              key={i}
+              className="absolute left-1/2 -translate-x-1/2 rounded-xl px-5 py-4 flex items-center"
+              style={{
+                background: `${color}14`,
+                border: `2px solid ${color}40`,
+                width: `${widthPct}%`,
+                top: `${i * step}px`,
+                zIndex: n - i,
+              }}
+            >
+              <span className="w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold text-white mr-3 shrink-0" style={{ backgroundColor: color }}>
+                {i + 1}
+              </span>
+              <div className="flex-1 min-w-0">
+                <EditableText value={layer.label} field={`layers.${i}.label`} as="div" className="text-sm font-bold" style={{ color: textColor || colors.textPrimary }} />
+                {layer.description && (
+                  <EditableText value={layer.description} field={`layers.${i}.description`} as="div" className="text-xs" style={{ color: colors.textSecondary }} />
+                )}
+              </div>
             </div>
-          </div>
-        )
-      })}
+          )
+        })}
+      </div>
     </div>
   )
 }

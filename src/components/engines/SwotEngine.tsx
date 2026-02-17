@@ -23,27 +23,28 @@ export function SwotDiagram({ strengths, weaknesses, opportunities, threats, tex
       {QUADRANT_META.map((meta, qi) => (
         <div
           key={meta.key}
-          className="rounded-xl p-4 flex flex-col overflow-hidden"
+          className="rounded-xl p-5 flex flex-col overflow-hidden"
           style={{ background: `${palette[qi]}10`, border: `2px solid ${palette[qi]}30` }}
         >
-          <div className="flex items-center gap-2 mb-3 shrink-0">
-            <span className="w-7 h-7 rounded-lg flex items-center justify-center text-sm font-bold text-white" style={{ backgroundColor: palette[qi] }}>
+          <div className="flex items-center gap-2 mb-4 shrink-0">
+            <span className="w-8 h-8 rounded-lg flex items-center justify-center text-sm font-bold text-white" style={{ backgroundColor: palette[qi] }}>
               {meta.icon}
             </span>
-            <span className="text-sm font-bold" style={{ color: textColor || colors.textPrimary }}>
+            <span className="text-base font-bold" style={{ color: textColor || colors.textPrimary }}>
               {meta.label}
             </span>
           </div>
-          <div className="flex flex-col gap-1.5 overflow-y-auto flex-1">
+          <div className="flex flex-col gap-2.5 overflow-y-auto flex-1">
             {quadrants[qi].map((item, ii) => {
               const fieldPrefix = `${meta.key}.${ii}`
               return (
-                <div key={ii} className="flex items-start gap-2">
-                  <span className="w-1.5 h-1.5 rounded-full mt-1.5 shrink-0" style={{ backgroundColor: palette[qi] }} />
-                  <div>
-                    <EditableText value={item.label} field={`${fieldPrefix}.label`} as="span" className="text-xs font-medium" style={{ color: textColor || colors.textPrimary }} />
+                <div key={ii} className="flex items-start gap-2.5">
+                  {/* Dot aligned with the center of the first line of text (text-sm = 14px, lh ~20px → center ~10px, dot 8px → mt-[6px]) */}
+                  <span className="w-2 h-2 rounded-full mt-[6px] shrink-0" style={{ backgroundColor: palette[qi] }} />
+                  <div className="flex-1 min-w-0">
+                    <EditableText value={item.label} field={`${fieldPrefix}.label`} as="div" className="text-sm font-medium" style={{ color: textColor || colors.textPrimary }} />
                     {item.description && (
-                      <EditableText value={`— ${item.description}`} field={`${fieldPrefix}.description`} as="span" className="text-[11px] ml-1" style={{ color: colors.textCaption }} />
+                      <EditableText value={item.description} field={`${fieldPrefix}.description`} as="div" className="text-xs mt-0.5" style={{ color: colors.textCaption }} />
                     )}
                   </div>
                 </div>
