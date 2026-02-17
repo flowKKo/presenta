@@ -11,6 +11,49 @@ function truncateLabel(text: string, maxChars: number): string {
   return text.length > maxChars ? text.slice(0, maxChars - 1) + '…' : text
 }
 
+/**
+ * Compute arc arrows that follow a circular/elliptical path between nodes.
+ * Arrows depart tangentially from each node and curve along the orbit toward the next.
+ */
+function computeArcArrow(
+  i: number, n: number,
+  positions: { x: number; y: number }[],
+  cx: number, cy: number,
+  orbitRx: number, orbitRy: number,
+  nodeR: number,
+) {
+  const j = (i + 1) % n
+  const θi = -Math.PI / 2 + (2 * Math.PI * i) / n
+  const θj = -Math.PI / 2 + (2 * Math.PI * j) / n
+
+  // Tangent directions on the ellipse (forward = increasing angle = clockwise in SVG)
+  // Derivative of (cx + rx*cos(t), cy + ry*sin(t)) is (-rx*sin(t), ry*cos(t))
+  const tanILen = Math.sqrt((orbitRx * Math.sin(θi)) ** 2 + (orbitRy * Math.cos(θi)) ** 2)
+  const tanIx = -orbitRx * Math.sin(θi) / tanILen
+  const tanIy = orbitRy * Math.cos(θi) / tanILen
+
+  const tanJLen = Math.sqrt((orbitRx * Math.sin(θj)) ** 2 + (orbitRy * Math.cos(θj)) ** 2)
+  const tanJx = orbitRx * Math.sin(θj) / tanJLen
+  const tanJy = -orbitRy * Math.cos(θj) / tanJLen
+
+  // Start: depart node i in forward tangent direction
+  const gap = nodeR + 5
+  const sx = positions[i].x + gap * tanIx
+  const sy = positions[i].y + gap * tanIy
+
+  // End: arrive at node j from backward tangent direction
+  const ex = positions[j].x + gap * tanJx
+  const ey = positions[j].y + gap * tanJy
+
+  // Control point: on the orbit at the midpoint angle
+  // Placed ON the orbit for a curve that follows the track closely
+  const midAngle = θi + Math.PI / n
+  const cpX = cx + orbitRx * Math.cos(midAngle)
+  const cpY = cy + orbitRy * Math.sin(midAngle)
+
+  return { sx, sy, ex, ey, cpX, cpY }
+}
+
 function CircularCycle({ steps, palette, textColor, uid }: { steps: CycleSlideData['steps']; palette: string[]; textColor?: string; uid: string }) {
   const n = steps.length
   const cx = VB_W / 2
@@ -26,31 +69,19 @@ function CircularCycle({ steps, palette, textColor, uid }: { steps: CycleSlideDa
   return (
     <>
       <defs>
-        <marker id={`${uid}-cyc`} markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
-          <polygon points="0,0 8,3 0,6" fill={colors.textCaption} opacity={0.5} />
+        <marker id={`${uid}-cyc`} markerWidth="10" markerHeight="8" refX="9" refY="4" orient="auto">
+          <polygon points="0,0 10,4 0,8" fill={colors.textCaption} opacity={0.6} />
         </marker>
       </defs>
-      {/* Arc arrows between nodes */}
-      {positions.map((from, i) => {
-        const to = positions[(i + 1) % n]
-        const fromAngle = Math.atan2(from.y - cy, from.x - cx)
-        const toAngle = Math.atan2(to.y - cy, to.x - cx)
-        const gap = (2 * Math.PI) / n / 4
-        const sx = from.x + (nodeR + 4) * Math.cos(fromAngle + gap)
-        const sy = from.y + (nodeR + 4) * Math.sin(fromAngle + gap)
-        const ex = to.x + (nodeR + 4) * Math.cos(toAngle - gap)
-        const ey = to.y + (nodeR + 4) * Math.sin(toAngle - gap)
-        const mx = (sx + ex) / 2
-        const my = (sy + ey) / 2
-        const mAngle = Math.atan2(my - cy, mx - cx)
-        const cpX = mx + 24 * Math.cos(mAngle)
-        const cpY = my + 24 * Math.sin(mAngle)
+      {/* Arc arrows following the circular orbit */}
+      {positions.map((_, i) => {
+        const { sx, sy, ex, ey, cpX, cpY } = computeArcArrow(i, n, positions, cx, cy, R, R, nodeR)
         return (
           <path
             key={`a-${i}`}
             d={`M ${sx} ${sy} Q ${cpX} ${cpY} ${ex} ${ey}`}
-            fill="none" stroke={colors.textCaption} strokeWidth="1.8"
-            strokeDasharray="5 4" markerEnd={`url(#${uid}-cyc)`} opacity={0.35}
+            fill="none" stroke={colors.textCaption} strokeWidth="2"
+            markerEnd={`url(#${uid}-cyc)`} opacity={0.5}
           />
         )
       })}
@@ -72,7 +103,7 @@ function CircularCycle({ steps, palette, textColor, uid }: { steps: CycleSlideDa
   )
 }
 
-function GearCycle({ steps, palette, textColor }: { steps: CycleSlideData['steps']; palette: string[]; textColor?: string }) {
+function GearCycle({ steps, palette, textColor, uid }: { steps: CycleSlideData['steps']; palette: string[]; textColor?: string; uid: string }) {
   const n = steps.length
   const cx = VB_W / 2
   const cy = VB_H / 2
@@ -104,12 +135,21 @@ function GearCycle({ steps, palette, textColor }: { steps: CycleSlideData['steps
 
   return (
     <>
-      {/* Connecting lines */}
-      {positions.map((from, i) => {
-        const to = positions[(i + 1) % n]
+      <defs>
+        <marker id={`${uid}-gear`} markerWidth="10" markerHeight="8" refX="9" refY="4" orient="auto">
+          <polygon points="0,0 10,4 0,8" fill={colors.textCaption} opacity={0.6} />
+        </marker>
+      </defs>
+      {/* Arc arrows following the circular orbit */}
+      {positions.map((_, i) => {
+        const { sx, sy, ex, ey, cpX, cpY } = computeArcArrow(i, n, positions, cx, cy, R, R, nodeR + 5)
         return (
-          <line key={`l-${i}`} x1={from.x} y1={from.y} x2={to.x} y2={to.y}
-            stroke={colors.textCaption} strokeWidth="1.5" strokeDasharray="4 3" opacity={0.3} />
+          <path
+            key={`a-${i}`}
+            d={`M ${sx} ${sy} Q ${cpX} ${cpY} ${ex} ${ey}`}
+            fill="none" stroke={colors.textCaption} strokeWidth="2"
+            markerEnd={`url(#${uid}-gear)`} opacity={0.5}
+          />
         )
       })}
       {/* Gear nodes */}
@@ -135,64 +175,50 @@ function LoopCycle({ steps, palette, textColor, uid }: { steps: CycleSlideData['
   const n = steps.length
   const cx = VB_W / 2
   const cy = VB_H / 2
-  // Racetrack shape: an elongated oval
-  const rx = Math.min(cx - 80, 280) // horizontal radius
-  const ry = Math.min(cy - 60, 150) // vertical radius
+  // Elliptical orbit (racetrack shape)
+  const rx = Math.min(cx - 80, 280)
+  const ry = Math.min(cy - 60, 150)
+  const nodeR = Math.max(22, 38 - n * 2)
 
-  // Distribute steps evenly along the oval perimeter
+  // Distribute steps evenly along the elliptical perimeter
   const positions = steps.map((_, i) => {
     const angle = -Math.PI / 2 + (2 * Math.PI * i) / n
     return { x: cx + rx * Math.cos(angle), y: cy + ry * Math.sin(angle) }
   })
 
-  // Draw the oval track
-  const trackPath = `M ${cx + rx} ${cy} A ${rx} ${ry} 0 1 1 ${cx + rx - 0.01} ${cy}`
-
   return (
     <>
       <defs>
-        <marker id={`${uid}-loop`} markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
-          <polygon points="0,0 8,3 0,6" fill={colors.textCaption} opacity={0.5} />
+        <marker id={`${uid}-loop`} markerWidth="10" markerHeight="8" refX="9" refY="4" orient="auto">
+          <polygon points="0,0 10,4 0,8" fill={colors.textCaption} opacity={0.6} />
         </marker>
       </defs>
-      {/* Track */}
-      <ellipse cx={cx} cy={cy} rx={rx} ry={ry} fill="none" stroke={colors.textCaption} strokeWidth="2" strokeDasharray="8 5" opacity={0.2} />
-      {/* Direction arrow on track */}
-      <path d={trackPath} fill="none" stroke="none" id="loop-track" />
-      {/* Arrows between nodes */}
-      {positions.map((from, i) => {
-        const to = positions[(i + 1) % n]
-        const mx = (from.x + to.x) / 2
-        const my = (from.y + to.y) / 2
-        const mAngle = Math.atan2(my - cy, mx - cx)
-        const cpX = mx + 16 * Math.cos(mAngle)
-        const cpY = my + 10 * Math.sin(mAngle)
+      {/* Elliptical arc arrows — single unified track, no separate ellipse */}
+      {positions.map((_, i) => {
+        const { sx, sy, ex, ey, cpX, cpY } = computeArcArrow(i, n, positions, cx, cy, rx, ry, nodeR)
         return (
-          <path key={`a-${i}`}
-            d={`M ${from.x} ${from.y} Q ${cpX} ${cpY} ${to.x} ${to.y}`}
-            fill="none" stroke={colors.textCaption} strokeWidth="1.5"
-            strokeDasharray="4 3" markerEnd={`url(#${uid}-loop)`} opacity={0.3}
+          <path
+            key={`a-${i}`}
+            d={`M ${sx} ${sy} Q ${cpX} ${cpY} ${ex} ${ey}`}
+            fill="none" stroke={colors.textCaption} strokeWidth="2"
+            markerEnd={`url(#${uid}-loop)`} opacity={0.5}
           />
         )
       })}
-      {/* Nodes */}
-      {positions.map((pos, i) => {
-        const w = Math.max(60, 80 - n * 4)
-        const h = 36
-        return (
-          <g key={i}>
-            <rect x={pos.x - w / 2} y={pos.y - h / 2} width={w} height={h} rx={h / 2} fill={palette[i]} fillOpacity={0.14} stroke={palette[i]} strokeWidth="2" />
-            <text x={pos.x} y={steps[i].description ? pos.y - 4 : pos.y + 1} textAnchor="middle" dominantBaseline="middle" fontSize={n > 6 ? 11 : 12} fontWeight="700" fill={textColor || colors.textPrimary}>
-              {truncateLabel(steps[i].label, Math.floor(w / 8))}
+      {/* Circular nodes on elliptical path */}
+      {positions.map((pos, i) => (
+        <g key={i}>
+          <circle cx={pos.x} cy={pos.y} r={nodeR} fill={palette[i]} fillOpacity={0.14} stroke={palette[i]} strokeWidth="2.5" />
+          <text x={pos.x} y={steps[i].description ? pos.y - 4 : pos.y + 1} textAnchor="middle" dominantBaseline="middle" fontSize={n > 6 ? 11 : 12} fontWeight="700" fill={textColor || colors.textPrimary}>
+            {truncateLabel(steps[i].label, Math.floor(nodeR / 4))}
+          </text>
+          {steps[i].description && (
+            <text x={pos.x} y={pos.y + 12} textAnchor="middle" dominantBaseline="middle" fontSize={10} fill={colors.textSecondary}>
+              {truncateLabel(steps[i].description!, Math.floor(nodeR / 3.5))}
             </text>
-            {steps[i].description && (
-              <text x={pos.x} y={pos.y + 12} textAnchor="middle" dominantBaseline="middle" fontSize={10} fill={colors.textSecondary}>
-                {truncateLabel(steps[i].description!, Math.floor(w / 7))}
-              </text>
-            )}
-          </g>
-        )
-      })}
+          )}
+        </g>
+      ))}
     </>
   )
 }
@@ -205,7 +231,7 @@ export function CycleDiagram({ steps, variant, textColor, colorPalette }: { step
   return (
     <svg width="100%" height="100%" viewBox={`0 0 ${VB_W} ${VB_H}`} preserveAspectRatio="xMidYMid meet" role="img" aria-label="循环图">
       {variant === 'gear' ? (
-        <GearCycle steps={steps} palette={palette} textColor={textColor} />
+        <GearCycle steps={steps} palette={palette} textColor={textColor} uid={uid} />
       ) : variant === 'loop' ? (
         <LoopCycle steps={steps} palette={palette} textColor={textColor} uid={uid} />
       ) : (

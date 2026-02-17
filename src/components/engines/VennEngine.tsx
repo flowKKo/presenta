@@ -67,12 +67,21 @@ export function VennDiagram({ sets, intersectionLabel, variant, textColor, color
       ))}
 
       {positions.map((pos, i) => {
-        const dx = pos.cx - centerX
-        const dy = pos.cy - centerY
-        const dist = Math.sqrt(dx * dx + dy * dy) || 1
-        const labelPush = isLinear ? 0 : 45
-        const lx = pos.cx + (dx / dist) * labelPush
-        const ly = pos.cy + (dy / dist) * labelPush
+        let lx: number, ly: number
+        if (isLinear) {
+          // Push labels to outer portion of each circle, away from center overlap zone
+          const dx = pos.cx - centerX
+          const sign = dx > 0 ? 1 : dx < 0 ? -1 : 0
+          // Edge circles: push horizontally outward; middle circle: push upward
+          lx = pos.cx + sign * r * 0.45
+          ly = Math.abs(dx) < r * 0.1 ? pos.cy - r * 0.55 : pos.cy
+        } else {
+          const dx = pos.cx - centerX
+          const dy = pos.cy - centerY
+          const dist = Math.sqrt(dx * dx + dy * dy) || 1
+          lx = pos.cx + (dx / dist) * 45
+          ly = pos.cy + (dy / dist) * 45
+        }
 
         return (
           <g key={`l-${i}`}>

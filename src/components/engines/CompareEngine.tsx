@@ -10,15 +10,15 @@ function VersusMode({ sides, textColor, colorPalette }: { sides: CompareSlideDat
   const palette = generateGradientColors(sides.length, colorPalette)
   const cols = Math.min(sides.length, 4)
   return (
-    <div className="grid gap-6 flex-1" style={{ gridTemplateColumns: `repeat(${cols}, minmax(0, 1fr))` }}>
+    <div className="grid gap-6 flex-1 min-h-0" style={{ gridTemplateColumns: `repeat(${cols}, minmax(0, 1fr))` }}>
       {sides.map((side, si) => (
-        <motion.div key={si} variants={motionConfig.child} className="rounded-xl p-5" style={{ background: colors.card, borderTop: `4px solid ${palette[si]}` }}>
-          <EditableText value={side.name} field={`sides.${si}.name`} as="div" className="text-lg font-bold mb-4" style={{ color: palette[si] }} />
-          <div className="flex flex-col gap-3">
+        <motion.div key={si} variants={motionConfig.child} className="rounded-xl p-6 flex flex-col" style={{ background: colors.card, borderTop: `4px solid ${palette[si]}` }}>
+          <EditableText value={side.name} field={`sides.${si}.name`} as="div" className="text-xl font-bold mb-5" style={{ color: palette[si] }} />
+          <div className="flex flex-col gap-4 flex-1">
             {side.items.map((item, ii) => (
-              <div key={ii} className="flex justify-between items-center py-1" style={{ borderBottom: `1px solid ${colors.border}` }}>
-                <EditableText value={item.label} field={`sides.${si}.items.${ii}.label`} as="span" className="text-sm" style={{ color: textColor || colors.textSecondary }} />
-                <EditableText value={item.value} field={`sides.${si}.items.${ii}.value`} as="span" className="text-sm font-semibold" style={{ color: textColor || colors.textPrimary }} />
+              <div key={ii} className="flex justify-between items-center py-2" style={{ borderBottom: `1px solid ${colors.border}` }}>
+                <EditableText value={item.label} field={`sides.${si}.items.${ii}.label`} as="span" className="text-base" style={{ color: textColor || colors.textSecondary }} />
+                <EditableText value={item.value} field={`sides.${si}.items.${ii}.value`} as="span" className="text-base font-semibold" style={{ color: textColor || colors.textPrimary }} />
               </div>
             ))}
           </div>
@@ -108,37 +108,46 @@ function QuadrantMode({ quadrantItems, xAxis, yAxis, colorPalette }: Pick<Compar
 }
 
 function IcebergMode({ visible, hidden }: Pick<CompareSlideData, 'visible' | 'hidden'>) {
+  const visibleCount = visible?.length ?? 0
+  const hiddenCount = hidden?.length ?? 0
+  // Hidden section (below water) should be proportionally larger to convey the iceberg metaphor
+  const visibleFlex = Math.max(visibleCount, 1)
+  const hiddenFlex = Math.max(hiddenCount, 2)
+
   return (
-    <motion.div variants={motionConfig.child} className="flex flex-col flex-1 gap-0 overflow-hidden rounded-xl">
+    <motion.div variants={motionConfig.child} className="flex flex-col flex-1 gap-0 overflow-hidden rounded-xl min-h-0">
       {/* above water */}
-      <div className="p-5 flex flex-col gap-2" style={{ background: `${colors.accentPositive}18` }}>
-        <div className="text-xs font-semibold uppercase tracking-wide mb-1" style={{ color: colors.accentPositive }}>显性因素</div>
+      <div className="p-6 flex flex-col gap-3 justify-center" style={{ background: `${colors.accentPositive}18`, flex: visibleFlex }}>
+        <div className="text-sm font-semibold uppercase tracking-wide mb-1" style={{ color: colors.accentPositive }}>显性因素</div>
         {visible?.map((item, i) => (
-          <div key={i} className="flex items-center gap-2">
-            <div className="w-2 h-2 rounded-full" style={{ backgroundColor: colors.accentPositive }} />
-            <EditableText value={item.label} field={`visible.${i}.label`} as="span" className="text-sm font-medium" style={{ color: colors.textPrimary }} />
+          <div key={i} className="flex items-center gap-3">
+            <div className="w-3 h-3 rounded-full shrink-0" style={{ backgroundColor: colors.accentPositive }} />
+            <EditableText value={item.label} field={`visible.${i}.label`} as="span" className="text-base font-medium" style={{ color: colors.textPrimary }} />
             {item.description && (
               <>
-                <span className="text-xs" style={{ color: colors.textSecondary }}>&mdash;</span>
-                <EditableText value={item.description} field={`visible.${i}.description`} as="span" className="text-xs" style={{ color: colors.textSecondary }} />
+                <span className="text-sm" style={{ color: colors.textSecondary }}>&mdash;</span>
+                <EditableText value={item.description} field={`visible.${i}.description`} as="span" className="text-sm" style={{ color: colors.textSecondary }} />
               </>
             )}
           </div>
         ))}
       </div>
       {/* waterline */}
-      <div className="h-1" style={{ background: `linear-gradient(90deg, ${colors.accentNeutral}44, ${colors.accentNeutral}, ${colors.accentNeutral}44)` }} />
+      <div className="relative h-2" style={{ background: `linear-gradient(90deg, ${colors.accentNeutral}22, ${colors.accentNeutral}88, ${colors.accentNeutral}22)` }}>
+        <div className="absolute inset-x-0 top-0 h-px" style={{ background: `${colors.accentNeutral}66` }} />
+        <div className="absolute inset-x-0 bottom-0 h-px" style={{ background: `${colors.accentNeutral}44` }} />
+      </div>
       {/* below water */}
-      <div className="p-5 flex flex-col gap-2 flex-1" style={{ background: `${colors.accentNeutral}12` }}>
-        <div className="text-xs font-semibold uppercase tracking-wide mb-1" style={{ color: colors.accentNeutral }}>隐性因素</div>
+      <div className="p-6 flex flex-col gap-3 justify-center" style={{ background: `${colors.accentNeutral}12`, flex: hiddenFlex }}>
+        <div className="text-sm font-semibold uppercase tracking-wide mb-1" style={{ color: colors.accentNeutral }}>隐性因素</div>
         {hidden?.map((item, i) => (
-          <div key={i} className="flex items-center gap-2">
-            <div className="w-2 h-2 rounded-full" style={{ backgroundColor: colors.accentNeutral }} />
-            <EditableText value={item.label} field={`hidden.${i}.label`} as="span" className="text-sm font-medium" style={{ color: colors.textPrimary }} />
+          <div key={i} className="flex items-center gap-3">
+            <div className="w-3 h-3 rounded-full shrink-0" style={{ backgroundColor: colors.accentNeutral }} />
+            <EditableText value={item.label} field={`hidden.${i}.label`} as="span" className="text-base font-medium" style={{ color: colors.textPrimary }} />
             {item.description && (
               <>
-                <span className="text-xs" style={{ color: colors.textSecondary }}>&mdash;</span>
-                <EditableText value={item.description} field={`hidden.${i}.description`} as="span" className="text-xs" style={{ color: colors.textSecondary }} />
+                <span className="text-sm" style={{ color: colors.textSecondary }}>&mdash;</span>
+                <EditableText value={item.description} field={`hidden.${i}.description`} as="span" className="text-sm" style={{ color: colors.textSecondary }} />
               </>
             )}
           </div>
@@ -164,7 +173,7 @@ export default function CompareEngine(props: CompareSlideData) {
 
   return (
     <motion.div
-      className="flex flex-col gap-6 h-full justify-center"
+      className="flex flex-col gap-6 h-full"
       variants={motionConfig.stagger}
       initial="hidden"
       whileInView="visible"
