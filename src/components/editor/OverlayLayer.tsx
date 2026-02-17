@@ -1,4 +1,4 @@
-import { useCallback, useRef, useState } from 'react'
+import { memo, useCallback, useRef, useState } from 'react'
 import { useEditor } from './EditorProvider'
 import ResizeHandles from './ResizeHandles'
 import type { OverlayElement, TextOverlay, RectOverlay, LineOverlay } from '../../data/editor-types'
@@ -113,6 +113,10 @@ export default function OverlayLayer({ slideIndex, readOnly = false }: OverlayLa
     }
   }, [editMode, readOnly, selection, slideIndex, removeOverlay, editingTextId])
 
+  // Stable editing callbacks — OverlayItem passes its own overlay.id
+  const handleStartEditing = useCallback((id: string) => setEditingTextId(id), [])
+  const handleStopEditing = useCallback(() => setEditingTextId(null), [])
+
   const isInteractive = editMode && !readOnly
   // When select tool is active, let clicks pass through to slide content (EditableText etc.)
   // Only capture events on the overlay layer itself when using a drawing tool (text/rect/line)
@@ -135,14 +139,14 @@ export default function OverlayLayer({ slideIndex, readOnly = false }: OverlayLa
       tabIndex={isInteractive ? 0 : undefined}
     >
       {overlays.map((overlay) => (
-        <OverlayItem
+        <MemoOverlayItem
           key={overlay.id}
           overlay={overlay}
           slideIndex={slideIndex}
           isSelected={selection?.type === 'overlay' && selection.id === overlay.id}
           isEditing={editingTextId === overlay.id}
-          onStartEditing={() => setEditingTextId(overlay.id)}
-          onStopEditing={() => setEditingTextId(null)}
+          onStartEditing={handleStartEditing}
+          onStopEditing={handleStopEditing}
           interactive={isInteractive}
         />
       ))}
@@ -168,10 +172,12 @@ interface OverlayItemProps {
   slideIndex: number
   isSelected: boolean
   isEditing: boolean
-  onStartEditing: () => void
+  onStartEditing: (id: string) => void
   onStopEditing: () => void
   interactive: boolean
 }
+
+const MemoOverlayItem = memo(OverlayItem)
 
 function OverlayItem({ overlay, slideIndex, isSelected, isEditing, onStartEditing, onStopEditing, interactive }: OverlayItemProps) {
   const { setSelection, updateOverlay, updateOverlayQuiet, beginDrag } = useEditor()
@@ -186,8 +192,8 @@ function OverlayItem({ overlay, slideIndex, isSelected, isEditing, onStartEditin
   const handleDoubleClick = useCallback((e: React.MouseEvent) => {
     if (!interactive || overlay.type !== 'text') return
     e.stopPropagation()
-    onStartEditing()
-  }, [interactive, overlay.type, onStartEditing])
+    onStartEditing(overlay.id)
+  }, [interactive, overlay.type, overlay.id, onStartEditing])
 
   const handleDragStart = useCallback((e: React.PointerEvent) => {
     if (!interactive || !isSelected || isEditing) return

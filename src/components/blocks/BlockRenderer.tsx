@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react'
+import { memo, type ReactNode } from 'react'
 import type { BlockData } from '../../data/types'
 import ErrorBoundary from '../ErrorBoundary'
 import { colors, motionConfig } from '../../theme/swiss'
@@ -99,13 +99,13 @@ function ImageBlock({ data, blockId, slideIndex }: { data: Extract<BlockData, { 
   )
 }
 
-export default function BlockRenderer({ data, blockId, slideIndex }: BlockRendererProps) {
+export default memo(function BlockRenderer({ data, blockId, slideIndex }: BlockRendererProps) {
   return (
     <ErrorBoundary compact>
       <BlockRendererInner data={data} blockId={blockId} slideIndex={slideIndex} />
     </ErrorBoundary>
   )
-}
+})
 
 function BlockRendererInner({ data, blockId, slideIndex }: BlockRendererProps) {
   switch (data.type) {

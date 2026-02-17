@@ -435,12 +435,28 @@ function editorReducer(state: EditorState, action: EditorAction): EditorState {
     case 'COMMIT_SAVE': {
       // Reset editor state: merged slides become the new originals
       const newList: SlideEntry[] = action.mergedSlides.map((_, i) => ({ kind: 'original' as const, index: i }))
+
+      // Rebase history: fill missing overrides so entries don't depend on the old originalSlides.
+      // After this, each history entry is self-contained and undo works across save boundaries.
+      const oldOriginals = state.originalSlides
+      const rebasedHistory = state.history.map(h => {
+        const entries = materializeSlideList(h, oldOriginals.length)
+        const filled = { ...h.slides }
+        entries.forEach((entry, i) => {
+          if (!filled[i]?.slideDataOverride) {
+            const data = entry.kind === 'original' ? oldOriginals[entry.index] : entry.data
+            filled[i] = { ...(filled[i] ?? { overlays: [] }), slideDataOverride: data }
+          }
+        })
+        return { ...h, slides: filled }
+      })
+
       return {
         ...state,
         originalSlides: action.mergedSlides,
         deckState: { version: 1, slides: {}, slideList: newList },
-        history: [],
-        historyIndex: -1,
+        history: rebasedHistory,
+        historyIndex: state.historyIndex,
       }
     }
 
@@ -512,6 +528,7 @@ interface EditorContextValue {
   addSlide: (data: SlideData) => void
   removeAddedSlide: (index: number) => void
   allSlides: SlideData[]
+  effectiveSlides: SlideData[]
   slideEntries: SlideEntry[]
   insertSlide: (position: number, data: SlideData) => void
   deleteSlide: (position: number) => void
@@ -694,9 +711,11 @@ export function EditorProvider({ deckId, originalSlides, deckTitle: initialTitle
 
   const beginDrag = useCallback(() => dispatch({ type: 'BEGIN_DRAG' }), [])
 
+  // Getter functions: use deckStateRef for stable identity (never change reference).
+  // This prevents cascading useMemo/useCallback invalidations throughout the tree.
   const getContentBox = useCallback(
-    (slideIndex: number) => getSlideState(state.deckState, slideIndex).contentBox,
-    [state.deckState],
+    (slideIndex: number) => getSlideState(deckStateRef.current, slideIndex).contentBox,
+    [],
   )
 
   const setContentBox = useCallback(
@@ -713,13 +732,13 @@ export function EditorProvider({ deckId, originalSlides, deckTitle: initialTitle
 
   const getEffectiveSlideData = useCallback(
     (slideIndex: number, original: SlideData): SlideData =>
-      getSlideState(state.deckState, slideIndex).slideDataOverride ?? original,
-    [state.deckState],
+      getSlideState(deckStateRef.current, slideIndex).slideDataOverride ?? original,
+    [],
   )
 
   const getSlideDataOverride = useCallback(
-    (slideIndex: number) => getSlideState(state.deckState, slideIndex).slideDataOverride,
-    [state.deckState],
+    (slideIndex: number) => getSlideState(deckStateRef.current, slideIndex).slideDataOverride,
+    [],
   )
 
   const setSlideDataOverride = useCallback(
@@ -729,8 +748,8 @@ export function EditorProvider({ deckId, originalSlides, deckTitle: initialTitle
   )
 
   const getOverlays = useCallback(
-    (slideIndex: number) => getSlideState(state.deckState, slideIndex).overlays,
-    [state.deckState],
+    (slideIndex: number) => getSlideState(deckStateRef.current, slideIndex).overlays,
+    [],
   )
 
   const addOverlay = useCallback(
@@ -782,6 +801,14 @@ export function EditorProvider({ deckId, originalSlides, deckTitle: initialTitle
     [slideEntries, state.originalSlides],
   )
 
+  // Effective slides: base slides with editor overrides applied. Recomputes on any deckState change.
+  const effectiveSlides = useMemo(
+    () => allSlides.map((s, i) =>
+      state.deckState.slides[i]?.slideDataOverride ?? s,
+    ),
+    [allSlides, state.deckState],
+  )
+
   const insertSlide = useCallback(
     (position: number, data: SlideData) =>
       dispatch({ type: 'INSERT_SLIDE', position, data }),
@@ -794,15 +821,18 @@ export function EditorProvider({ deckId, originalSlides, deckTitle: initialTitle
     [],
   )
 
+  const slideEntriesRef = useRef(slideEntries)
+  slideEntriesRef.current = slideEntries
+
   const copySlide = useCallback(
     (position: number) => {
-      const entry = slideEntries[position]
+      const entry = slideEntriesRef.current[position]
       if (!entry) return
-      const original = entry.kind === 'original' ? state.originalSlides[entry.index] : entry.data
+      const original = entry.kind === 'original' ? originalSlidesRef.current[entry.index] : entry.data
       const data = getEffectiveSlideData(position, original)
       dispatch({ type: 'SET_CLIPBOARD', data: JSON.parse(JSON.stringify(data)) })
     },
-    [slideEntries, state.originalSlides, getEffectiveSlideData],
+    [getEffectiveSlideData],
   )
 
   const pasteSlide = useCallback(
@@ -813,14 +843,14 @@ export function EditorProvider({ deckId, originalSlides, deckTitle: initialTitle
 
   const duplicateSlide = useCallback(
     (position: number) => {
-      const entry = slideEntries[position]
+      const entry = slideEntriesRef.current[position]
       if (!entry) return
-      const original = entry.kind === 'original' ? state.originalSlides[entry.index] : entry.data
+      const original = entry.kind === 'original' ? originalSlidesRef.current[entry.index] : entry.data
       const data = getEffectiveSlideData(position, original)
       const copy = JSON.parse(JSON.stringify(data)) as SlideData
       dispatch({ type: 'INSERT_SLIDE', position: position + 1, data: copy })
     },
-    [slideEntries, state.originalSlides, getEffectiveSlideData],
+    [getEffectiveSlideData],
   )
 
   const moveSlide = useCallback(
@@ -888,16 +918,16 @@ export function EditorProvider({ deckId, originalSlides, deckTitle: initialTitle
 
   const duplicateBlock = useCallback((slideIndex: number, blockId: string) => {
     const override = getSlideDataOverride(slideIndex)
-    const entry = slideEntries[slideIndex]
+    const entry = slideEntriesRef.current[slideIndex]
     const original = entry
-      ? entry.kind === 'original' ? state.originalSlides[entry.index] : entry.data
+      ? entry.kind === 'original' ? originalSlidesRef.current[entry.index] : entry.data
       : undefined
     const slideData = override ?? original
     if (!slideData || slideData.type !== 'block-slide') return
     const source = (slideData as BlockSlideData).blocks.find(b => b.id === blockId)
     if (!source) return
     const newBlock: ContentBlock = {
-      id: `blk-${Date.now()}`,
+      id: `blk-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
       x: Math.min(source.x + 2, 90),
       y: Math.min(source.y + 2, 90),
       width: source.width,
@@ -906,9 +936,9 @@ export function EditorProvider({ deckId, originalSlides, deckTitle: initialTitle
     }
     addBlock(slideIndex, newBlock)
     setSelection({ type: 'block', slideIndex, blockId: newBlock.id })
-  }, [getSlideDataOverride, slideEntries, state.originalSlides, addBlock, setSelection])
+  }, [getSlideDataOverride, addBlock, setSelection])
 
-  const value: EditorContextValue = {
+  const value: EditorContextValue = useMemo(() => ({
     editMode: state.editMode,
     activeTool: state.activeTool,
     selection: state.selection,
@@ -937,6 +967,7 @@ export function EditorProvider({ deckId, originalSlides, deckTitle: initialTitle
     addSlide,
     removeAddedSlide,
     allSlides,
+    effectiveSlides,
     slideEntries,
     insertSlide,
     deleteSlide,
@@ -961,7 +992,14 @@ export function EditorProvider({ deckId, originalSlides, deckTitle: initialTitle
     openBlockContextMenu,
     closeBlockContextMenu,
     duplicateBlock,
-  }
+  }), [
+    state.editMode, state.activeTool, state.selection, state.activeColor,
+    localTitle, localDescription,
+    allSlides, effectiveSlides, slideEntries, addedSlides,
+    state.clipboard, state.pendingTemplateSlideIndex,
+    canUndo, canRedo, blockContextMenu,
+    copySlide, duplicateSlide, duplicateBlock,
+  ])
 
   return <EditorContext.Provider value={value}>{children}</EditorContext.Provider>
 }

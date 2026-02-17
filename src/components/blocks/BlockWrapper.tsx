@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react'
+import { memo, useCallback, useEffect, useRef, useState, type ReactNode } from 'react'
 import ResizeHandles from '../editor/ResizeHandles'
 import type { ContentBlock } from '../../data/types'
 
@@ -15,7 +15,7 @@ interface BlockWrapperProps {
   children: ReactNode
 }
 
-export default function BlockWrapper({
+export default memo(function BlockWrapper({
   block,
   isSelected,
   editMode,
@@ -158,4 +158,4 @@ export default function BlockWrapper({
       )}
     </>
   )
-}
+})

@@ -1,4 +1,5 @@
-import type { BlockSlideData } from '../../data/types'
+import { useCallback } from 'react'
+import type { BlockSlideData, ContentBlock } from '../../data/types'
 import { useEditor } from '../editor/EditorProvider'
 import { useSpotlight } from '../../hooks/useSpotlight'
 import BlockRenderer from './BlockRenderer'
@@ -14,15 +15,8 @@ export default function BlockSlideRenderer({ data, slideIndex }: BlockSlideRende
     editMode,
     selection,
     setSelection,
-    beginDrag,
-    updateBlockQuiet,
-    openBlockContextMenu,
   } = useEditor()
   const { active: spotlightActive, revealedCount } = useSpotlight()
-
-  const handleBlockSelect = (blockId: string) => {
-    setSelection({ type: 'block', slideIndex, blockId })
-  }
 
   // Click on empty canvas area → select the slide (shows add-block panel)
   const handleCanvasClick = (e: React.MouseEvent) => {
@@ -47,22 +41,58 @@ export default function BlockSlideRenderer({ data, slideIndex }: BlockSlideRende
         const isRevealed = !spotlightActive || blockIndex < revealedCount
 
         return (
-          <BlockWrapper
+          <BlockItem
             key={block.id}
             block={block}
+            slideIndex={slideIndex}
             isSelected={isSelected}
             editMode={editMode}
-            onSelect={() => handleBlockSelect(block.id)}
-            onUpdate={(bounds) => updateBlockQuiet(slideIndex, block.id, bounds)}
-            onUpdateQuiet={(bounds) => updateBlockQuiet(slideIndex, block.id, bounds)}
-            onDragStart={beginDrag}
-            onContextMenu={(e) => openBlockContextMenu(e.clientX, e.clientY, slideIndex, block.id)}
             spotlightRevealed={isRevealed}
-          >
-            <BlockRenderer data={block.data} blockId={block.id} slideIndex={slideIndex} />
-          </BlockWrapper>
+          />
         )
       })}
     </div>
+  )
+}
+
+/**
+ * BlockItem creates stable callbacks via useCallback so that the
+ * memoized BlockWrapper only re-renders when its relevant props change.
+ */
+function BlockItem({ block, slideIndex, isSelected, editMode, spotlightRevealed }: {
+  block: ContentBlock
+  slideIndex: number
+  isSelected: boolean
+  editMode: boolean
+  spotlightRevealed: boolean
+}) {
+  const { setSelection, updateBlockQuiet, beginDrag, openBlockContextMenu } = useEditor()
+
+  const onSelect = useCallback(() => {
+    setSelection({ type: 'block', slideIndex, blockId: block.id })
+  }, [setSelection, slideIndex, block.id])
+
+  const onUpdate = useCallback((bounds: { x: number; y: number; width: number; height: number }) => {
+    updateBlockQuiet(slideIndex, block.id, bounds)
+  }, [updateBlockQuiet, slideIndex, block.id])
+
+  const onContextMenu = useCallback((e: React.MouseEvent) => {
+    openBlockContextMenu(e.clientX, e.clientY, slideIndex, block.id)
+  }, [openBlockContextMenu, slideIndex, block.id])
+
+  return (
+    <BlockWrapper
+      block={block}
+      isSelected={isSelected}
+      editMode={editMode}
+      onSelect={onSelect}
+      onUpdate={onUpdate}
+      onUpdateQuiet={onUpdate}
+      onDragStart={beginDrag}
+      onContextMenu={onContextMenu}
+      spotlightRevealed={spotlightRevealed}
+    >
+      <BlockRenderer data={block.data} blockId={block.id} slideIndex={slideIndex} />
+    </BlockWrapper>
   )
 }

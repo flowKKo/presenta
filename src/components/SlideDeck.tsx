@@ -1,17 +1,18 @@
-import { useRef, useCallback, useMemo, useState, useEffect } from 'react'
+import { useRef, useCallback, useState, useEffect, lazy, Suspense } from 'react'
 import { colors } from '../theme/swiss'
 import type { SlideData } from '../data/types'
 import Slide from './Slide'
 import SlideContent from './SlideContent'
 import Sidebar from './Sidebar'
-import FullscreenOverlay from './FullscreenOverlay'
 import { useFullscreen } from '../hooks/useFullscreen'
 import { EditorProvider, useEditor } from './editor/EditorProvider'
 import { InlineEditProvider } from './editor/InlineEditContext'
 import EditorToolbar from './editor/EditorToolbar'
 import BlockContextMenu from './editor/BlockContextMenu'
-import PropertyPanel from './editor/PropertyPanel'
 import { exportDeck } from '../data/deck-io'
+
+const FullscreenOverlay = lazy(() => import('./FullscreenOverlay'))
+const PropertyPanel = lazy(() => import('./editor/PropertyPanel'))
 
 function Tooltip({ label, children }: { label: string; children: React.ReactNode }) {
   return (
@@ -43,8 +44,8 @@ export default function SlideDeck({ slides, onBack, deckId, deckTitle, deckDescr
 function SlideDeckInner({ slides, onBack }: Omit<SlideDeckProps, 'deckId' | 'deckTitle' | 'deckDescription'>) {
   const mainRef = useRef<HTMLDivElement>(null)
   const {
-    editMode, toggleEditMode, getEffectiveSlideData, setSelection,
-    allSlides, insertSlide, deleteSlide, copySlide, pasteSlide, duplicateSlide, moveSlide, clipboard,
+    editMode, toggleEditMode, setSelection,
+    allSlides, effectiveSlides, insertSlide, deleteSlide, copySlide, pasteSlide, duplicateSlide, moveSlide, clipboard,
     setPendingTemplate, pendingTemplateSlideIndex,
     deckTitle, deckDescription, setDeckTitle, setDeckDescription,
   } = useEditor()
@@ -56,11 +57,6 @@ function SlideDeckInner({ slides, onBack }: Omit<SlideDeckProps, 'deckId' | 'dec
   const goNextRef = useRef(() => {})
   const goPrevRef = useRef(() => {})
   const fullscreen = useFullscreen(allSlides.length)
-
-  const effectiveSlides = useMemo(
-    () => allSlides.map((s, i) => getEffectiveSlideData(i, s)),
-    [allSlides, getEffectiveSlideData],
-  )
 
   // ─── Navigation helpers ───
 
@@ -409,21 +405,25 @@ function SlideDeckInner({ slides, onBack }: Omit<SlideDeckProps, 'deckId' | 'dec
             <span className="text-sm font-semibold" style={{ color: colors.textPrimary }}>属性面板</span>
           </div>
           <div className="flex-1 overflow-y-auto">
-            <PropertyPanel originalSlides={allSlides} />
+            <Suspense fallback={null}>
+              <PropertyPanel originalSlides={allSlides} />
+            </Suspense>
           </div>
         </div>
       )}
 
-      {/* Fullscreen overlay */}
+      {/* Fullscreen overlay (lazy-loaded) */}
       {fullscreen.isActive && fullscreen.currentIndex !== null && (
-        <FullscreenOverlay
-          slides={effectiveSlides}
-          currentIndex={fullscreen.currentIndex}
-          onNext={fullscreen.next}
-          onPrev={fullscreen.prev}
-          onExit={handleExitFullscreen}
-          spotlight={spotlight}
-        />
+        <Suspense fallback={null}>
+          <FullscreenOverlay
+            slides={effectiveSlides}
+            currentIndex={fullscreen.currentIndex}
+            onNext={fullscreen.next}
+            onPrev={fullscreen.prev}
+            onExit={handleExitFullscreen}
+            spotlight={spotlight}
+          />
+        </Suspense>
       )}
     </div>
   )

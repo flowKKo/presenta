@@ -1,3 +1,4 @@
+import { memo } from 'react'
 import type { SlideData } from '../data/types'
 import ErrorBoundary from './ErrorBoundary'
 
@@ -19,13 +20,13 @@ import MindmapEngine from './engines/MindmapEngine'
 import StackEngine from './engines/StackEngine'
 import BlockSlideRenderer from './blocks/BlockSlideRenderer'
 
-export default function SlideContent({ data, slideIndex }: { data: SlideData; slideIndex?: number }) {
+export default memo(function SlideContent({ data, slideIndex }: { data: SlideData; slideIndex?: number }) {
   return (
     <ErrorBoundary>
       <SlideContentInner data={data} slideIndex={slideIndex} />
     </ErrorBoundary>
   )
-}
+})
 
 function SlideContentInner({ data, slideIndex }: { data: SlideData; slideIndex?: number }) {
   switch (data.type) {
