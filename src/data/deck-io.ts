@@ -1,11 +1,41 @@
 import type { DeckExportPayload, DeckMeta, SlideData } from './types'
 
-const VALID_SLIDE_TYPES = new Set([
-  'title', 'key-point', 'chart', 'grid-item', 'sequence',
-  'compare', 'funnel', 'concentric', 'hub-spoke', 'venn',
-  'cycle', 'table', 'roadmap', 'swot', 'mindmap', 'stack',
-  'block-slide',
-])
+/** Required fields per slide type — checks array/object/string presence to prevent runtime crashes */
+const REQUIRED_FIELDS: Record<string, { arrays?: string[]; objects?: string[]; strings?: string[] }> = {
+  'title':      { strings: ['title'] },
+  'key-point':  { strings: ['title'] },
+  'chart':      { strings: ['title', 'chartType'] },
+  'grid-item':  { strings: ['title', 'variant'], arrays: ['items'] },
+  'sequence':   { strings: ['title', 'variant'], arrays: ['steps'] },
+  'compare':    { strings: ['title', 'mode'] },
+  'funnel':     { strings: ['title', 'variant'], arrays: ['layers'] },
+  'concentric': { strings: ['title', 'variant'], arrays: ['rings'] },
+  'hub-spoke':  { strings: ['title', 'variant'], arrays: ['spokes'], objects: ['center'] },
+  'venn':       { strings: ['title', 'variant'], arrays: ['sets'] },
+  'cycle':      { strings: ['title', 'variant'], arrays: ['steps'] },
+  'table':      { strings: ['title', 'variant'], arrays: ['headers', 'rows'] },
+  'roadmap':    { strings: ['title', 'variant'], arrays: ['phases'] },
+  'swot':       { strings: ['title'], arrays: ['strengths', 'weaknesses', 'opportunities', 'threats'] },
+  'mindmap':    { strings: ['title'], objects: ['root'] },
+  'stack':      { strings: ['title', 'variant'], arrays: ['layers'] },
+  'block-slide': { strings: ['title'], arrays: ['blocks'] },
+}
+
+function validateSlide(slide: Record<string, unknown>): boolean {
+  const type = slide.type as string
+  const req = REQUIRED_FIELDS[type]
+  if (!req) return false
+  for (const f of req.strings ?? []) {
+    if (typeof slide[f] !== 'string') return false
+  }
+  for (const f of req.arrays ?? []) {
+    if (!Array.isArray(slide[f])) return false
+  }
+  for (const f of req.objects ?? []) {
+    if (typeof slide[f] !== 'object' || slide[f] === null || Array.isArray(slide[f])) return false
+  }
+  return true
+}
 
 export function exportDeck(title: string, description: string | undefined, slides: SlideData[]) {
   const payload: DeckExportPayload = {
@@ -56,9 +86,14 @@ export async function importDeckFromFile(file: File): Promise<DeckMeta> {
     throw new Error('文件内容无效：缺少必要字段或幻灯片格式不正确')
   }
 
-  for (const slide of obj.slides as Record<string, unknown>[]) {
-    if (typeof slide !== 'object' || slide === null || !VALID_SLIDE_TYPES.has(slide.type as string)) {
-      throw new Error('文件内容无效：缺少必要字段或幻灯片格式不正确')
+  for (let i = 0; i < (obj.slides as unknown[]).length; i++) {
+    const slide = (obj.slides as unknown[])[i]
+    if (typeof slide !== 'object' || slide === null || Array.isArray(slide)) {
+      throw new Error(`幻灯片 #${i + 1} 格式无效`)
+    }
+    const s = slide as Record<string, unknown>
+    if (!validateSlide(s)) {
+      throw new Error(`幻灯片 #${i + 1} (${String(s.type ?? '未知类型')}) 缺少必要字段`)
     }
   }
 
