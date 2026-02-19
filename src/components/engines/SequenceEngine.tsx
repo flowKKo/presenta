@@ -52,10 +52,10 @@ function RibbonStep({ label, description, index, color, isFirst, isLast, textCol
     : `polygon(0 0, 100% 0, 100% calc(100% - ${arrowDepth}px), 50% 100%, 0 calc(100% - ${arrowDepth}px))`
   const clipMiddle = isH
     ? `polygon(0 0, calc(100% - ${arrowDepth}px) 0, 100% 50%, calc(100% - ${arrowDepth}px) 100%, 0 100%, ${arrowDepth}px 50%)`
-    : `polygon(0 0, 100% 0, 100% calc(100% - ${arrowDepth}px), 50% 100%, 0 calc(100% - ${arrowDepth}px), 0 0)`
+    : `polygon(0 ${arrowDepth}px, 50% 0, 100% ${arrowDepth}px, 100% calc(100% - ${arrowDepth}px), 50% 100%, 0 calc(100% - ${arrowDepth}px))`
   const clipLast = isH
     ? `polygon(0 0, 100% 0, 100% 100%, 0 100%, ${arrowDepth}px 50%)`
-    : `polygon(0 0, 100% 0, 100% 100%, 50% 100%, 0 100%)`
+    : `polygon(0 ${arrowDepth}px, 50% 0, 100% ${arrowDepth}px, 100% 100%, 0 100%)`
 
   const clip = isFirst ? clipFirst : isLast ? clipLast : clipMiddle
   const margin = !isLast ? (isH ? { marginRight: `-${arrowDepth / 2}px` } : { marginBottom: `-${arrowDepth / 2}px` }) : undefined
