@@ -899,7 +899,7 @@ export function EditorProvider({ deckId, originalSlides, deckTitle: initialTitle
   const undo = useCallback(() => dispatch({ type: 'UNDO' }), [])
   const redo = useCallback(() => dispatch({ type: 'REDO' }), [])
 
-  const canUndo = state.historyIndex >= 0
+  const canUndo = state.historyIndex > 0
   const canRedo = state.historyIndex < state.history.length - 1
 
   // ─── Block context menu (UI state, not in reducer) ───
