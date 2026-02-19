@@ -1,5 +1,5 @@
 import { AnimatePresence, motion } from 'framer-motion'
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { colors } from '../theme/swiss'
 import type { SlideData } from '../data/types'
 import SlideContent from './SlideContent'
@@ -61,23 +61,28 @@ export default function FullscreenOverlay({
     setRevealedCount(goingForward ? 0 : getBlockCount(slides[currentIndex]))
   }
 
-  const handleNext = useCallback(() => {
+  const handleNextRef = useRef(() => {})
+  handleNextRef.current = () => {
     if (spotlight && blockCount > 0 && revealedCount < blockCount) {
       setRevealedCount((c) => c + 1)
     } else {
       onNext()
     }
-  }, [spotlight, blockCount, revealedCount, onNext])
+  }
 
-  const handlePrev = useCallback(() => {
+  const handlePrevRef = useRef(() => {})
+  handlePrevRef.current = () => {
     if (spotlight && revealedCount > 0) {
       setRevealedCount((c) => c - 1)
     } else {
       onPrev()
     }
-  }, [spotlight, revealedCount, onPrev])
+  }
 
-  // Keyboard navigation
+  const onExitRef = useRef(onExit)
+  onExitRef.current = onExit
+
+  // Keyboard navigation — stable listener, no re-attachment on state change
   useEffect(() => {
     const handleKey = (e: KeyboardEvent) => {
       switch (e.key) {
@@ -86,22 +91,22 @@ export default function FullscreenOverlay({
         case ' ':
         case 'Enter':
           e.preventDefault()
-          handleNext()
+          handleNextRef.current()
           break
         case 'ArrowLeft':
         case 'ArrowUp':
           e.preventDefault()
-          handlePrev()
+          handlePrevRef.current()
           break
         case 'Escape':
           e.preventDefault()
-          onExit()
+          onExitRef.current()
           break
       }
     }
     window.addEventListener('keydown', handleKey)
     return () => window.removeEventListener('keydown', handleKey)
-  }, [handleNext, handlePrev, onExit])
+  }, [])
 
   const isFirst = currentIndex === 0
 
@@ -113,14 +118,14 @@ export default function FullscreenOverlay({
       {/* Left 20% — prev */}
       {!isFirst && (
         <div
-          onClick={handlePrev}
+          onClick={() => handlePrevRef.current()}
           className="absolute left-0 top-0 bottom-0 w-[20%] z-10 cursor-pointer"
         />
       )}
 
       {/* Right 80% — next */}
       <div
-        onClick={handleNext}
+        onClick={() => handleNextRef.current()}
         className="absolute right-0 top-0 bottom-0 z-10 cursor-pointer"
         style={{ left: isFirst ? '0' : '20%' }}
       />
