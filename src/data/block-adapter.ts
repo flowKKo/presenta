@@ -30,7 +30,7 @@ export function legacyToBlocks(data: SlideData): BlockSlideData {
       y: 0,
       width: 100,
       height: 18,
-      data: { type: 'title-body', title, body: body ?? subtitle },
+      data: { type: 'title-body', title, body: body ?? subtitle ?? '' },
     })
     blocks.push({
       id: nextBlockId(),
@@ -48,7 +48,7 @@ export function legacyToBlocks(data: SlideData): BlockSlideData {
       y: 0,
       width: 100,
       height: 100,
-      data: { type: 'title-body', title, body: body ?? subtitle },
+      data: { type: 'title-body', title, body: body ?? subtitle ?? '' },
     })
   }
 
