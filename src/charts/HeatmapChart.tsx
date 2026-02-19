@@ -21,7 +21,7 @@ export default function HeatmapChart({ xCategories, yCategories, data, height, c
       position: 'top' as const,
       formatter: (params: { value: [number, number, number] }) => {
         const [xi, yi, val] = params.value
-        return `${xCategories[xi]} × ${yCategories[yi]}<br/><b>${val}</b>`
+        return `${xCategories[xi] ?? xi} × ${yCategories[yi] ?? yi}<br/><b>${val}</b>`
       },
     },
     grid: {
