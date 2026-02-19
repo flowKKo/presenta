@@ -119,7 +119,7 @@ function extractDiagramData(data: SlideData): BlockData | null {
       return { type: 'stack', layers: data.layers, variant: data.variant, ...pickColors(data) }
 
     case 'chart': {
-      const { type, title, body, titleSize, bodySize, titleColor, chartHeight, ...chartData } = data
+      const { type, title, body, titleSize, bodySize, titleColor, textColor, chartHeight, ...chartData } = data
       return { type: 'chart' as const, ...chartData }
     }
 
