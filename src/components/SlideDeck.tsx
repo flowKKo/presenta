@@ -182,16 +182,18 @@ function SlideDeckInner({ slides, onBack }: Omit<SlideDeckProps, 'deckId' | 'dec
     fullscreen.enter(activeIndex)
   }, [fullscreen, activeIndex, editMode, toggleEditMode])
 
+  const editModeRef = useRef(editMode)
+  editModeRef.current = editMode
   const handleExitFullscreen = useCallback(() => {
     const idx = fullscreen.currentIndex
     fullscreen.exit()
     requestAnimationFrame(() => {
-      if (!editMode) toggleEditMode()
+      if (!editModeRef.current) toggleEditMode()
     })
     if (idx !== null) {
       setActiveIndex(idx)
     }
-  }, [fullscreen, editMode, toggleEditMode])
+  }, [fullscreen, toggleEditMode])
 
   // ─── Delete slide wrapper — adjust activeIndex ───
 
