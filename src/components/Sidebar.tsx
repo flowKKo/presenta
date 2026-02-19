@@ -186,7 +186,8 @@ export default function Sidebar({
     (e.currentTarget as HTMLElement).style.opacity = '1'
     const from = dragIndexRef.current
     const to = dropTargetRef.current
-    if (from !== null && to !== null && from !== to && onReorderSlide) {
+    // Only reorder if dropped on a valid target (dropEffect is 'none' when dropped outside)
+    if (from !== null && to !== null && from !== to && onReorderSlide && e.dataTransfer.dropEffect !== 'none') {
       onReorderSlide(from, to)
     }
     dragIndexRef.current = null
@@ -200,6 +201,10 @@ export default function Sidebar({
     e.dataTransfer.dropEffect = 'move'
     dropTargetRef.current = index
     setDropTarget(index)
+  }, [])
+
+  const handleDrop = useCallback((e: React.DragEvent) => {
+    e.preventDefault()
   }, [])
 
   const isGapMenu = contextMenu !== null && contextMenu.gapPosition !== undefined
@@ -244,6 +249,7 @@ export default function Sidebar({
                 onDragStart={(e) => handleDragStart(e, i)}
                 onDragEnd={handleDragEnd}
                 onDragOver={(e) => handleDragOver(e, i)}
+                onDrop={handleDrop}
                 className={`relative ${isDragOver ? 'pt-1' : ''}`}
               >
                 {isDragOver && dragIndex !== null && i < dragIndex && (
