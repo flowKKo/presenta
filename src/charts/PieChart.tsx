@@ -70,7 +70,7 @@ export default function PieChart({ data, innerRadius = 0, height, colorPalette, 
             label: {
               show: true,
               position: 'center' as const,
-              formatter: `{total|${total}}\n{label|总计}`,
+              formatter: `{total|${Number.isInteger(total) ? total : total.toFixed(1)}}\n{label|总计}`,
               rich: {
                 total: {
                   fontSize: 28,
