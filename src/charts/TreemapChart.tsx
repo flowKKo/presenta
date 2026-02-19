@@ -16,7 +16,7 @@ export default function TreemapChart({ data, height, colorPalette }: TreemapChar
     tooltip: {
       formatter: (info: { name: string; value: number; treePathInfo: { name: string }[] }) => {
         const path = info.treePathInfo.map(n => n.name).filter(Boolean).join(' / ')
-        return `<b>${path}</b><br/>值: ${info.value}`
+        return `<b>${path}</b>${info.value != null ? `<br/>值: ${info.value}` : ''}`
       },
     },
     series: [

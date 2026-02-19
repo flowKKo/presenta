@@ -17,7 +17,7 @@ export default function SunburstChart({ data, height, colorPalette }: SunburstCh
       trigger: 'item' as const,
       formatter: (params: { name: string; value: number; treePathInfo: { name: string }[] }) => {
         const path = params.treePathInfo.map(n => n.name).filter(Boolean).join(' / ')
-        return `<b>${path}</b><br/>值: ${params.value}`
+        return `<b>${path}</b>${params.value != null ? `<br/>值: ${params.value}` : ''}`
       },
     },
     series: [
