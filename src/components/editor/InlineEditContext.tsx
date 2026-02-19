@@ -11,11 +11,9 @@ function setByPath(obj: Record<string, unknown>, path: string, value: unknown): 
   for (let i = 0; i < keys.length - 1; i++) {
     const k = keys[i]
     const idx = Number(k)
-    if (!Number.isNaN(idx) && Array.isArray(cur)) {
-      cur = cur[idx] as Record<string, unknown>
-    } else {
-      cur = cur[k] as Record<string, unknown>
-    }
+    const next = (!Number.isNaN(idx) && Array.isArray(cur)) ? cur[idx] : cur[k]
+    if (next == null || typeof next !== 'object') return clone // bail out on null/undefined intermediate
+    cur = next as Record<string, unknown>
   }
   const lastKey = keys[keys.length - 1]
   const lastIdx = Number(lastKey)
