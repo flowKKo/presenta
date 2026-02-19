@@ -69,10 +69,10 @@ export default function WaterfallChart({ items, height, colorPalette }: Waterfal
   const option = {
     tooltip: {
       trigger: 'axis' as const,
-      formatter: (params: { name: string; value: number; seriesName: string }[]) => {
+      formatter: (params: { name: string; value: number; seriesName: string; dataIndex: number }[]) => {
         const visible = params.find(p => p.seriesName === '值')
         if (!visible) return ''
-        const item = items.find(i => i.name === visible.name)
+        const item = items[visible.dataIndex]
         const sign = item?.type === 'decrease' || (item && !item.type && item.value < 0) ? '-' : item?.type === 'total' ? '' : '+'
         return `<b>${visible.name}</b><br/>${sign}${visible.value}`
       },
