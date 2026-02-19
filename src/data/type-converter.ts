@@ -574,8 +574,8 @@ function buildCompare(
         type: 'compare', title, body, mode: 'quadrant',
         quadrantItems: items.map((i, idx) => ({
           label: i.name,
-          x: ((idx % 3) + 1) * 25,
-          y: (Math.floor(idx / 3) + 1) * 25,
+          x: (idx % 2) * 50 + 25,
+          y: Math.floor(idx / 2) * 50 + 25,
         })),
         xAxis: '维度 X',
         yAxis: '维度 Y',
