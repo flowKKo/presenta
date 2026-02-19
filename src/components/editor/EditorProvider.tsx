@@ -463,22 +463,17 @@ function editorReducer(state: EditorState, action: EditorAction): EditorState {
     // ─── Undo / Redo ───
     case 'UNDO': {
       if (state.historyIndex < 0) return state
-      // Save current state as redo target
       const history = [...state.history]
-      // If we're at the tip and haven't pushed current yet, push it
-      if (state.historyIndex === history.length - 1) {
+      // At the tip: save current state for redo only if it actually differs
+      // (after a redo, deckState === history[tip] so pushing would be a no-op duplicate)
+      if (state.historyIndex === history.length - 1 && state.deckState !== history[state.historyIndex]) {
         history.push(state.deckState)
-        return {
-          ...state,
-          history,
-          historyIndex: state.historyIndex, // points to the entry we restore
-          deckState: history[state.historyIndex],
-        }
       }
       const newIdx = state.historyIndex - 1
       if (newIdx < 0) return state
       return {
         ...state,
+        history,
         historyIndex: newIdx,
         deckState: history[newIdx],
       }
