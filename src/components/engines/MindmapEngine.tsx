@@ -3,9 +3,7 @@ import { motion } from 'framer-motion'
 import type { MindmapSlideData, MindmapNode } from '../../data/types'
 import { colors, motionConfig, generateGradientColors } from '../../theme/swiss'
 import EngineTitle from './shared/EngineTitle'
-
-const VB_W = 800
-const VB_H = 480
+import { VB_W, VB_H } from './shared/constants'
 
 interface LayoutNode {
   label: string

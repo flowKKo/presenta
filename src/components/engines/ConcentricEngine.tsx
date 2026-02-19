@@ -2,10 +2,7 @@ import { motion } from 'framer-motion'
 import type { ConcentricSlideData } from '../../data/types'
 import { colors, motionConfig, generateGradientColors } from '../../theme/swiss'
 import EngineTitle from './shared/EngineTitle'
-
-// viewBox coordinate system — SVG itself fills container via width/height 100%
-const VB_W = 800
-const VB_H = 480
+import { VB_W, VB_H } from './shared/constants'
 
 export function ConcentricDiagram({ rings, variant, textColor, colorPalette }: { rings: ConcentricSlideData['rings']; variant: ConcentricSlideData['variant']; textColor?: string; colorPalette?: string }) {
   if (rings.length === 0) return null

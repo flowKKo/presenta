@@ -2,9 +2,7 @@ import { motion } from 'framer-motion'
 import type { VennSlideData } from '../../data/types'
 import { colors, motionConfig, generateGradientColors } from '../../theme/swiss'
 import EngineTitle from './shared/EngineTitle'
-
-const VB_W = 800
-const VB_H = 480
+import { VB_W, VB_H } from './shared/constants'
 
 export function VennDiagram({ sets, intersectionLabel, variant, textColor, colorPalette }: { sets: VennSlideData['sets']; variant: VennSlideData['variant']; intersectionLabel?: string; textColor?: string; colorPalette?: string }) {
   const palette = generateGradientColors(sets.length, colorPalette)

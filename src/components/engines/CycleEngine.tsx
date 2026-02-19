@@ -3,13 +3,7 @@ import { motion } from 'framer-motion'
 import type { CycleSlideData } from '../../data/types'
 import { colors, motionConfig, generateGradientColors } from '../../theme/swiss'
 import EngineTitle from './shared/EngineTitle'
-
-const VB_W = 800
-const VB_H = 480
-
-function truncateLabel(text: string, maxChars: number): string {
-  return text.length > maxChars ? text.slice(0, maxChars - 1) + '…' : text
-}
+import { VB_W, VB_H, truncateLabel } from './shared/constants'
 
 /**
  * Compute arc arrows that follow a circular/elliptical path between nodes.

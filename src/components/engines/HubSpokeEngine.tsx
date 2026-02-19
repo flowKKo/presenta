@@ -2,13 +2,7 @@ import { motion } from 'framer-motion'
 import type { HubSpokeSlideData } from '../../data/types'
 import { colors, motionConfig, generateGradientColors } from '../../theme/swiss'
 import EngineTitle from './shared/EngineTitle'
-
-const VB_W = 800
-const VB_H = 480
-
-function truncateLabel(text: string, maxChars: number): string {
-  return text.length > maxChars ? text.slice(0, maxChars - 1) + '…' : text
-}
+import { VB_W, VB_H, truncateLabel } from './shared/constants'
 
 export function HubSpokeDiagram({ center, spokes, variant, textColor, colorPalette }: { center: HubSpokeSlideData['center']; spokes: HubSpokeSlideData['spokes']; variant: HubSpokeSlideData['variant']; textColor?: string; colorPalette?: string }) {
   const palette = generateGradientColors(spokes.length, colorPalette)
