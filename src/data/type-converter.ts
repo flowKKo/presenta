@@ -154,6 +154,7 @@ export function extractCommonItems(data: SlideData): CommonSlideData {
 
     case 'block-slide':
       return { ...base, items: [] }
+    default: { const _exhaustive: never = data; return { ...base, items: [] } }
   }
 }
 
@@ -296,6 +297,7 @@ function applyVariant(data: SlideData, variant?: string): SlideData {
     case 'mindmap':
     case 'block-slide':
       return data
+    default: { const _exhaustive: never = data; return data }
   }
 }
 
@@ -410,6 +412,7 @@ function buildTarget(
 
     case 'block-slide':
       return { type: 'block-slide', title, blocks: [] }
+    default: { const _exhaustive: never = type; return { type: 'title', title, subtitle: '' } }
   }
 }
 
@@ -831,5 +834,6 @@ function getVariant(data: SlideData): string | undefined {
     case 'mindmap':
     case 'block-slide':
       return undefined
+    default: { const _exhaustive: never = data; return undefined }
   }
 }

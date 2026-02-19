@@ -125,5 +125,6 @@ function extractDiagramData(data: SlideData): BlockData | null {
 
     case 'block-slide':
       return null
+    default: { const _exhaustive: never = data; return null }
   }
 }
