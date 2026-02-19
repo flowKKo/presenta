@@ -5,6 +5,7 @@ import EngineTitle from './shared/EngineTitle'
 import EditableText from '../editor/EditableText'
 
 function getClipPath(variant: FunnelSlideData['variant'], index: number, total: number): string {
+  if (total <= 0) return 'polygon(0 0, 100% 0, 100% 100%, 0 100%)'
   const step = 100 / total
   const topOffset = index * step
   const bottomOffset = (index + 1) * step
