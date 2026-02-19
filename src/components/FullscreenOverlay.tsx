@@ -51,6 +51,7 @@ export default function FullscreenOverlay({
   }, [])
 
   const currentSlide = slides[currentIndex]
+  if (!currentSlide) return null
   const blockCount = getBlockCount(currentSlide)
 
   // Reset revealed count synchronously during render to avoid one-frame flash
