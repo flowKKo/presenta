@@ -30,6 +30,12 @@ function validateSlide(slide: Record<string, unknown>): boolean {
   }
   for (const f of req.arrays ?? []) {
     if (!Array.isArray(slide[f])) return false
+    // Validate array elements are non-null objects (or strings for headers)
+    const arr = slide[f] as unknown[]
+    for (const el of arr) {
+      if (el == null) return false
+      if (typeof el !== 'object' && typeof el !== 'string') return false
+    }
   }
   for (const f of req.objects ?? []) {
     if (typeof slide[f] !== 'object' || slide[f] === null || Array.isArray(slide[f])) return false
