@@ -175,16 +175,20 @@ function extractChartItems(data: ChartSlideData): CommonItem[] {
         value: s.value,
       }))
     case 'line':
-    case 'area':
+    case 'area': {
+      const lineData = data.lineSeries?.[0]?.data ?? []
       return (data.categories ?? []).map((cat, i) => ({
         name: cat,
-        value: data.lineSeries?.[0]?.data[i],
+        value: i < lineData.length ? lineData[i] : undefined,
       }))
-    case 'radar':
+    }
+    case 'radar': {
+      const radarValues = data.radarSeries?.[0]?.values ?? []
       return (data.indicators ?? []).map((ind, i) => ({
         name: ind.name,
-        value: data.radarSeries?.[0]?.values[i],
+        value: i < radarValues.length ? radarValues[i] : undefined,
       }))
+    }
     case 'proportion':
       return (data.proportionItems ?? []).map((p) => ({
         name: p.name,
@@ -195,11 +199,13 @@ function extractChartItems(data: ChartSlideData): CommonItem[] {
         name: w.name,
         value: w.value,
       }))
-    case 'combo':
+    case 'combo': {
+      const comboData = data.comboSeries?.[0]?.data ?? []
       return (data.categories ?? []).map((cat, i) => ({
         name: cat,
-        value: data.comboSeries?.[0]?.data[i],
+        value: i < comboData.length ? comboData[i] : undefined,
       }))
+    }
     case 'scatter':
       return (data.scatterSeries ?? []).flatMap((s) =>
         s.data.map((d, i) => ({
