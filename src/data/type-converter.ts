@@ -220,6 +220,7 @@ function extractChartItems(data: ChartSlideData): CommonItem[] {
       return (data.boxplotItems ?? []).map((b) => ({ name: b.name, value: b.values[2] }))
     case 'gantt':
       return (data.ganttTasks ?? []).map((t) => ({ name: t.name, value: t.end - t.start }))
+    default: { const _exhaustive: never = data.chartType; return [] }
   }
 }
 
@@ -240,6 +241,7 @@ function extractCompareItems(data: CompareSlideData): CommonItem[] {
         name: it.label,
         value: (it.x + it.y) / 2,
       }))
+    default: { const _exhaustive: never = data.mode; return [] }
   }
 }
 
@@ -538,6 +540,7 @@ function buildChart(title: string, body: string | undefined, items: CommonItem[]
         type: 'chart', chartType: 'gantt', title, body,
         ganttTasks: withValues.map((i, idx) => ({ name: i.name, start: idx * 3, end: idx * 3 + 4 })),
       }
+    default: { const _exhaustive: never = chartType; return { type: 'chart', chartType: 'bar', title, body, bars: [] } as ChartSlideData }
   }
 }
 
@@ -577,6 +580,7 @@ function buildCompare(
         xAxis: '维度 X',
         yAxis: '维度 Y',
       }
+    default: { const _exhaustive: never = mode; return { type: 'compare', title, body, mode: 'versus', sides: [] } as CompareSlideData }
   }
 }
 
