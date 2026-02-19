@@ -381,6 +381,7 @@ function OverlayItem({ overlay, slideIndex, isSelected, isEditing, onStartEditin
         <ResizeHandles
           constraint="free"
           bounds={{ x: overlay.x, y: overlay.y, width: overlay.width, height: overlay.height }}
+          onResizeStart={beginDrag}
           onResize={handleResize}
           onResizeEnd={handleResizeEnd}
           color="#AB47BC"
