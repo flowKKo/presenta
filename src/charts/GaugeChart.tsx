@@ -11,7 +11,7 @@ interface GaugeChartProps {
 
 export default function GaugeChart({ data, height, colorPalette }: GaugeChartProps) {
   const pal = getChartPalette(colorPalette)
-  const max = data.max ?? 100
+  const max = Math.max(data.max ?? 100, 1)
   const ratio = data.value / max
 
   // Use auto-color (red/yellow/green by ratio) unless a custom palette is explicitly set
