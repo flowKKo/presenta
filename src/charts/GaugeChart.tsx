@@ -11,8 +11,9 @@ interface GaugeChartProps {
 
 export default function GaugeChart({ data, height, colorPalette }: GaugeChartProps) {
   const pal = getChartPalette(colorPalette)
+  const safeValue = Number.isFinite(data.value) ? data.value : 0
   const max = Math.max(data.max ?? 100, 1)
-  const ratio = data.value / max
+  const ratio = safeValue / max
 
   // Use auto-color (red/yellow/green by ratio) unless a custom palette is explicitly set
   const autoColor = ratio < 0.4 ? '#E57373' : ratio < 0.7 ? '#FFB74D' : '#4CAF50'
@@ -84,7 +85,7 @@ export default function GaugeChart({ data, height, colorPalette }: GaugeChartPro
           fontSize: 14,
           color: colors.textSecondary,
         },
-        data: [{ value: data.value, name: data.name || '' }],
+        data: [{ value: safeValue, name: data.name || '' }],
         animationDuration: 1200,
         animationEasing: 'cubicOut' as const,
       },
