@@ -67,8 +67,8 @@ function CircularCycle({ steps, palette, textColor, uid }: { steps: CycleSlideDa
           <polygon points="0,0 10,4 0,8" fill={colors.textCaption} opacity={0.6} />
         </marker>
       </defs>
-      {/* Arc arrows following the circular orbit */}
-      {positions.map((_, i) => {
+      {/* Arc arrows following the circular orbit (skip for single node) */}
+      {n > 1 && positions.map((_, i) => {
         const { sx, sy, ex, ey, cpX, cpY } = computeArcArrow(i, n, positions, cx, cy, R, R, nodeR)
         return (
           <path
@@ -134,8 +134,8 @@ function GearCycle({ steps, palette, textColor, uid }: { steps: CycleSlideData['
           <polygon points="0,0 10,4 0,8" fill={colors.textCaption} opacity={0.6} />
         </marker>
       </defs>
-      {/* Arc arrows following the circular orbit */}
-      {positions.map((_, i) => {
+      {/* Arc arrows following the circular orbit (skip for single node) */}
+      {n > 1 && positions.map((_, i) => {
         const { sx, sy, ex, ey, cpX, cpY } = computeArcArrow(i, n, positions, cx, cy, R, R, nodeR + 5)
         return (
           <path
@@ -187,8 +187,8 @@ function LoopCycle({ steps, palette, textColor, uid }: { steps: CycleSlideData['
           <polygon points="0,0 10,4 0,8" fill={colors.textCaption} opacity={0.6} />
         </marker>
       </defs>
-      {/* Elliptical arc arrows — single unified track, no separate ellipse */}
-      {positions.map((_, i) => {
+      {/* Elliptical arc arrows — single unified track, no separate ellipse (skip for single node) */}
+      {n > 1 && positions.map((_, i) => {
         const { sx, sy, ex, ey, cpX, cpY } = computeArcArrow(i, n, positions, cx, cy, rx, ry, nodeR)
         return (
           <path
@@ -219,8 +219,9 @@ function LoopCycle({ steps, palette, textColor, uid }: { steps: CycleSlideData['
 
 export function CycleDiagram({ steps, variant, textColor, colorPalette }: { steps: CycleSlideData['steps']; variant: CycleSlideData['variant']; textColor?: string; colorPalette?: string }) {
   const uid = useId()
-  const palette = generateGradientColors(steps.length, colorPalette)
   if (steps.length === 0) return null
+  const palette = generateGradientColors(steps.length, colorPalette)
+  const showArrows = steps.length > 1
 
   return (
     <svg width="100%" height="100%" viewBox={`0 0 ${VB_W} ${VB_H}`} preserveAspectRatio="xMidYMid meet" role="img" aria-label="循环图">
