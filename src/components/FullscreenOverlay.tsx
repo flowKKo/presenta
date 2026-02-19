@@ -34,7 +34,7 @@ export default function FullscreenOverlay({
 }: FullscreenOverlayProps) {
   const [direction, setDirection] = useState(0)
   const [revealedCount, setRevealedCount] = useState(0)
-  const prevIndex = useRef(currentIndex)
+  const [prevIdx, setPrevIdx] = useState(currentIndex)
   const containerRef = useRef<HTMLDivElement>(null)
   const [scale, setScale] = useState(1)
 
@@ -54,10 +54,11 @@ export default function FullscreenOverlay({
   const blockCount = getBlockCount(currentSlide)
 
   // Reset revealed count synchronously during render to avoid one-frame flash
-  if (currentIndex !== prevIndex.current) {
-    const goingForward = currentIndex > prevIndex.current
+  // Uses state (not ref) so StrictMode double-render works correctly
+  if (currentIndex !== prevIdx) {
+    const goingForward = currentIndex > prevIdx
     setDirection(goingForward ? 1 : -1)
-    prevIndex.current = currentIndex
+    setPrevIdx(currentIndex)
     setRevealedCount(goingForward ? 0 : getBlockCount(slides[currentIndex]))
   }
 
