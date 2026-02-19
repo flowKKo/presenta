@@ -1,4 +1,4 @@
-import { memo, useCallback, useRef, useState } from 'react'
+import { memo, useCallback, useEffect, useRef, useState } from 'react'
 import { useEditor } from './EditorProvider'
 import ResizeHandles from './ResizeHandles'
 import type { OverlayElement, TextOverlay, RectOverlay, LineOverlay } from '../../data/editor-types'
@@ -348,6 +348,14 @@ function OverlayItem({ overlay, slideIndex, isSelected, isEditing, onStartEditin
 
   // Text overlay
   const textOverlay = overlay as TextOverlay
+  const textElRef = useRef<HTMLDivElement>(null)
+  // Set initial text via DOM when entering edit mode (avoid React children overwriting user input)
+  useEffect(() => {
+    if (isEditing && textElRef.current) {
+      textElRef.current.textContent = textOverlay.text
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isEditing])
   return (
     <div
       data-overlay-id={overlay.id}
@@ -362,6 +370,7 @@ function OverlayItem({ overlay, slideIndex, isSelected, isEditing, onStartEditin
       onPointerUp={handleDragEnd}
     >
       <div
+        ref={textElRef}
         contentEditable={isEditing}
         suppressContentEditableWarning
         onBlur={handleTextBlur}
@@ -376,7 +385,7 @@ function OverlayItem({ overlay, slideIndex, isSelected, isEditing, onStartEditin
           pointerEvents: isEditing ? 'auto' : 'inherit',
         }}
       >
-        {textOverlay.text}
+        {!isEditing && textOverlay.text}
       </div>
       {isSelected && interactive && !isEditing && (
         <ResizeHandles

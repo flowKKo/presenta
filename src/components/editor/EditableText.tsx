@@ -1,4 +1,4 @@
-import { useRef, useState, useCallback, type CSSProperties, type KeyboardEvent } from 'react'
+import { useRef, useState, useCallback, useEffect, type CSSProperties, type KeyboardEvent } from 'react'
 import { motion, type Variants } from 'framer-motion'
 import { useInlineEdit } from './InlineEditContext'
 
@@ -40,22 +40,26 @@ export default function EditableText({
 
   const canEdit = ctx?.editMode ?? false
 
-  const handleDoubleClick = useCallback(() => {
-    if (!canEdit || !ref.current) return
-    originalRef.current = value
-    setEditing(true)
-    // Focus after React re-renders with contentEditable
-    requestAnimationFrame(() => {
-      ref.current?.focus()
-      // Select all text
+  // Set initial text via DOM when entering edit mode (React children are suppressed during edit)
+  useEffect(() => {
+    if (editing && ref.current) {
+      ref.current.textContent = originalRef.current
+      ref.current.focus()
       const sel = window.getSelection()
       const range = document.createRange()
-      if (ref.current && sel) {
+      if (sel) {
         range.selectNodeContents(ref.current)
         sel.removeAllRanges()
         sel.addRange(range)
       }
-    })
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [editing])
+
+  const handleDoubleClick = useCallback(() => {
+    if (!canEdit) return
+    originalRef.current = value
+    setEditing(true)
   }, [canEdit, value])
 
   const commit = useCallback(() => {
@@ -118,7 +122,7 @@ export default function EditableText({
       onKeyDown={editing ? handleKeyDown : undefined}
       onPointerDown={canEdit ? (e: React.PointerEvent) => e.stopPropagation() : undefined}
     >
-      {value}
+      {!editing && value}
     </Comp>
   )
 }
