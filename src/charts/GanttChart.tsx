@@ -58,7 +58,7 @@ export default function GanttChart({ tasks, height, colorPalette }: GanttChartPr
           const endCoord = api.coord([api.value(0) + api.value(2), yIdx])
           const barHeight = api.size([0, 1])[1] * 0.6
           const task = displayTasks[yIdx]
-          const catIdx = categories.indexOf(task?.category || '默认')
+          const catIdx = Math.max(0, categories.indexOf(task?.category || '默认'))
           const color = pal[catIdx % pal.length]
 
           return {
