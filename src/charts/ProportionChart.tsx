@@ -86,7 +86,7 @@ export default function ProportionChart({ items, height, colorPalette }: Proport
           fontSize: 13,
           fontWeight: 600,
           formatter: (params: { dataIndex: number; value: number }) => {
-            const max = maxValues[params.dataIndex]
+            const max = maxValues[params.dataIndex] ?? 100
             const pct = max > 0 ? ((params.value / max) * 100).toFixed(0) : '0'
             return `${pct}%`
           },
