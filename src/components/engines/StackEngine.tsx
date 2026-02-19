@@ -5,7 +5,7 @@ import EngineTitle from './shared/EngineTitle'
 import EditableText from '../editor/EditableText'
 
 function HorizontalStack({ layers, palette, textColor }: { layers: StackSlideData['layers']; palette: string[]; textColor?: string }) {
-  const n = layers.length
+  const n = Math.max(layers.length, 1)
   return (
     <div className="flex flex-col justify-center gap-2 h-full px-4">
       {layers.map((layer, i) => {
@@ -37,7 +37,7 @@ function HorizontalStack({ layers, palette, textColor }: { layers: StackSlideDat
 }
 
 function VerticalStack({ layers, palette, textColor }: { layers: StackSlideData['layers']; palette: string[]; textColor?: string }) {
-  const n = layers.length
+  const n = Math.max(layers.length, 1)
   return (
     <div className="flex items-end justify-center gap-0 h-full px-8 pb-4">
       {layers.map((layer, i) => {
