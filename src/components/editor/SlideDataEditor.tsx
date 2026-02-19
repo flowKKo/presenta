@@ -356,7 +356,8 @@ export default function SlideDataEditor({ data, onChange, isBlock }: SlideDataEd
 
     default: {
       const _exhaustive: never = data
-      return _exhaustive
+      void _exhaustive
+      return null
     }
   }
 }

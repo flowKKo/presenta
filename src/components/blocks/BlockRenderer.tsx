@@ -151,7 +151,8 @@ function BlockRendererInner({ data, blockId, slideIndex }: BlockRendererProps) {
     }
     default: {
       const _exhaustive: never = data
-      return _exhaustive
+      void _exhaustive
+      return null
     }
   }
 }
