@@ -43,7 +43,7 @@ export function TableDiagram({ headers, rows, variant, textColor, colorPalette }
 
             return (
               <tr key={ri} style={{ backgroundColor: bg }}>
-                {row.cells.map((cell, ci) => (
+                {Array.from({ length: headers.length }, (_, ci) => row.cells[ci] ?? '').map((cell, ci) => (
                   <td
                     key={ci}
                     className="px-5 py-3.5 text-base"
