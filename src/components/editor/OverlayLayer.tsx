@@ -102,11 +102,16 @@ export default function OverlayLayer({ slideIndex, readOnly = false }: OverlayLa
     setSelection({ type: 'overlay', slideIndex, id: overlay.id })
   }, [activeColor, slideIndex, addOverlay, setSelection, toPercent])
 
-  // Keyboard delete
+  // Keyboard: delete overlay or ESC to cancel line drawing
   const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
     if (!editMode || readOnly) return
+    if (e.key === 'Escape' && lineStartRef.current) {
+      lineStartRef.current = null
+      setLinePreview(null)
+      e.preventDefault()
+      return
+    }
     if ((e.key === 'Delete' || e.key === 'Backspace') && selection?.type === 'overlay' && selection.slideIndex === slideIndex) {
-      // Don't delete if editing text
       if (editingTextId === selection.id) return
       e.preventDefault()
       removeOverlay(slideIndex, selection.id)
