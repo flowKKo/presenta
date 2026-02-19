@@ -61,7 +61,7 @@ export default function ScatterChart({ series, xAxisName, yAxisName, height, col
         symbolSize: hasBubble
           ? (val: (number | undefined)[]) => {
               const size = val[2]
-              return size != null ? Math.max(Math.sqrt(Math.abs(size)) * 4, 8) : 14
+              return size != null ? Math.min(Math.max(Math.sqrt(Math.abs(size)) * 4, 8), 80) : 14
             }
           : 14,
         itemStyle: {
