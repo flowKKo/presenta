@@ -3,6 +3,7 @@ import path from 'node:path'
 import type { Plugin } from 'vite'
 
 const USER_DECKS_DIR = path.resolve(__dirname, 'src/data/user-decks')
+const MAX_BODY_SIZE = 10 * 1024 * 1024 // 10 MB
 
 export default function deckApiPlugin(): Plugin {
   return {
@@ -15,9 +16,24 @@ export default function deckApiPlugin(): Plugin {
         const id = match[1]
 
         if (req.method === 'PUT') {
-          let body = ''
-          req.on('data', (chunk: Buffer) => { body += chunk.toString() })
+          const chunks: Buffer[] = []
+          let size = 0
+          let aborted = false
+          req.on('data', (chunk: Buffer) => {
+            if (aborted) return
+            size += chunk.length
+            if (size > MAX_BODY_SIZE) {
+              aborted = true
+              res.statusCode = 413
+              res.end('payload too large')
+              req.destroy()
+              return
+            }
+            chunks.push(chunk)
+          })
           req.on('end', () => {
+            if (aborted) return
+            const body = Buffer.concat(chunks).toString()
             try {
               JSON.parse(body) // validate JSON
               fs.mkdirSync(USER_DECKS_DIR, { recursive: true })
