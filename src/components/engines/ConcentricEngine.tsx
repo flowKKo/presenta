@@ -59,14 +59,23 @@ export function ConcentricDiagram({ rings, variant, textColor, colorPalette }: {
         const color = palette[i]
         const labelY = cy - maxR + 24 + i * ((maxR * 2 - 24) / Math.max(count - 1, 1))
 
+        // Leader line starts at ring boundary toward the label dot
+        const dotX = labelX - 8
+        const dotY = labelY - 2
+        const dx = dotX - cx
+        const dy = dotY - cy
+        const dist = Math.sqrt(dx * dx + dy * dy) || 1
+        const startX = cx + r * (dx / dist)
+        const startY = cy + r * (dy / dist)
+
         return (
           <g key={`label-${i}`}>
             <line
-              x1={cx + r} y1={cy - r * 0.15 + i * (r * 0.08)}
-              x2={labelX - 8} y2={labelY - 2}
+              x1={startX} y1={startY}
+              x2={dotX} y2={dotY}
               stroke={color} strokeWidth="1.5" strokeDasharray="4 3" opacity={0.4}
             />
-            <circle cx={labelX - 8} cy={labelY - 2} r={3} fill={color} opacity={0.6} />
+            <circle cx={dotX} cy={dotY} r={3} fill={color} opacity={0.6} />
             <text x={labelX} y={ring.description ? labelY - 6 : labelY} fontSize="16" fontWeight="700" fill={textColor || colors.textPrimary}>
               {ring.label}
             </text>
