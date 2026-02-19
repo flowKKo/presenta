@@ -219,8 +219,15 @@ function extractChartItems(data: ChartSlideData): CommonItem[] {
       return (data.treemapData ?? []).map((n) => ({ name: n.name, value: n.value }))
     case 'sankey':
       return (data.sankeyNodes ?? []).map((n) => ({ name: n.name }))
-    case 'heatmap':
-      return (data.categories ?? []).map((cat, i) => ({ name: cat, value: i }))
+    case 'heatmap': {
+      // Aggregate heatmap cell values per x-category (sum of all y-values for each column)
+      const cats = data.categories ?? []
+      const cells = data.heatmapData ?? []
+      return cats.map((cat, ci) => ({
+        name: cat,
+        value: cells.filter(([xi]) => xi === ci).reduce((sum, [,, v]) => sum + v, 0),
+      }))
+    }
     case 'sunburst':
       return (data.sunburstData ?? []).map((n) => ({ name: n.name, value: n.value }))
     case 'boxplot':
