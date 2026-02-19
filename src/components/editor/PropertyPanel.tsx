@@ -13,6 +13,7 @@ import type { TextOverlay, RectOverlay, LineOverlay, OverlayElement } from '../.
 
 interface PropertyPanelProps {
   originalSlides: SlideData[]
+  activeIndex: number
 }
 
 function NumberField({ label, value, onChange, min, max, step }: { label: string; value: number; onChange: (v: number) => void; min?: number; max?: number; step?: number }) {
@@ -52,7 +53,7 @@ function ColorField({ label, value, onChange }: { label: string; value: string; 
   )
 }
 
-export default function PropertyPanel({ originalSlides }: PropertyPanelProps) {
+export default function PropertyPanel({ originalSlides, activeIndex }: PropertyPanelProps) {
   const {
     selection,
     getContentBox,
@@ -90,7 +91,7 @@ export default function PropertyPanel({ originalSlides }: PropertyPanelProps) {
 
   // No selection — show block list overview for block-slide pages, or generic hint
   if (!selection) {
-    return <NoSelectionPanel originalSlides={originalSlides} />
+    return <NoSelectionPanel originalSlides={originalSlides} activeIndex={activeIndex} />
   }
 
   if (selection.type === 'content-box') {
@@ -333,14 +334,14 @@ function BlockListPanel({ slideIndex, blocks }: { slideIndex: number; blocks: Co
   )
 }
 
-function NoSelectionPanel({ originalSlides }: { originalSlides: SlideData[] }) {
-  const { getEffectiveSlideData, setSelection } = useEditor()
+function NoSelectionPanel({ originalSlides, activeIndex }: { originalSlides: SlideData[]; activeIndex: number }) {
+  const { getEffectiveSlideData } = useEditor()
 
-  // Find the first visible block-slide to show its block list
-  for (let i = 0; i < originalSlides.length; i++) {
-    const data = getEffectiveSlideData(i, originalSlides[i])
+  // Show block list for the current slide if it's a block-slide
+  if (activeIndex >= 0 && activeIndex < originalSlides.length) {
+    const data = getEffectiveSlideData(activeIndex, originalSlides[activeIndex])
     if (data.type === 'block-slide') {
-      return <BlockListPanel slideIndex={i} blocks={data.blocks} />
+      return <BlockListPanel slideIndex={activeIndex} blocks={data.blocks} />
     }
   }
 

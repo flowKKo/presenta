@@ -409,7 +409,7 @@ function SlideDeckInner({ slides, onBack }: Omit<SlideDeckProps, 'deckId' | 'dec
           </div>
           <div className="flex-1 overflow-y-auto">
             <Suspense fallback={null}>
-              <PropertyPanel originalSlides={allSlides} />
+              <PropertyPanel originalSlides={allSlides} activeIndex={activeIndex} />
             </Suspense>
           </div>
         </div>
