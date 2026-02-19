@@ -68,7 +68,8 @@ export default memo(function BlockWrapper({
       document.removeEventListener('pointerup', handlePointerUp)
       document.removeEventListener('pointercancel', handlePointerUp)
     }
-  }, [handlePointerMove, handlePointerUp])
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   const handleDragStart = useCallback((e: React.PointerEvent) => {
     if (!editMode || !isSelected) return
@@ -86,7 +87,8 @@ export default memo(function BlockWrapper({
     document.addEventListener('pointermove', handlePointerMove)
     document.addEventListener('pointerup', handlePointerUp)
     document.addEventListener('pointercancel', handlePointerUp)
-  }, [editMode, isSelected, bounds, onDragStart, handlePointerMove, handlePointerUp])
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [editMode, isSelected, bounds, onDragStart])
 
   const handleResize = useCallback((newBounds: { x: number; y: number; width: number; height: number }) => {
     onUpdateQuiet(newBounds)

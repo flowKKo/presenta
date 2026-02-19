@@ -165,7 +165,8 @@ export default function ResizeHandles({ constraint, bounds, onResize, onResizeSt
       document.removeEventListener('pointerup', handlePointerUp)
       document.removeEventListener('pointercancel', handlePointerUp)
     }
-  }, [handlePointerMove, handlePointerUp])
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   const handlePointerDown = useCallback((pos: HandlePosition, e: React.PointerEvent) => {
     e.stopPropagation()
@@ -182,7 +183,8 @@ export default function ResizeHandles({ constraint, bounds, onResize, onResizeSt
     document.addEventListener('pointermove', handlePointerMove)
     document.addEventListener('pointerup', handlePointerUp)
     document.addEventListener('pointercancel', handlePointerUp)
-  }, [bounds, onResizeStart, handlePointerMove, handlePointerUp])
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [bounds, onResizeStart])
 
   return (
     <>

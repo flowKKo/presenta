@@ -69,7 +69,8 @@ export default function ContentBoxWrapper({ slideIndex, slideData, children }: C
       document.removeEventListener('pointerup', handlePointerUp)
       document.removeEventListener('pointercancel', handlePointerUp)
     }
-  }, [handlePointerMove, handlePointerUp])
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   const handleDragStart = useCallback((e: React.PointerEvent) => {
     if (!editMode || !isSelected) return
@@ -87,7 +88,8 @@ export default function ContentBoxWrapper({ slideIndex, slideData, children }: C
     document.addEventListener('pointermove', handlePointerMove)
     document.addEventListener('pointerup', handlePointerUp)
     document.addEventListener('pointercancel', handlePointerUp)
-  }, [editMode, isSelected, box, beginDrag, handlePointerMove, handlePointerUp])
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [editMode, isSelected, box, beginDrag])
 
   const handleResize = useCallback((newBounds: { x: number; y: number; width: number; height: number }) => {
     setContentBoxQuiet(slideIndex, newBounds)
