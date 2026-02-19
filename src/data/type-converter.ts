@@ -584,7 +584,7 @@ function buildCompare(
         quadrantItems: items.map((i, idx) => ({
           label: i.name,
           x: (idx % 2) * 50 + 25,
-          y: Math.floor(idx / 2) * 50 + 25,
+          y: Math.min(Math.floor(idx / 2) * 50 + 25, 95),
         })),
         xAxis: '维度 X',
         yAxis: '维度 Y',
