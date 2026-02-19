@@ -131,6 +131,7 @@ export default function OverlayLayer({ slideIndex, readOnly = false }: OverlayLa
   return (
     <div
       ref={containerRef}
+      data-overlay-layer
       className="absolute inset-0"
       style={{
         zIndex: 20,
