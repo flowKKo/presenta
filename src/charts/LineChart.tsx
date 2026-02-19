@@ -63,8 +63,8 @@ export default function LineChart({ categories, series, height, colorPalette, fo
             }
           : undefined,
         emphasis: {
+          scale: true,
           itemStyle: {
-            symbolSize: 10,
             shadowBlur: 10,
             shadowColor: `${color}40`,
           },
