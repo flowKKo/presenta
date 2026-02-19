@@ -264,15 +264,18 @@ function extractCompareItems(data: CompareSlideData): CommonItem[] {
 type TargetType = SlideData['type']
 
 export function convertToType(source: SlideData, targetType: TargetType, targetVariant?: string): SlideData {
+  // Chart sub-type switch (e.g. bar→pie) needs full data rebuild
+  if (source.type === 'chart' && targetType === 'chart') {
+    const ct = targetVariant && isValidVariant('chart', targetVariant) ? targetVariant as ChartType : source.chartType
+    if (ct === source.chartType) return source
+    const common = extractCommonItems(source)
+    const items = common.items.length > 0 ? common.items : generatePlaceholder()
+    return buildChart(common.title, common.body, items, ct)
+  }
+
   // Same type → just change variant
   if (source.type === targetType) {
     return applyVariant(source, targetVariant)
-  }
-
-  // Chart internal switch
-  if (source.type === 'chart' && targetType === 'chart') {
-    const ct = targetVariant && isValidVariant('chart', targetVariant) ? targetVariant as ChartType : 'bar'
-    return { ...source, chartType: ct }
   }
 
   const common = extractCommonItems(source)
