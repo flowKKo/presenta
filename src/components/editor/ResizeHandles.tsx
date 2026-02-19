@@ -89,7 +89,7 @@ export default function ResizeHandles({ constraint, bounds, onResize, onResizeEn
 
     if (constraintRef.current === 'proportional') {
       // Proportional: use corner handles, maintain aspect ratio
-      const aspect = startBounds.width / startBounds.height
+      const aspect = startBounds.height > 0 ? startBounds.width / startBounds.height : 1
       let dw = 0
       let dh = 0
 
