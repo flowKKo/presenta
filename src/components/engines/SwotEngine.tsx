@@ -16,7 +16,7 @@ export function SwotDiagram({ strengths, weaknesses, opportunities, threats, tex
   textColor?: string; colorPalette?: string
 }) {
   const palette = generateGradientColors(4, colorPalette)
-  const quadrants = [strengths, weaknesses, opportunities, threats]
+  const quadrants = [strengths ?? [], weaknesses ?? [], opportunities ?? [], threats ?? []]
 
   return (
     <div className="grid grid-cols-2 gap-3 h-full p-2">
