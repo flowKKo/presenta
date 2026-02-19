@@ -247,9 +247,8 @@ function OverlayItem({ overlay, slideIndex, isSelected, isEditing, onStartEditin
     if (!dragRef.current) return
     dragRef.current = null
     ;(e.target as HTMLElement).releasePointerCapture(e.pointerId)
-    // Push final drag position to undo history
-    updateOverlay(slideIndex, overlay.id, {})
-  }, [updateOverlay, slideIndex, overlay.id])
+    // BEGIN_DRAG already saved the pre-drag snapshot; no additional history push needed
+  }, [])
 
   const handleTextBlur = useCallback((e: React.FocusEvent<HTMLDivElement>) => {
     onStopEditing()
@@ -261,8 +260,9 @@ function OverlayItem({ overlay, slideIndex, isSelected, isEditing, onStartEditin
   }, [updateOverlayQuiet, slideIndex, overlay.id])
 
   const handleResizeEnd = useCallback((newBounds: { x: number; y: number; width: number; height: number }) => {
-    updateOverlay(slideIndex, overlay.id, newBounds)
-  }, [updateOverlay, slideIndex, overlay.id])
+    // BEGIN_DRAG already saved the pre-resize snapshot; just finalize quietly
+    updateOverlayQuiet(slideIndex, overlay.id, newBounds)
+  }, [updateOverlayQuiet, slideIndex, overlay.id])
 
   if (overlay.type === 'line') {
     return (

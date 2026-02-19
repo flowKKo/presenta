@@ -62,9 +62,9 @@ export default function ContentBoxWrapper({ slideIndex, slideData, children }: C
     document.removeEventListener('pointermove', handlePointerMove)
     document.removeEventListener('pointerup', handlePointerUp)
     document.removeEventListener('pointercancel', handlePointerUp)
-    // Push final drag position to undo history
+    // Finalize drag position (BEGIN_DRAG already saved the pre-drag snapshot)
     if (lastDragBoundsRef.current) {
-      setContentBoxRef.current(slideIndexRef.current, lastDragBoundsRef.current)
+      setContentBoxQuietRef.current(slideIndexRef.current, lastDragBoundsRef.current)
       lastDragBoundsRef.current = null
     }
   }).current
@@ -103,8 +103,9 @@ export default function ContentBoxWrapper({ slideIndex, slideData, children }: C
   }, [slideIndex, setContentBoxQuiet])
 
   const handleResizeEnd = useCallback((newBounds: { x: number; y: number; width: number; height: number }) => {
-    setContentBox(slideIndex, newBounds)
-  }, [slideIndex, setContentBox])
+    // BEGIN_DRAG already saved the pre-resize snapshot; just finalize quietly
+    setContentBoxQuiet(slideIndex, newBounds)
+  }, [slideIndex, setContentBoxQuiet])
 
   // Block-slides manage their own positioning — no content-box wrapping needed
   if (slideData.type === 'block-slide') {
