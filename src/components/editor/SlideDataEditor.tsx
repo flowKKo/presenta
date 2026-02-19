@@ -214,7 +214,7 @@ const defaultTextColors: Record<string, string> = {
 
 export default function SlideDataEditor({ data, onChange, isBlock }: SlideDataEditorProps) {
   // Font size controls — available for all slide types except block-slide
-  const fontSizeFields = data.type !== 'block-slide' && 'titleSize' in data || data.type !== 'block-slide' ? (
+  const fontSizeFields = data.type !== 'block-slide' ? (
     <Section title="字体大小">
       <div className="flex gap-2">
         <div className="flex-1">
