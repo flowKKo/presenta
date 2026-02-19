@@ -10,7 +10,7 @@ export function TableDiagram({ headers, rows, variant, textColor, colorPalette }
   const isStriped = variant === 'striped'
   const isHighlight = variant === 'highlight'
   // Use a single unified header color — first palette color for all columns
-  const headerBg = palette[0]
+  const headerBg = palette[0] ?? colors.accentNeutral
 
   return (
     <div className="w-full h-full overflow-auto flex items-start justify-center p-2">
