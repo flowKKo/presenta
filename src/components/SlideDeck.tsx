@@ -45,7 +45,7 @@ function SlideDeckInner({ slides, onBack }: Omit<SlideDeckProps, 'deckId' | 'dec
   const mainRef = useRef<HTMLDivElement>(null)
   const {
     editMode, toggleEditMode, setSelection,
-    allSlides, effectiveSlides, insertSlide, deleteSlide, copySlide, pasteSlide, duplicateSlide, moveSlide, clipboard,
+    allSlides, effectiveSlides, slideEntries, insertSlide, deleteSlide, copySlide, pasteSlide, duplicateSlide, moveSlide, clipboard,
     setPendingTemplate, pendingTemplateSlideIndex,
     deckTitle, deckDescription, setDeckTitle, setDeckDescription,
   } = useEditor()
@@ -226,6 +226,7 @@ function SlideDeckInner({ slides, onBack }: Omit<SlideDeckProps, 'deckId' | 'dec
       {/* Sidebar */}
       <Sidebar
         slides={effectiveSlides}
+        slideEntries={slideEntries}
         activeIndex={activeIndex}
         onClickSlide={goToSlide}
         editMode={editMode}

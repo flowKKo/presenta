@@ -2,10 +2,12 @@ import { useEffect, useRef, useState, useCallback } from 'react'
 import { MotionConfig } from 'framer-motion'
 import { colors } from '../theme/swiss'
 import type { SlideData } from '../data/types'
+import type { SlideEntry } from '../data/editor-types'
 import SlideContent from './SlideContent'
 
 interface SidebarProps {
   slides: SlideData[]
+  slideEntries?: SlideEntry[]
   activeIndex: number
   onClickSlide: (index: number) => void
   editMode?: boolean
@@ -54,8 +56,23 @@ function ContextMenuItem({ label, onClick, danger, disabled }: {
   )
 }
 
+// Stable key for added entries via WeakMap
+const addedKeyMap = new WeakMap<SlideData, number>()
+let addedKeyCounter = 0
+function getSlideKey(entry: SlideEntry | undefined, index: number): string {
+  if (!entry) return `idx-${index}`
+  if (entry.kind === 'original') return `orig-${entry.index}`
+  // Added entries: assign stable key via WeakMap on the data object
+  let key = addedKeyMap.get(entry.data)
+  if (key === undefined) {
+    key = ++addedKeyCounter
+    addedKeyMap.set(entry.data, key)
+  }
+  return `added-${key}`
+}
+
 export default function Sidebar({
-  slides, activeIndex, onClickSlide, editMode,
+  slides, slideEntries, activeIndex, onClickSlide, editMode,
   onInsertBlankSlide, onDeleteSlide, onCopySlide, onPasteSlide, onDuplicateSlide,
   onReorderSlide, hasClipboard, width, onResize,
 }: SidebarProps) {
@@ -227,7 +244,7 @@ export default function Sidebar({
           const isHighlighted = i === activeIndex && insertionIndex === null
           const isDragOver = dropTarget === i && dragIndex !== null && dragIndex !== i
           return (
-            <div key={i}>
+            <div key={getSlideKey(slideEntries?.[i], i)}>
               {/* Gap zone before this slide */}
               <div
                 className="h-4 flex items-center pl-7 group/gap cursor-pointer"
