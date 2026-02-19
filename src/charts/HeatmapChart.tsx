@@ -13,8 +13,12 @@ interface HeatmapChartProps {
 export default function HeatmapChart({ xCategories, yCategories, data, height, colorPalette }: HeatmapChartProps) {
   const pal = getChartPalette(colorPalette)
   const values = data.map(d => d[2])
-  const minVal = values.length > 0 ? Math.min(...values) : 0
-  const maxVal = values.length > 0 ? Math.max(...values) : 100
+  let minVal = 0, maxVal = 100
+  if (values.length > 0) {
+    minVal = values.reduce((a, b) => a < b ? a : b, values[0])
+    maxVal = values.reduce((a, b) => a > b ? a : b, values[0])
+  }
+  if (minVal === maxVal) maxVal = minVal + 1
 
   const option = {
     tooltip: {

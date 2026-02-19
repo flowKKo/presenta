@@ -41,8 +41,8 @@ export default function GanttChart({ tasks, height, colorPalette }: GanttChartPr
     },
     xAxis: {
       type: 'value' as const,
-      min: tasks.length > 0 ? Math.min(...tasks.map(t => t.start)) : 0,
-      max: tasks.length > 0 ? Math.max(...tasks.map(t => t.end)) : 10,
+      min: tasks.length > 0 ? tasks.reduce((m, t) => t.start < m ? t.start : m, tasks[0].start) : 0,
+      max: tasks.length > 0 ? Math.max(tasks.reduce((m, t) => t.end > m ? t.end : m, tasks[0].end), tasks.reduce((m, t) => t.start < m ? t.start : m, tasks[0].start) + 1) : 10,
     },
     yAxis: {
       type: 'category' as const,
