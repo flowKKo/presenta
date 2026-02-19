@@ -13,6 +13,7 @@ interface ResizeHandlesProps {
   constraint: ResizeConstraint
   bounds: Bounds
   onResize: (newBounds: Bounds) => void
+  onResizeEnd?: (newBounds: Bounds) => void
   onResizeStart?: () => void
   color?: string // handle color
 }
@@ -62,15 +63,18 @@ function getHandleStyle(pos: HandlePosition, bounds: Bounds): React.CSSPropertie
   }
 }
 
-export default function ResizeHandles({ constraint, bounds, onResize, onResizeStart, color = '#42A5F5' }: ResizeHandlesProps) {
+export default function ResizeHandles({ constraint, bounds, onResize, onResizeEnd, onResizeStart, color = '#42A5F5' }: ResizeHandlesProps) {
   const positions = getHandlePositions(constraint)
   const startRef = useRef<{ pos: HandlePosition; startBounds: Bounds; startMouse: { x: number; y: number }; containerRect: DOMRect } | null>(null)
+  const lastBoundsRef = useRef<Bounds | null>(null)
 
   // Use refs for stable callback references
   const constraintRef = useRef(constraint)
   constraintRef.current = constraint
   const onResizeRef = useRef(onResize)
   onResizeRef.current = onResize
+  const onResizeEndRef = useRef(onResizeEnd)
+  onResizeEndRef.current = onResizeEnd
 
   // Stable handlers via refs — never change identity
   const handlePointerMove = useRef((e: PointerEvent) => {
@@ -147,6 +151,7 @@ export default function ResizeHandles({ constraint, bounds, onResize, onResizeSt
       if (pos.includes('top')) newBounds.y = startBounds.y + startBounds.height - MIN_SIZE
     }
 
+    lastBoundsRef.current = newBounds
     onResizeRef.current(newBounds)
   }).current
 
@@ -156,6 +161,10 @@ export default function ResizeHandles({ constraint, bounds, onResize, onResizeSt
     document.removeEventListener('pointermove', handlePointerMove)
     document.removeEventListener('pointerup', handlePointerUp)
     document.removeEventListener('pointercancel', handlePointerUp)
+    if (lastBoundsRef.current) {
+      onResizeEndRef.current?.(lastBoundsRef.current)
+      lastBoundsRef.current = null
+    }
   }).current
 
   // Cleanup on unmount

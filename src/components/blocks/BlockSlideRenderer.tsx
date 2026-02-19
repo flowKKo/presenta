@@ -66,13 +66,17 @@ function BlockItem({ block, slideIndex, isSelected, editMode, spotlightRevealed 
   editMode: boolean
   spotlightRevealed: boolean
 }) {
-  const { setSelection, updateBlockQuiet, beginDrag, openBlockContextMenu } = useEditor()
+  const { setSelection, updateBlock, updateBlockQuiet, beginDrag, openBlockContextMenu } = useEditor()
 
   const onSelect = useCallback(() => {
     setSelection({ type: 'block', slideIndex, blockId: block.id })
   }, [setSelection, slideIndex, block.id])
 
   const onUpdate = useCallback((bounds: { x: number; y: number; width: number; height: number }) => {
+    updateBlock(slideIndex, block.id, bounds)
+  }, [updateBlock, slideIndex, block.id])
+
+  const onUpdateQuiet = useCallback((bounds: { x: number; y: number; width: number; height: number }) => {
     updateBlockQuiet(slideIndex, block.id, bounds)
   }, [updateBlockQuiet, slideIndex, block.id])
 
@@ -87,7 +91,7 @@ function BlockItem({ block, slideIndex, isSelected, editMode, spotlightRevealed 
       editMode={editMode}
       onSelect={onSelect}
       onUpdate={onUpdate}
-      onUpdateQuiet={onUpdate}
+      onUpdateQuiet={onUpdateQuiet}
       onDragStart={beginDrag}
       onContextMenu={onContextMenu}
       spotlightRevealed={spotlightRevealed}

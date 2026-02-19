@@ -15,7 +15,7 @@ interface ContentBoxWrapperProps {
 const DEFAULT_BOX: ContentBox = { x: 0, y: 0, width: 100, height: 100 }
 
 export default function ContentBoxWrapper({ slideIndex, slideData, children }: ContentBoxWrapperProps) {
-  const { editMode, selection, setSelection, getContentBox, setContentBoxQuiet, setSlideDataOverrideQuiet, beginDrag } = useEditor()
+  const { editMode, selection, setSelection, getContentBox, setContentBox, setContentBoxQuiet, setSlideDataOverrideQuiet, beginDrag } = useEditor()
   const box = getContentBox(slideIndex) ?? DEFAULT_BOX
   const isSelected = selection?.type === 'content-box' && selection.slideIndex === slideIndex
   const constraint = getResizeConstraint(slideData)
@@ -28,7 +28,11 @@ export default function ContentBoxWrapper({ slideIndex, slideData, children }: C
     }
   }, [editMode, slideData.type, slideIndex, slideData, setSlideDataOverrideQuiet])
 
+  const lastDragBoundsRef = useRef<ContentBox | null>(null)
+
   // Use refs for stable callback references
+  const setContentBoxRef = useRef(setContentBox)
+  setContentBoxRef.current = setContentBox
   const setContentBoxQuietRef = useRef(setContentBoxQuiet)
   setContentBoxQuietRef.current = setContentBoxQuiet
 
@@ -47,11 +51,9 @@ export default function ContentBoxWrapper({ slideIndex, slideData, children }: C
     const { startMouse, startBox, containerRect } = dragRef.current
     const dx = ((e.clientX - startMouse.x) / containerRect.width) * 100
     const dy = ((e.clientY - startMouse.y) / containerRect.height) * 100
-    setContentBoxQuietRef.current(slideIndexRef.current, {
-      ...startBox,
-      x: startBox.x + dx,
-      y: startBox.y + dy,
-    })
+    const newBox = { ...startBox, x: startBox.x + dx, y: startBox.y + dy }
+    lastDragBoundsRef.current = newBox
+    setContentBoxQuietRef.current(slideIndexRef.current, newBox)
   }).current
 
   const handlePointerUp = useRef((e: PointerEvent) => {
@@ -60,6 +62,11 @@ export default function ContentBoxWrapper({ slideIndex, slideData, children }: C
     document.removeEventListener('pointermove', handlePointerMove)
     document.removeEventListener('pointerup', handlePointerUp)
     document.removeEventListener('pointercancel', handlePointerUp)
+    // Push final drag position to undo history
+    if (lastDragBoundsRef.current) {
+      setContentBoxRef.current(slideIndexRef.current, lastDragBoundsRef.current)
+      lastDragBoundsRef.current = null
+    }
   }).current
 
   // Cleanup on unmount
@@ -94,6 +101,10 @@ export default function ContentBoxWrapper({ slideIndex, slideData, children }: C
   const handleResize = useCallback((newBounds: { x: number; y: number; width: number; height: number }) => {
     setContentBoxQuiet(slideIndex, newBounds)
   }, [slideIndex, setContentBoxQuiet])
+
+  const handleResizeEnd = useCallback((newBounds: { x: number; y: number; width: number; height: number }) => {
+    setContentBox(slideIndex, newBounds)
+  }, [slideIndex, setContentBox])
 
   // Block-slides manage their own positioning — no content-box wrapping needed
   if (slideData.type === 'block-slide') {
@@ -151,6 +162,7 @@ export default function ContentBoxWrapper({ slideIndex, slideData, children }: C
           constraint={constraint}
           bounds={box}
           onResize={handleResize}
+          onResizeEnd={handleResizeEnd}
           onResizeStart={beginDrag}
           color="#42A5F5"
         />

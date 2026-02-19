@@ -246,7 +246,9 @@ function OverlayItem({ overlay, slideIndex, isSelected, isEditing, onStartEditin
     if (!dragRef.current) return
     dragRef.current = null
     ;(e.target as HTMLElement).releasePointerCapture(e.pointerId)
-  }, [])
+    // Push final drag position to undo history
+    updateOverlay(slideIndex, overlay.id, {})
+  }, [updateOverlay, slideIndex, overlay.id])
 
   const handleTextBlur = useCallback((e: React.FocusEvent<HTMLDivElement>) => {
     onStopEditing()
@@ -256,6 +258,10 @@ function OverlayItem({ overlay, slideIndex, isSelected, isEditing, onStartEditin
   const handleResize = useCallback((newBounds: { x: number; y: number; width: number; height: number }) => {
     updateOverlayQuiet(slideIndex, overlay.id, newBounds)
   }, [updateOverlayQuiet, slideIndex, overlay.id])
+
+  const handleResizeEnd = useCallback((newBounds: { x: number; y: number; width: number; height: number }) => {
+    updateOverlay(slideIndex, overlay.id, newBounds)
+  }, [updateOverlay, slideIndex, overlay.id])
 
   if (overlay.type === 'line') {
     return (
@@ -330,6 +336,7 @@ function OverlayItem({ overlay, slideIndex, isSelected, isEditing, onStartEditin
             constraint="free"
             bounds={{ x: overlay.x, y: overlay.y, width: overlay.width, height: overlay.height }}
             onResize={handleResize}
+            onResizeEnd={handleResizeEnd}
             onResizeStart={beginDrag}
             color="#AB47BC"
           />
@@ -375,6 +382,7 @@ function OverlayItem({ overlay, slideIndex, isSelected, isEditing, onStartEditin
           constraint="free"
           bounds={{ x: overlay.x, y: overlay.y, width: overlay.width, height: overlay.height }}
           onResize={handleResize}
+          onResizeEnd={handleResizeEnd}
           color="#AB47BC"
         />
       )}

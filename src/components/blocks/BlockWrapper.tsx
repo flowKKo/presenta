@@ -29,8 +29,11 @@ export default memo(function BlockWrapper({
 }: BlockWrapperProps) {
   const bounds = { x: block.x, y: block.y, width: block.width, height: block.height }
   const dragRef = useRef<{ startMouse: { x: number; y: number }; startBounds: typeof bounds; containerRect: DOMRect } | null>(null)
+  const lastDragBoundsRef = useRef<typeof bounds | null>(null)
 
   // Use refs for stable handler references to avoid listener leaks
+  const onUpdateRef = useRef(onUpdate)
+  onUpdateRef.current = onUpdate
   const onUpdateQuietRef = useRef(onUpdateQuiet)
   onUpdateQuietRef.current = onUpdateQuiet
 
@@ -46,11 +49,9 @@ export default memo(function BlockWrapper({
     const { startMouse, startBounds, containerRect } = dragRef.current
     const dx = ((e.clientX - startMouse.x) / containerRect.width) * 100
     const dy = ((e.clientY - startMouse.y) / containerRect.height) * 100
-    onUpdateQuietRef.current({
-      ...startBounds,
-      x: startBounds.x + dx,
-      y: startBounds.y + dy,
-    })
+    const newBounds = { ...startBounds, x: startBounds.x + dx, y: startBounds.y + dy }
+    lastDragBoundsRef.current = newBounds
+    onUpdateQuietRef.current(newBounds)
   }).current
 
   const handlePointerUp = useRef((e: PointerEvent) => {
@@ -59,6 +60,11 @@ export default memo(function BlockWrapper({
     document.removeEventListener('pointermove', handlePointerMove)
     document.removeEventListener('pointerup', handlePointerUp)
     document.removeEventListener('pointercancel', handlePointerUp)
+    // Push final drag position to undo history
+    if (lastDragBoundsRef.current) {
+      onUpdateRef.current(lastDragBoundsRef.current)
+      lastDragBoundsRef.current = null
+    }
   }).current
 
   // Cleanup on unmount — release any dangling listeners
@@ -93,6 +99,10 @@ export default memo(function BlockWrapper({
   const handleResize = useCallback((newBounds: { x: number; y: number; width: number; height: number }) => {
     onUpdateQuiet(newBounds)
   }, [onUpdateQuiet])
+
+  const handleResizeEnd = useCallback((newBounds: { x: number; y: number; width: number; height: number }) => {
+    onUpdate(newBounds)
+  }, [onUpdate])
 
   // Only enable transition after first render to avoid flash on mount
   const [mounted, setMounted] = useState(false)
@@ -154,6 +164,7 @@ export default memo(function BlockWrapper({
           constraint="free"
           bounds={bounds}
           onResize={handleResize}
+          onResizeEnd={handleResizeEnd}
           onResizeStart={onDragStart}
           color="#42A5F5"
         />
