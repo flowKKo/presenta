@@ -42,14 +42,14 @@ export default function App() {
     // Overlay pending deck for optimistic navigation
     if (pendingDeck) merged[pendingDeck.id] = pendingDeck
     return merged
-  }, [pendingDeck])
+  }, [pendingDeck, decks])
 
   // Clear pendingDeck once HMR brings the real data
   useEffect(() => {
     if (pendingDeck && decks[pendingDeck.id]) {
       setPendingDeck(null)
     }
-  }, [pendingDeck])
+  }, [pendingDeck, decks])
 
   const allDeckList = useMemo(() => {
     // Start with sorted list, replace with pending if applicable
@@ -59,7 +59,7 @@ export default function App() {
       list.push(pendingDeck)
     }
     return list
-  }, [allDecks, pendingDeck])
+  }, [allDecks, pendingDeck, deckList])
 
   const onHashChange = useCallback(() => {
     setDeckId(getHashDeckId())
