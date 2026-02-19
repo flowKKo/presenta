@@ -115,8 +115,8 @@ function MilestoneRoadmap({ phases, palette, textColor }: { phases: RoadmapPhase
 }
 
 export function RoadmapDiagram({ phases, variant, textColor, colorPalette }: { phases: RoadmapSlideData['phases']; variant: RoadmapSlideData['variant']; textColor?: string; colorPalette?: string }) {
-  const palette = generateGradientColors(phases.length, colorPalette)
   if (phases.length === 0) return null
+  const palette = generateGradientColors(phases.length, colorPalette)
 
   switch (variant) {
     case 'vertical':

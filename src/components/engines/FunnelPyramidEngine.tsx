@@ -29,6 +29,7 @@ function getClipPath(variant: FunnelSlideData['variant'], index: number, total: 
 }
 
 export function FunnelDiagram({ layers, variant, textColor, colorPalette }: { layers: FunnelSlideData['layers']; variant: FunnelSlideData['variant']; textColor?: string; colorPalette?: string }) {
+  if (layers.length === 0) return null
   const palette = generateGradientColors(layers.length, colorPalette)
 
   return (
