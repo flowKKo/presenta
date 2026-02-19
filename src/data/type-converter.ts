@@ -350,7 +350,7 @@ function buildTarget(
       return {
         type: 'hub-spoke', title, body,
         center: { label: items[0]?.name ?? title, description: items[0]?.description },
-        spokes: (items.length > 1 ? items.slice(1) : items).map((i) => ({ label: i.name, description: i.description })),
+        spokes: items.slice(1).map((i) => ({ label: i.name, description: i.description })),
         variant: (variant as HubSpokeVariant) ?? 'orbit',
       }
 
