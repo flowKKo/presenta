@@ -8,6 +8,27 @@ import type {
   StackVariant,
 } from './types'
 
+// ─── Variant validation sets ───
+
+const VALID_VARIANTS: Record<string, ReadonlySet<string>> = {
+  'grid-item': new Set<GridItemVariant>(['solid', 'outline', 'sideline', 'topline', 'top-circle', 'joined', 'leaf', 'labeled', 'alternating', 'pillar', 'diamonds', 'signs']),
+  'sequence': new Set<SequenceVariant>(['timeline', 'chain', 'arrows', 'pills', 'ribbon-arrows', 'numbered', 'zigzag']),
+  'compare': new Set(['versus', 'quadrant', 'iceberg']),
+  'funnel': new Set<FunnelVariant>(['funnel', 'pyramid', 'slope']),
+  'concentric': new Set<ConcentricVariant>(['circles', 'diamond', 'target']),
+  'hub-spoke': new Set<HubSpokeVariant>(['orbit', 'solar', 'pinwheel']),
+  'venn': new Set<VennVariant>(['classic', 'linear', 'linear-filled']),
+  'cycle': new Set<CycleVariant>(['circular', 'gear', 'loop']),
+  'table': new Set<TableVariant>(['striped', 'bordered', 'highlight']),
+  'roadmap': new Set<RoadmapVariant>(['horizontal', 'vertical', 'milestone']),
+  'stack': new Set<StackVariant>(['horizontal', 'vertical', 'offset']),
+  'chart': new Set<ChartType>(['bar', 'horizontal-bar', 'stacked-bar', 'pie', 'donut', 'rose', 'line', 'area', 'radar', 'proportion', 'waterfall', 'combo', 'scatter', 'gauge', 'treemap', 'sankey', 'heatmap', 'sunburst', 'boxplot', 'gantt']),
+}
+
+function isValidVariant(slideType: string, variant: string): boolean {
+  return VALID_VARIANTS[slideType]?.has(variant) ?? false
+}
+
 // ─── Common intermediate representation ───
 
 export interface CommonItem {
@@ -234,7 +255,8 @@ export function convertToType(source: SlideData, targetType: TargetType, targetV
 
   // Chart internal switch
   if (source.type === 'chart' && targetType === 'chart') {
-    return { ...source, chartType: (targetVariant as ChartType) ?? 'bar' }
+    const ct = targetVariant && isValidVariant('chart', targetVariant) ? targetVariant as ChartType : 'bar'
+    return { ...source, chartType: ct }
   }
 
   const common = extractCommonItems(source)
@@ -252,7 +274,7 @@ function generatePlaceholder(): CommonItem[] {
 }
 
 function applyVariant(data: SlideData, variant?: string): SlideData {
-  if (!variant) return data
+  if (!variant || !isValidVariant(data.type, variant)) return data
   switch (data.type) {
     case 'grid-item': return { ...data, variant: variant as GridItemVariant }
     case 'sequence': return { ...data, variant: variant as SequenceVariant }
